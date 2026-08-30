@@ -192,27 +192,20 @@ const [error, setError] = useState('')
           </div>
 
           <div className="service-card">
-            <span>🧮</span>
-            <h3>Mathematics</h3>
+            <span>🌐</span>
+            <h3>Languages</h3>
             <p>
-              Build strong mathematical understanding through
-              personalized support.
+              Improve language skills through personalized learning and practice.
             </p>
           </div>
 
+          
           <div className="service-card">
-            <span>🔬</span>
-            <h3>Science</h3>
+            <span>📚</span>
+            <h3>
+All Subjects</h3>
             <p>
-              Make difficult science concepts easier to understand.
-            </p>
-          </div>
-
-          <div className="service-card">
-            <span>🇬🇧</span>
-            <h3>English</h3>
-            <p>
-              Improve reading, writing, grammar, and communication skills.
+              Get support across all school subjects based on your child's needs.
             </p>
           </div>
 
@@ -220,7 +213,7 @@ const [error, setError] = useState('')
             <span>📝</span>
             <h3>Exam Preparation</h3>
             <p>
-              Prepare with structured revision and exam-focused study.
+              Prepare effectively with structured revision and exam-focused study.
             </p>
           </div>
 
