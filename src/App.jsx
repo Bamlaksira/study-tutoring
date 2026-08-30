@@ -23,7 +23,7 @@ const [error, setError] = useState('')
   }
 
   try {
-    const response = await fetch('http://localhost:5000/api/leads', {
+    const response = await fetch('https://studycare-backend.onrender.com/api/leads', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
