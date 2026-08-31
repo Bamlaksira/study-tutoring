@@ -76,6 +76,31 @@ app.post("/api/leads", async (req, res) => {
 });
 
 // Test route
+// Admin: Get all leads
+app.get("/api/leads", async (req, res) => {
+  try {
+    const adminKey = req.headers["x-admin-key"];
+
+    if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
+      return res.status(401).json({
+        message: "Unauthorized"
+      });
+    }
+
+    const leads = await Lead.find().sort({ createdAt: -1 });
+
+    res.json(leads);
+
+  } catch (error) {
+    console.error("Error fetching leads:", error);
+
+    res.status(500).json({
+      message: "Something went wrong."
+    });
+  }
+});
+
+// Test route
 app.get("/", (req, res) => {
   res.send("StudyCare backend is running with MongoDB!");
 });
