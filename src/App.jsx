@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Onboarding from './Onboarding'
 import './App.css'
 
 function PrivacyPolicy({ onBack }) {
@@ -78,7 +79,9 @@ function PrivacyPolicy({ onBack }) {
 
 
 function App() {
-
+if (window.location.pathname === '/onboarding') {
+  return <Onboarding />
+}
   const [showForm, setShowForm] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -87,7 +90,9 @@ function App() {
   const [showPrivacy, setShowPrivacy] = useState(
     window.location.pathname === '/privacy-policy'
   )
-
+  if (window.location.pathname === '/onboarding') {
+    return <Onboarding />
+  }
 
   const openPrivacy = () => {
     window.history.pushState({}, '', '/privacy-policy')
