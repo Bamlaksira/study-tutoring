@@ -119,7 +119,6 @@ const Lead = mongoose.model("Lead", leadSchema);
 // 2. PARENT & CHILD ONBOARDING SCHEMA
 // =====================================================
 
-const onboardingSchema = new mongoose.Schema({
 
   // ---------------- CHILD INFORMATION ----------------
 
