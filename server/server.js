@@ -4,1099 +4,685 @@ const mongoose = require("mongoose");
 
 const app = express();
 
-// =====================================================
-// SERVER SETUP
-// =====================================================
+app.use(cors());
+app.use(express.json({ limit: "100kb" }));
 
 const PORT = process.env.PORT || 5000;
-
-app.use(cors());
-app.use(express.json());
-
-
-// =====================================================
-// 1. FREE GUIDE LEAD SCHEMA
-// =====================================================
-
-const leadSchema = new mongoose.Schema({
-  // CHILD
-  childName: {
-    type: String,
-    default: ""
-  },
-
-  preferredName: {
-    type: String,
-    default: ""
-  },
-
-  age: {
-    type: String,
-    default: ""
-  },
-
-  dateOfBirth: {
-    type: String,
-    default: ""
-  },
-
-  grade: {
-    type: String,
-    required: true
-  },
-
-  school: {
-    type: String,
-    default: ""
-  },
-
-  gender: {
-    type: String,
-    default: ""
-  },
-
-  // PARENT
-  parentName: {
-    type: String,
-    required: true
-  },
-
-  relationship: {
-    type: String,
-    default: ""
-  },
-
-  phone: {
-    type: String,
-    required: true
-  },
-
-  email: {
-    type: String,
-    default: ""
-  },
-
-  city: {
-    type: String,
-    default: ""
-  },
-
-  heardAbout: {
-    type: String,
-    default: ""
-  },
-
-  // ACADEMICS
-  subjects: {
-    type: [String],
-    default: []
-  },
-
-  subject: {
-    type: String,
-    default: ""
-  },
-
-  strongestSubjects: {
-    type: String,
-    default: ""
-  },
-
-  interestedSubject: {
-    type: String,
-    default: ""
-  },
-
-  strugglingSubject: {
-    type: String,
-    default: ""
-  },
-
-  currentPerformance: {
-    type: String,
-    default: ""
-  },
-
-  recentResults: {
-    type: String,
-    default: ""
-  },
-
-  difficultTopics: {
-    type: String,
-    default: ""
-  },
-
-  homeworkSituation: {
-    type: String,
-    default: ""
-  },
-
-  academicConcern: {
-    type: String,
-    default: ""
-  },
-
-  // STRENGTHS / CHALLENGES
-  strengths: {
-    type: String,
-    default: ""
-  },
-
-  learningChallenges: {
-    type: String,
-    default: ""
-  },
-
-  freeTimeActivities: {
-    type: String,
-    default: ""
-  },
-
-  motivation: {
-    type: String,
-    default: ""
-  },
-
-  dislikes: {
-    type: String,
-    default: ""
-  },
-
-  // STUDY HABITS
-  studyRoutine: {
-    type: String,
-    default: ""
-  },
-
-  studyDuration: {
-    type: String,
-    default: ""
-  },
-
-  concentration: {
-    type: String,
-    default: ""
-  },
-
-  distractions: {
-    type: String,
-    default: ""
-  },
-
-  independentStudy: {
-    type: String,
-    default: ""
-  },
-
-  examPreparation: {
-    type: String,
-    default: ""
-  },
-
-  homeworkHabits: {
-    type: String,
-    default: ""
-  },
-
-  // LEARNING PREFERENCES
-  learningStyle: {
-    type: String,
-    default: ""
-  },
-
-  helpfulSupport: {
-    type: [String],
-    default: []
-  },
-
-  // GOALS
-  goals: {
-    type: [String],
-    default: []
-  },
-
-  mainGoals: {
-    type: String,
-    default: ""
-  },
-
-  oneMonthGoal: {
-    type: String,
-    default: ""
-  },
-
-  threeMonthGoal: {
-    type: String,
-    default: ""
-  },
-
-  upcomingExam: {
-    type: String,
-    default: ""
-  },
-
-  targetGrade: {
-    type: String,
-    default: ""
-  },
-
-  // STUDENT VOICE
-  studentGoal: {
-    type: String,
-    default: ""
-  },
-
-  studentDifficulty: {
-    type: String,
-    default: ""
-  },
-
-  // SCHEDULE
-  preferredStudyTime: {
-    type: [String],
-    default: []
-  },
-
-  unavailableTimes: {
-    type: String,
-    default: ""
-  },
-
-  sessionsPerWeek: {
-    type: String,
-    default: ""
-  },
-
-  sessionLength: {
-    type: String,
-    default: ""
-  },
-
-  learningMode: {
-    type: String,
-    default: ""
-  },
-
-  // ENVIRONMENT
-  quietPlace: {
-    type: String,
-    default: ""
-  },
-
-  devices: {
-    type: [String],
-    default: []
-  },
-
-  internetConnection: {
-    type: String,
-    default: ""
-  },
-
-  // PREVIOUS SUPPORT
-  previousTutoring: {
-    type: String,
-    default: ""
-  },
-
-  previousTutoringDetails: {
-    type: String,
-    default: ""
-  },
-
-  whatWorked: {
-    type: String,
-    default: ""
-  },
-
-  whatDidNotWork: {
-    type: String,
-    default: ""
-  },
-
-  // PARENT EXPECTATIONS
-  parentConcern: {
-    type: String,
-    default: ""
-  },
-
-  parentExpectations: {
-    type: String,
-    default: ""
-  },
-
-  progressUpdates: {
-    type: String,
-    default: ""
-  },
-
-  // ADDITIONAL
-  additionalInformation: {
-    type: String,
-    default: ""
-  },
-
-  serviceStatus: {
-    type: String,
-    default: "active"
-  },
-
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-const Lead = mongoose.model("Lead", leadSchema);
-
-
-// =====================================================
-// 2. PAID CLIENT ONBOARDING SCHEMA
-// =====================================================
-
-const onboardingSchema = new mongoose.Schema({
-  // CHILD INFORMATION
-  childName: {
-    type: String,
-    required: true
-  },
-
-  age: {
-    type: String,
-    default: ""
-  },
-
-  dateOfBirth: {
-    type: String,
-    default: ""
-  },
-
-  grade: {
-    type: String,
-    required: true
-  },
-
-  school: {
-    type: String,
-    default: ""
-  },
-
-  preferredName: {
-    type: String,
-    default: ""
-  },
-
-  gender: {
-    type: String,
-    default: ""
-  },
-
-  // PARENT INFORMATION
-  parentName: {
-    type: String,
-    required: true
-  },
-
-  relationship: {
-    type: String,
-    default: ""
-  },
-
-  phone: {
-    type: String,
-    required: true
-  },
-
-  email: {
-    type: String,
-    default: ""
-  },
-
-  city: {
-    type: String,
-    default: ""
-  },
-
-  heardAbout: {
-    type: String,
-    default: ""
-  },
-
-  // ACADEMICS
-  subjects: {
-    type: [String],
-    default: []
-  },
-
-  strongestSubjects: {
-    type: String,
-    default: ""
-  },
-
-  interestedSubject: {
-    type: String,
-    default: ""
-  },
-
-  strugglingSubject: {
-    type: String,
-    default: ""
-  },
-
-  currentPerformance: {
-    type: String,
-    default: ""
-  },
-
-  recentResults: {
-    type: String,
-    default: ""
-  },
-
-  difficultTopics: {
-    type: String,
-    default: ""
-  },
-
-  homeworkSituation: {
-    type: String,
-    default: ""
-  },
-
-  academicConcern: {
-    type: String,
-    default: ""
-  },
-
-  // STRENGTHS / CHALLENGES
-  strengths: {
-    type: String,
-    default: ""
-  },
-
-  learningChallenges: {
-    type: String,
-    default: ""
-  },
-
-  freeTimeActivities: {
-    type: String,
-    default: ""
-  },
-
-  motivation: {
-    type: String,
-    default: ""
-  },
-
-  dislikes: {
-    type: String,
-    default: ""
-  },
-
-  // STUDY HABITS
-  studyRoutine: {
-    type: String,
-    default: ""
-  },
-
-  studyDuration: {
-    type: String,
-    default: ""
-  },
-
-  concentration: {
-    type: String,
-    default: ""
-  },
-
-  distractions: {
-    type: String,
-    default: ""
-  },
-
-  independentStudy: {
-    type: String,
-    default: ""
-  },
-
-  examPreparation: {
-    type: String,
-    default: ""
-  },
-
-  homeworkHabits: {
-    type: String,
-    default: ""
-  },
-
-  // LEARNING PREFERENCES
-  learningStyle: {
-    type: String,
-    default: ""
-  },
-
-  helpfulSupport: {
-    type: [String],
-    default: []
-  },
-
-  // GOALS
-  goals: {
-    type: [String],
-    default: []
-  },
-
-  mainGoals: {
-    type: String,
-    default: ""
-  },
-
-  oneMonthGoal: {
-    type: String,
-    default: ""
-  },
-
-  threeMonthGoal: {
-    type: String,
-    default: ""
-  },
-
-  upcomingExam: {
-    type: String,
-    default: ""
-  },
-
-  targetGrade: {
-    type: String,
-    default: ""
-  },
-
-  // STUDENT VOICE
-  studentGoal: {
-    type: String,
-    default: ""
-  },
-
-  studentDifficulty: {
-    type: String,
-    default: ""
-  },
-
-  // SCHEDULE
-  preferredStudyTime: {
-    type: [String],
-    default: []
-  },
-
-  unavailableTimes: {
-    type: String,
-    default: ""
-  },
-
-  sessionsPerWeek: {
-    type: String,
-    default: ""
-  },
-
-  sessionLength: {
-    type: String,
-    default: ""
-  },
-
-  learningMode: {
-    type: String,
-    default: ""
-  },
-
-  // LEARNING ENVIRONMENT
-  quietPlace: {
-    type: String,
-    default: ""
-  },
-
-  devices: {
-    type: [String],
-    default: []
-  },
-
-  internetConnection: {
-    type: String,
-    default: ""
-  },
-
-  // PREVIOUS SUPPORT
-  previousTutoring: {
-    type: String,
-    default: ""
-  },
-
-  previousTutoringDetails: {
-    type: String,
-    default: ""
-  },
-
-  whatWorked: {
-    type: String,
-    default: ""
-  },
-
-  whatDidNotWork: {
-    type: String,
-    default: ""
-  },
-
-  // PARENT EXPECTATIONS
-  parentConcern: {
-    type: String,
-    default: ""
-  },
-
-  parentExpectations: {
-    type: String,
-    default: ""
-  },
-
-  progressUpdates: {
-    type: String,
-    default: ""
-  },
-
-  // ADDITIONAL
-  additionalInformation: {
-    type: String,
-    default: ""
-  },
-
-  expectations: {
-    type: String,
-    default: ""
-  },
-
-  // SERVICE
-  serviceStatus: {
-    type: String,
-    default: "active"
-  },
-
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-const Onboarding = mongoose.model("Onboarding", onboardingSchema);
-
-
-// =====================================================
-// 3. HEALTH CHECK
-// =====================================================
+const MONGO_URI = process.env.MONGO_URI;
+const ADMIN_KEY = process.env.ADMIN_KEY || "studycare-admin";
+
+// ===============================
+// HEALTH CHECK
+// ===============================
 
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "StudyCare backend is running"
+    message: "StudyCare backend is running",
   });
 });
 
+app.get("/api/health", (req, res) => {
+  res.json({
+    success: true,
+    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+  });
+});
 
-// =====================================================
-// 4. FREE GUIDE LEAD SUBMISSION
-// =====================================================
+// ===============================
+// HELPERS
+// ===============================
+
+const clean = (value) => {
+  if (value === undefined || value === null) return "";
+  return String(value).trim();
+};
+
+const requireAdmin = (req, res, next) => {
+  if (req.headers["x-admin-key"] !== ADMIN_KEY) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+  next();
+};
+
+// ===============================
+// FREE GUIDE LEADS
+// ===============================
+
+const leadSchema = new mongoose.Schema(
+  {
+    parentName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    grade: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    childName: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    subject: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    city: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    location: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    area: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    country: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    preferredLanguage: {
+      type: String,
+      default: "en",
+      trim: true,
+    },
+
+    mainLearningChallenge: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    marketingSource: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    heardAbout: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    leadStatus: {
+      type: String,
+      enum: [
+        "New",
+        "Contacted",
+        "Interested",
+        "Consultation",
+        "Enrolled",
+        "Active",
+        "Completed",
+        "Lost",
+      ],
+      default: "New",
+    },
+
+    // Kept for compatibility with the existing system.
+    serviceStatus: {
+      type: String,
+      default: "active",
+    },
+
+    utmSource: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    utmMedium: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    utmCampaign: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    utmContent: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    utmTerm: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    landingPage: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    referrer: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  {
+    strict: true,
+  }
+);
+
+const Lead = mongoose.model("Lead", leadSchema);
+
+// ===============================
+// SAVE FREE GUIDE LEAD
+// ===============================
 
 app.post("/api/leads", async (req, res) => {
   try {
-    const {
-      parentName,
-      phone,
-      grade,
-      subject
-    } = req.body;
+    const parentName = clean(req.body.parentName);
+    const phone = clean(req.body.phone);
+    const grade = clean(req.body.grade);
 
-    // These are the only required fields for the FREE GUIDE.
-    // Child name is collected later during paid onboarding.
+    const city = clean(req.body.city || req.body.location);
 
-    if (!parentName || !phone || !grade) {
+    if (!parentName || !phone || !grade || !city) {
       return res.status(400).json({
         success: false,
-        message:
-          "Please provide the parent name, phone number and grade."
+        message: "Parent name, phone, grade and location are required.",
       });
     }
 
-    const newLead = new Lead({
+    const marketingSource = clean(
+      req.body.marketingSource || req.body.heardAbout
+    );
+
+    const lead = await Lead.create({
       parentName,
       phone,
       grade,
-      subject: subject || "",
-      serviceStatus: "active"
+
+      childName: clean(req.body.childName),
+      subject: clean(req.body.subject),
+
+      city,
+      location: city,
+      area: clean(req.body.area),
+      country: clean(req.body.country),
+
+      preferredLanguage: clean(req.body.preferredLanguage) || "en",
+
+      mainLearningChallenge: clean(
+        req.body.mainLearningChallenge || req.body.challenge
+      ),
+
+      marketingSource,
+      heardAbout: marketingSource,
+
+      leadStatus: "New",
+      serviceStatus: "active",
+
+      utmSource: clean(req.body.utmSource),
+      utmMedium: clean(req.body.utmMedium),
+      utmCampaign: clean(req.body.utmCampaign),
+      utmContent: clean(req.body.utmContent),
+      utmTerm: clean(req.body.utmTerm),
+
+      landingPage: clean(req.body.landingPage),
+      referrer: clean(req.body.referrer),
+
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
-    await newLead.save();
-
-    console.log(
-      "New free-guide lead saved:",
-      newLead._id
-    );
+    console.log("New StudyCare lead saved:", lead._id);
 
     res.status(201).json({
       success: true,
       message: "Lead saved successfully.",
-      leadId: newLead._id
+      leadId: lead._id,
     });
-
   } catch (error) {
-    console.error("Error saving lead:", error);
+    console.error("Lead save error:", error);
 
     res.status(500).json({
       success: false,
-      message: "Unable to save lead."
+      message: "Unable to save the lead.",
     });
   }
 });
 
+// ===============================
+// GET LEADS - ADMIN
+// ===============================
 
-// =====================================================
-// 5. ADMIN - GET FREE GUIDE LEADS
-// =====================================================
-
-app.get("/api/leads", async (req, res) => {
+app.get("/api/leads", requireAdmin, async (req, res) => {
   try {
-    const adminKey = req.headers["x-admin-key"];
+    const leads = await Lead.find()
+      .sort({ createdAt: -1 })
+      .lean();
 
-    if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
-      return res.status(401).json({
+    res.json({
+      success: true,
+      leads,
+    });
+  } catch (error) {
+    console.error("Get leads error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to retrieve leads.",
+    });
+  }
+});
+
+// ===============================
+// UPDATE LEAD STATUS - ADMIN
+// ===============================
+
+app.patch("/api/leads/:id/status", requireAdmin, async (req, res) => {
+  try {
+    const allowedStatuses = [
+      "New",
+      "Contacted",
+      "Interested",
+      "Consultation",
+      "Enrolled",
+      "Active",
+      "Completed",
+      "Lost",
+    ];
+
+    const status = clean(req.body.status);
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
         success: false,
-        message: "Unauthorized"
+        message: "Invalid lead status.",
       });
     }
 
-    const leads = await Lead
-      .find()
-      .sort({ createdAt: -1 });
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid lead ID.",
+      });
+    }
 
-    res.json(leads);
+    const lead = await Lead.findByIdAndUpdate(
+      req.params.id,
+      {
+        leadStatus: status,
+        updatedAt: new Date(),
+      },
+      {
+        new: true,
+      }
+    );
 
+    if (!lead) {
+      return res.status(404).json({
+        success: false,
+        message: "Lead not found.",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Lead status updated.",
+      lead,
+    });
   } catch (error) {
-    console.error("Error fetching leads:", error);
+    console.error("Update lead status error:", error);
 
     res.status(500).json({
       success: false,
-      message: "Something went wrong."
+      message: "Unable to update lead status.",
     });
   }
 });
 
+// ===============================
+// PAID ONBOARDING
+// ===============================
 
-// =====================================================
-// 6. PAID CLIENT ONBOARDING SUBMISSION
-// =====================================================
+const onboardingSchema = new mongoose.Schema(
+  {
+    // Student
+    childName: { type: String, required: true, trim: true },
+    preferredName: { type: String, default: "", trim: true },
+    age: { type: String, default: "", trim: true },
+    dateOfBirth: { type: String, default: "", trim: true },
+    grade: { type: String, required: true, trim: true },
+    school: { type: String, default: "", trim: true },
+    gender: { type: String, default: "", trim: true },
+
+    // Parent
+    parentName: { type: String, required: true, trim: true },
+    relationship: { type: String, default: "", trim: true },
+    phone: { type: String, required: true, trim: true },
+    email: { type: String, default: "", trim: true },
+    city: { type: String, default: "", trim: true },
+    location: { type: String, default: "", trim: true },
+    area: { type: String, default: "", trim: true },
+    country: { type: String, default: "", trim: true },
+    preferredLanguage: { type: String, default: "en", trim: true },
+    heardAbout: { type: String, default: "", trim: true },
+
+    // Academics
+    subjects: { type: [String], default: [] },
+    strongestSubjects: { type: String, default: "", trim: true },
+    interestedSubject: { type: String, default: "", trim: true },
+    strugglingSubject: { type: String, default: "", trim: true },
+    currentPerformance: { type: String, default: "", trim: true },
+    recentResults: { type: String, default: "", trim: true },
+    difficultTopics: { type: String, default: "", trim: true },
+    homeworkSituation: { type: String, default: "", trim: true },
+    academicConcern: { type: String, default: "", trim: true },
+
+    // Strengths / challenges
+    strengths: { type: String, default: "", trim: true },
+    learningChallenges: { type: String, default: "", trim: true },
+    freeTimeActivities: { type: String, default: "", trim: true },
+    motivation: { type: String, default: "", trim: true },
+    dislikes: { type: String, default: "", trim: true },
+
+    // Study habits
+    studyRoutine: { type: String, default: "", trim: true },
+    studyDuration: { type: String, default: "", trim: true },
+    concentration: { type: String, default: "", trim: true },
+    distractions: { type: String, default: "", trim: true },
+    independentStudy: { type: String, default: "", trim: true },
+    examPreparation: { type: String, default: "", trim: true },
+    homeworkHabits: { type: String, default: "", trim: true },
+
+    // Learning preferences
+    learningStyle: { type: String, default: "", trim: true },
+    helpfulSupport: { type: [String], default: [] },
+
+    // Goals
+    goals: { type: [String], default: [] },
+    mainGoals: { type: String, default: "", trim: true },
+    oneMonthGoal: { type: String, default: "", trim: true },
+    threeMonthGoal: { type: String, default: "", trim: true },
+    upcomingExam: { type: String, default: "", trim: true },
+    targetGrade: { type: String, default: "", trim: true },
+    studentGoal: { type: String, default: "", trim: true },
+    studentDifficulty: { type: String, default: "", trim: true },
+
+    // Schedule
+    preferredStudyTime: { type: [String], default: [] },
+    unavailableTimes: { type: String, default: "", trim: true },
+    sessionsPerWeek: { type: String, default: "", trim: true },
+    sessionLength: { type: String, default: "", trim: true },
+    learningMode: { type: String, default: "", trim: true },
+
+    // Environment
+    quietPlace: { type: String, default: "", trim: true },
+    devices: { type: String, default: "", trim: true },
+    internetConnection: { type: String, default: "", trim: true },
+
+    // Previous tutoring
+    previousTutoring: { type: String, default: "", trim: true },
+    previousTutoringDetails: { type: String, default: "", trim: true },
+    whatWorked: { type: String, default: "", trim: true },
+    whatDidNotWork: { type: String, default: "", trim: true },
+
+    // Parent expectations
+    parentConcern: { type: String, default: "", trim: true },
+    parentExpectations: { type: String, default: "", trim: true },
+    progressUpdates: { type: String, default: "", trim: true },
+
+    // Additional
+    additionalInformation: { type: String, default: "", trim: true },
+    expectations: { type: String, default: "", trim: true },
+
+    serviceStatus: {
+      type: String,
+      default: "new",
+      trim: true,
+    },
+
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  {
+    strict: true,
+  }
+);
+
+const Onboarding = mongoose.model("Onboarding", onboardingSchema);
+
+// ===============================
+// SAVE PAID ONBOARDING
+// ===============================
 
 app.post("/api/onboarding", async (req, res) => {
   try {
-
-    const {
-      childName,
-      age,
-      dateOfBirth,
-      grade,
-      school,
-      preferredName,
-      gender,
-
-      parentName,
-      relationship,
-      phone,
-      email,
-      city,
-      heardAbout,
-
-      subjects,
-      strongestSubjects,
-      interestedSubject,
-      strugglingSubject,
-      currentPerformance,
-      recentResults,
-      difficultTopics,
-      homeworkSituation,
-      academicConcern,
-
-      strengths,
-      learningChallenges,
-      freeTimeActivities,
-      motivation,
-      dislikes,
-
-      studyRoutine,
-      studyDuration,
-      concentration,
-      distractions,
-      independentStudy,
-      examPreparation,
-      homeworkHabits,
-
-      learningStyle,
-      helpfulSupport,
-
-      goals,
-      mainGoals,
-      oneMonthGoal,
-      threeMonthGoal,
-      upcomingExam,
-      targetGrade,
-
-      studentGoal,
-      studentDifficulty,
-
-      preferredStudyTime,
-      unavailableTimes,
-      sessionsPerWeek,
-      sessionLength,
-      learningMode,
-
-      quietPlace,
-      devices,
-      internetConnection,
-
-      previousTutoring,
-      previousTutoringDetails,
-      whatWorked,
-      whatDidNotWork,
-
-      parentConcern,
-      parentExpectations,
-      progressUpdates,
-
-      additionalInformation,
-      expectations
-
-    } = req.body;
-
-
-    // REQUIRED INFORMATION
+    const childName = clean(req.body.childName);
+    const grade = clean(req.body.grade);
+    const parentName = clean(req.body.parentName);
+    const phone = clean(req.body.phone);
 
     if (!childName || !grade || !parentName || !phone) {
       return res.status(400).json({
         success: false,
         message:
-          "Please provide the child's name, grade, parent name and phone number."
+          "Child name, grade, parent name and phone are required.",
       });
     }
 
+    const onboarding = await Onboarding.create({
+      ...req.body,
 
-    // CREATE ONBOARDING RECORD
-
-    const newOnboarding = new Onboarding({
-
-      // CHILD
       childName,
-      age: age || "",
-      dateOfBirth: dateOfBirth || "",
       grade,
-      school: school || "",
-      preferredName: preferredName || "",
-      gender: gender || "",
-
-      // PARENT
       parentName,
-      relationship: relationship || "",
       phone,
-      email: email || "",
-      city: city || "",
-      heardAbout: heardAbout || "",
 
-      // ACADEMICS
-      subjects: subjects || [],
-      strongestSubjects: strongestSubjects || "",
-      interestedSubject: interestedSubject || "",
-      strugglingSubject: strugglingSubject || "",
-      currentPerformance: currentPerformance || "",
-      recentResults: recentResults || "",
-      difficultTopics: difficultTopics || "",
-      homeworkSituation: homeworkSituation || "",
-      academicConcern: academicConcern || "",
+      location: clean(req.body.location || req.body.city),
+      city: clean(req.body.city || req.body.location),
+      area: clean(req.body.area),
+      country: clean(req.body.country),
+      preferredLanguage:
+        clean(req.body.preferredLanguage) || "en",
 
-      // STRENGTHS
-      strengths: strengths || "",
-      learningChallenges: learningChallenges || "",
-      freeTimeActivities: freeTimeActivities || "",
-      motivation: motivation || "",
-      dislikes: dislikes || "",
-
-      // STUDY HABITS
-      studyRoutine: studyRoutine || "",
-      studyDuration: studyDuration || "",
-      concentration: concentration || "",
-      distractions: distractions || "",
-      independentStudy: independentStudy || "",
-      examPreparation: examPreparation || "",
-      homeworkHabits: homeworkHabits || "",
-
-      // LEARNING PREFERENCES
-      learningStyle: learningStyle || "",
-      helpfulSupport: helpfulSupport || [],
-
-      // GOALS
-      goals: goals || [],
-      mainGoals: mainGoals || "",
-      oneMonthGoal: oneMonthGoal || "",
-      threeMonthGoal: threeMonthGoal || "",
-      upcomingExam: upcomingExam || "",
-      targetGrade: targetGrade || "",
-
-      // STUDENT VOICE
-      studentGoal: studentGoal || "",
-      studentDifficulty: studentDifficulty || "",
-
-      // SCHEDULE
-      preferredStudyTime: preferredStudyTime || [],
-      unavailableTimes: unavailableTimes || "",
-      sessionsPerWeek: sessionsPerWeek || "",
-      sessionLength: sessionLength || "",
-      learningMode: learningMode || "",
-
-      // ENVIRONMENT
-      quietPlace: quietPlace || "",
-      devices: devices || [],
-      internetConnection: internetConnection || "",
-
-      // PREVIOUS SUPPORT
-      previousTutoring: previousTutoring || "",
-      previousTutoringDetails: previousTutoringDetails || "",
-      whatWorked: whatWorked || "",
-      whatDidNotWork: whatDidNotWork || "",
-
-      // PARENT EXPECTATIONS
-      parentConcern: parentConcern || "",
-      parentExpectations: parentExpectations || "",
-      progressUpdates: progressUpdates || "",
-
-      // ADDITIONAL
-      additionalInformation: additionalInformation || "",
-      expectations: expectations || "",
-
-      // SERVICE
-      serviceStatus: "active"
+      updatedAt: new Date(),
     });
 
-
-    await newOnboarding.save();
-
-
     console.log(
-      "New paid-client onboarding saved:",
-      newOnboarding._id
+      "New StudyCare onboarding saved:",
+      onboarding._id
     );
-
 
     res.status(201).json({
       success: true,
-      message: "Onboarding information saved successfully.",
-      onboardingId: newOnboarding._id
+      message: "Onboarding submitted successfully.",
+      onboardingId: onboarding._id,
     });
-
-
   } catch (error) {
-
-    console.error(
-      "Error saving onboarding information:",
-      error
-    );
+    console.error("Onboarding save error:", error);
 
     res.status(500).json({
       success: false,
-      message: "Unable to save onboarding information."
+      message: "Unable to save onboarding.",
     });
-
   }
 });
 
+// ===============================
+// GET ONBOARDING - ADMIN
+// ===============================
 
-// =====================================================
-// 7. ADMIN - GET PAID CLIENT ONBOARDING
-// =====================================================
-
-app.get("/api/onboarding", async (req, res) => {
-
+app.get("/api/onboarding", requireAdmin, async (req, res) => {
   try {
+    const onboarding = await Onboarding.find()
+      .sort({ createdAt: -1 })
+      .lean();
 
-    const adminKey = req.headers["x-admin-key"];
+    res.json({
+      success: true,
+      onboarding,
+    });
+  } catch (error) {
+    console.error("Get onboarding error:", error);
 
-    if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
-      return res.status(401).json({
+    res.status(500).json({
+      success: false,
+      message: "Unable to retrieve onboarding records.",
+    });
+  }
+});
+
+// ===============================
+// UPDATE ONBOARDING STATUS - ADMIN
+// ===============================
+
+app.patch(
+  "/api/onboarding/:id/status",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid onboarding ID.",
+        });
+      }
+
+      const status = clean(req.body.status);
+
+      if (!status) {
+        return res.status(400).json({
+          success: false,
+          message: "Status is required.",
+        });
+      }
+
+      const record = await Onboarding.findByIdAndUpdate(
+        req.params.id,
+        {
+          serviceStatus: status,
+          updatedAt: new Date(),
+        },
+        { new: true }
+      );
+
+      if (!record) {
+        return res.status(404).json({
+          success: false,
+          message: "Onboarding record not found.",
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Onboarding status updated.",
+        onboarding: record,
+      });
+    } catch (error) {
+      console.error("Update onboarding status error:", error);
+
+      res.status(500).json({
         success: false,
-        message: "Unauthorized"
+        message: "Unable to update onboarding status.",
       });
     }
-
-
-    const onboardingForms = await Onboarding
-      .find()
-      .sort({ createdAt: -1 });
-
-
-    res.json(onboardingForms);
-
-
-  } catch (error) {
-
-    console.error(
-      "Error fetching onboarding forms:",
-      error
-    );
-
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong."
-    });
-
   }
+);
 
+// ===============================
+// 404
+// ===============================
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found.",
+  });
 });
 
+// ===============================
+// ERROR HANDLER
+// ===============================
 
-// =====================================================
-// 8. START SERVER
-// =====================================================
+app.use((err, req, res, next) => {
+  console.error("Server error:", err);
 
-app.listen(PORT, "0.0.0.0", () => {
-
-  console.log(
-    `StudyCare backend running on port ${PORT}`
-  );
-
+  res.status(500).json({
+    success: false,
+    message: "Internal server error.",
+  });
 });
 
+// ===============================
+// DATABASE + SERVER
+// ===============================
 
-// =====================================================
-// 9. CONNECT TO MONGODB
-// =====================================================
+async function startServer() {
+  try {
+    if (!MONGO_URI) {
+      console.error("MONGO_URI is missing.");
+      process.exit(1);
+    }
 
-if (!process.env.MONGO_URI) {
+    await mongoose.connect(MONGO_URI);
 
-  console.error(
-    "WARNING: MONGO_URI is not defined."
-  );
+    console.log("Connected to MongoDB successfully");
 
-} else {
-
-  mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => {
-
-      console.log(
-        "Connected to MongoDB successfully"
-      );
-
-    })
-    .catch((error) => {
-
-      console.error(
-        "MongoDB connection failed:",
-        error.message
-      );
-
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`StudyCare backend running on port ${PORT}`);
     });
-
+  } catch (error) {
+    console.error("MongoDB connection failed:", error);
+    process.exit(1);
+  }
 }
+
+startServer();
