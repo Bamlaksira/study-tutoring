@@ -4,12 +4,15 @@ const mongoose = require("mongoose");
 
 const app = express();
 
-// Render provides PORT automatically.
-// 5000 is used when running locally.
+// =====================================================
+// SERVER SETUP
+// =====================================================
+
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+
 
 // =====================================================
 // 1. FREE GUIDE LEAD SCHEMA
@@ -19,7 +22,7 @@ const leadSchema = new mongoose.Schema({
   // CHILD
   childName: {
     type: String,
-    required: true
+    default: ""
   },
 
   preferredName: {
@@ -87,6 +90,11 @@ const leadSchema = new mongoose.Schema({
   subjects: {
     type: [String],
     default: []
+  },
+
+  subject: {
+    type: String,
+    default: ""
   },
 
   strongestSubjects: {
@@ -700,28 +708,37 @@ app.get("/", (req, res) => {
 app.post("/api/leads", async (req, res) => {
   try {
     const {
-      childName,
-      grade,
       parentName,
-      phone
+      phone,
+      grade,
+      subject
     } = req.body;
 
-    if (!childName || !grade || !parentName || !phone) {
+    // These are the only required fields for the FREE GUIDE.
+    // Child name is collected later during paid onboarding.
+
+    if (!parentName || !phone || !grade) {
       return res.status(400).json({
         success: false,
         message:
-          "Please provide the child's name, grade, parent name and phone number."
+          "Please provide the parent name, phone number and grade."
       });
     }
 
     const newLead = new Lead({
-      ...req.body,
+      parentName,
+      phone,
+      grade,
+      subject: subject || "",
       serviceStatus: "active"
     });
 
     await newLead.save();
 
-    console.log("New free-guide lead saved:", newLead._id);
+    console.log(
+      "New free-guide lead saved:",
+      newLead._id
+    );
 
     res.status(201).json({
       success: true,
@@ -778,6 +795,7 @@ app.get("/api/leads", async (req, res) => {
 
 app.post("/api/onboarding", async (req, res) => {
   try {
+
     const {
       childName,
       age,
@@ -852,9 +870,12 @@ app.post("/api/onboarding", async (req, res) => {
 
       additionalInformation,
       expectations
+
     } = req.body;
 
-    // Required information
+
+    // REQUIRED INFORMATION
+
     if (!childName || !grade || !parentName || !phone) {
       return res.status(400).json({
         success: false,
@@ -863,7 +884,12 @@ app.post("/api/onboarding", async (req, res) => {
       });
     }
 
+
+    // CREATE ONBOARDING RECORD
+
     const newOnboarding = new Onboarding({
+
+      // CHILD
       childName,
       age: age || "",
       dateOfBirth: dateOfBirth || "",
@@ -872,6 +898,7 @@ app.post("/api/onboarding", async (req, res) => {
       preferredName: preferredName || "",
       gender: gender || "",
 
+      // PARENT
       parentName,
       relationship: relationship || "",
       phone,
@@ -879,6 +906,7 @@ app.post("/api/onboarding", async (req, res) => {
       city: city || "",
       heardAbout: heardAbout || "",
 
+      // ACADEMICS
       subjects: subjects || [],
       strongestSubjects: strongestSubjects || "",
       interestedSubject: interestedSubject || "",
@@ -889,12 +917,14 @@ app.post("/api/onboarding", async (req, res) => {
       homeworkSituation: homeworkSituation || "",
       academicConcern: academicConcern || "",
 
+      // STRENGTHS
       strengths: strengths || "",
       learningChallenges: learningChallenges || "",
       freeTimeActivities: freeTimeActivities || "",
       motivation: motivation || "",
       dislikes: dislikes || "",
 
+      // STUDY HABITS
       studyRoutine: studyRoutine || "",
       studyDuration: studyDuration || "",
       concentration: concentration || "",
@@ -903,9 +933,11 @@ app.post("/api/onboarding", async (req, res) => {
       examPreparation: examPreparation || "",
       homeworkHabits: homeworkHabits || "",
 
+      // LEARNING PREFERENCES
       learningStyle: learningStyle || "",
       helpfulSupport: helpfulSupport || [],
 
+      // GOALS
       goals: goals || [],
       mainGoals: mainGoals || "",
       oneMonthGoal: oneMonthGoal || "",
@@ -913,40 +945,50 @@ app.post("/api/onboarding", async (req, res) => {
       upcomingExam: upcomingExam || "",
       targetGrade: targetGrade || "",
 
+      // STUDENT VOICE
       studentGoal: studentGoal || "",
       studentDifficulty: studentDifficulty || "",
 
+      // SCHEDULE
       preferredStudyTime: preferredStudyTime || [],
       unavailableTimes: unavailableTimes || "",
       sessionsPerWeek: sessionsPerWeek || "",
       sessionLength: sessionLength || "",
       learningMode: learningMode || "",
 
+      // ENVIRONMENT
       quietPlace: quietPlace || "",
       devices: devices || [],
       internetConnection: internetConnection || "",
 
+      // PREVIOUS SUPPORT
       previousTutoring: previousTutoring || "",
       previousTutoringDetails: previousTutoringDetails || "",
       whatWorked: whatWorked || "",
       whatDidNotWork: whatDidNotWork || "",
 
+      // PARENT EXPECTATIONS
       parentConcern: parentConcern || "",
       parentExpectations: parentExpectations || "",
       progressUpdates: progressUpdates || "",
 
+      // ADDITIONAL
       additionalInformation: additionalInformation || "",
       expectations: expectations || "",
 
+      // SERVICE
       serviceStatus: "active"
     });
 
+
     await newOnboarding.save();
+
 
     console.log(
       "New paid-client onboarding saved:",
       newOnboarding._id
     );
+
 
     res.status(201).json({
       success: true,
@@ -954,7 +996,9 @@ app.post("/api/onboarding", async (req, res) => {
       onboardingId: newOnboarding._id
     });
 
+
   } catch (error) {
+
     console.error(
       "Error saving onboarding information:",
       error
@@ -964,6 +1008,7 @@ app.post("/api/onboarding", async (req, res) => {
       success: false,
       message: "Unable to save onboarding information."
     });
+
   }
 });
 
@@ -973,7 +1018,9 @@ app.post("/api/onboarding", async (req, res) => {
 // =====================================================
 
 app.get("/api/onboarding", async (req, res) => {
+
   try {
+
     const adminKey = req.headers["x-admin-key"];
 
     if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
@@ -983,13 +1030,17 @@ app.get("/api/onboarding", async (req, res) => {
       });
     }
 
+
     const onboardingForms = await Onboarding
       .find()
       .sort({ createdAt: -1 });
 
+
     res.json(onboardingForms);
 
+
   } catch (error) {
+
     console.error(
       "Error fetching onboarding forms:",
       error
@@ -999,7 +1050,9 @@ app.get("/api/onboarding", async (req, res) => {
       success: false,
       message: "Something went wrong."
     });
+
   }
+
 });
 
 
@@ -1007,14 +1060,12 @@ app.get("/api/onboarding", async (req, res) => {
 // 8. START SERVER
 // =====================================================
 
-// IMPORTANT:
-// Start Express immediately so Render can detect the port.
-// MongoDB connects separately below.
-
 app.listen(PORT, "0.0.0.0", () => {
+
   console.log(
     `StudyCare backend running on port ${PORT}`
   );
+
 });
 
 
@@ -1023,21 +1074,29 @@ app.listen(PORT, "0.0.0.0", () => {
 // =====================================================
 
 if (!process.env.MONGO_URI) {
+
   console.error(
     "WARNING: MONGO_URI is not defined."
   );
+
 } else {
+
   mongoose
     .connect(process.env.MONGO_URI)
     .then(() => {
+
       console.log(
         "Connected to MongoDB successfully"
       );
+
     })
     .catch((error) => {
+
       console.error(
         "MongoDB connection failed:",
         error.message
       );
+
     });
+
 }
