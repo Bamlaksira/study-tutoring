@@ -1,931 +1,224 @@
 import { useState } from 'react'
-import Onboarding from './Onboarding'
 import './App.css'
+import Onboarding from './Onboarding'
 
-function PrivacyPolicy({ onBack }) {
-  return (
-    <div className="privacy-page">
+const API = 'https://studycare-backend.onrender.com'
+const GUIDE = '/study-guide.pdf'
+const WHATSAPP = '251908075506'
 
-      <div className="privacy-content">
+const grades = ['KG1','KG2','KG3','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12']
 
-        <div className="logo">
-          <span>📚</span> StudyCare
-        </div>
-
-        <h1>Privacy Policy</h1>
-
-        <p>
-          <strong>Last updated: August 31, 2026</strong>
-        </p>
-
-        <h2>Information We Collect</h2>
-
-        <p>
-          When you submit a form through StudyCare, we may collect your
-          name, phone number, your child's grade, and the subject or type
-          of support your child needs.
-        </p>
-
-        <h2>How We Use Your Information</h2>
-
-        <p>
-          We use this information to provide the requested study guide,
-          contact you about StudyCare tutoring services, understand your
-          child's needs, and follow up on your request.
-        </p>
-
-        <h2>Sharing Your Information</h2>
-
-        <p>
-          We do not sell your personal information. We may use service
-          providers and advertising platforms, including Meta, to help us
-          communicate with potential customers and measure advertising
-          performance.
-        </p>
-
-        <h2>Advertising and Cookies</h2>
-
-        <p>
-          StudyCare may use the Meta Pixel to measure website activity
-          and understand the effectiveness of our advertising campaigns.
-        </p>
-
-        <h2>Your Choices</h2>
-
-        <p>
-          You may ask us to stop contacting you or ask questions about
-          how your information is being used.
-        </p>
-
-        <h2>Contact</h2>
-
-        <p>
-          If you have questions about this Privacy Policy, please contact
-          StudyCare using the contact information provided on our website.
-        </p>
-
-        <button
-          className="primary-button"
-          onClick={onBack}
-        >
-          ← Back to StudyCare
-        </button>
-
-      </div>
-
-    </div>
-  )
+const text = {
+  en: {
+    navHome:'Home', navServices:'Services', navHow:'How It Works', navResources:'Resources', navContact:'Contact',
+    heroTitle:'Help Your Child Study Smarter — Not Just Harder',
+    heroText:'Personalized academic support for KG–12 students, designed around your child’s needs, challenges, goals and learning habits.',
+    guide:'Get Your FREE Study Guide', talk:'Talk to StudyCare',
+    trust:'Homework support • All subjects • Languages • Exam preparation • Personalized study plans',
+    problemTitle:'Could Your Child Benefit From More Learning Support?',
+    problemText:'Every child learns differently. These everyday signs may mean your child could benefit from additional structure or support.',
+    assessmentTitle:'Parent Learning Check',
+    assessmentText:'Answer a few quick questions to reflect on your child’s current study experience.',
+    often:'Often', sometimes:'Sometimes', rarely:'Rarely', result:'See My Result',
+    servicesTitle:'Academic Support Built Around Your Child',
+    planTitle:'A Personalized Approach — Not a One-Size-Fits-All Plan',
+    planText:'Before recommending support, StudyCare looks at academic performance, strengths, challenges, interests, goals, habits, learning preferences, schedule and the kind of support that works best.',
+    tipsTitle:'What Parents Can Do Today',
+    howTitle:'How StudyCare Works',
+    resourcesTitle:'Free Learning Resources',
+    faqTitle:'Frequently Asked Questions',
+    finalTitle:'Ready to Help Your Child Study With More Structure?',
+    finalText:'Start with a free study guide or talk with StudyCare about your child’s needs.',
+    submit:'Get My Free Guide', close:'Close',
+    parentName:'Parent Name', phone:'Phone / WhatsApp', grade:'Child Grade',
+    city:'City / Town', area:'Area / Sub-city (optional)', country:'Country',
+    challenge:'Main Learning Challenge', language:'Preferred Language', source:'How did you hear about StudyCare?',
+    select:'Select', english:'English', amharic:'Amharic', optional:'Optional',
+    success:'Your FREE Study Guide is Ready!', successText:'Download it now, then contact StudyCare if you would like help creating a plan specifically for your child.',
+    download:'Open Study Guide', start:'Talk About My Child', privacy:'We use your information only to respond to your request.',
+    services:['Homework Support','All Subjects','Language Skills','Exam Preparation','Personalized Study Plans'],
+    signs:['Avoids studying or homework','Struggles to understand lessons','Forgets what was recently learned','Has difficulty maintaining a study routine','Loses concentration easily','Seems to be falling behind','Lacks confidence when studying','Feels stressed about exams','Needs help preparing for important exams'],
+    questions:['Does your child often struggle to start homework?','Does your child need repeated explanations to understand lessons?','Does your child struggle to maintain a regular study routine?','Does your child forget material soon after studying?','Does your child lack confidence when studying?','Does your child need more structured exam preparation?'],
+    tips:['Create a consistent study time','Break large tasks into smaller goals','Ask what makes studying difficult — not only about grades'],
+    steps:['Tell us about your child','We understand their needs','We identify an appropriate support approach','Your child follows structured support','Progress is reviewed','Parents stay informed'],
+    faqs:[
+      ['What grades does StudyCare support?','StudyCare supports students from KG through Grade 12.'],
+      ['What subjects can my child get help with?','Support can cover all subjects, depending on the child’s needs.'],
+      ['Is support personalized?','Yes. We consider the child’s academic situation, strengths, challenges, goals, habits and preferences.'],
+      ['Can my child study online?','Online academic support is available. Contact StudyCare to discuss what is suitable.'],
+      ['What is the free study guide?','It is a practical resource for study routines, homework, study struggles and exam preparation.'],
+      ['What happens after I contact StudyCare?','You can discuss your child’s situation and determine what type of support may be appropriate.'],
+      ['Does StudyCare guarantee grades?','No. We do not promise unrealistic academic results.'],
+      ['How do I get started?','Start with the free guide or contact StudyCare directly.']
+    ]
+  },
+  am: {
+    navHome:'መነሻ', navServices:'አገልግሎቶች', navHow:'እንዴት እንሰራለን', navResources:'መረጃዎች', navContact:'ያግኙን',
+    heroTitle:'ልጅዎ የበለጠ ሳይሆን በተሻለ እንዲማር ያግዙት',
+    heroText:'ለKG–12 ተማሪዎች በፍላጎታቸው፣ ችግሮቻቸው እና ግቦቻቸው ላይ የተመሰረተ የትምህርት ድጋፍ።',
+    guide:'ነፃ የጥናት መመሪያውን ያግኙ', talk:'StudyCareን ያነጋግሩ',
+    trust:'የቤት ስራ ድጋፍ • ሁሉም ትምህርቶች • ቋንቋ • የፈተና ዝግጅት • ግላዊ የጥናት እቅድ',
+    problemTitle:'ልጅዎ ተጨማሪ የትምህርት ድጋፍ ያስፈልገዋል?',
+    problemText:'እያንዳንዱ ልጅ የሚማረው በተለየ መንገድ ነው።',
+    assessmentTitle:'የወላጅ የመማር ሁኔታ ማረጋገጫ',
+    assessmentText:'ስለ ልጅዎ የጥናት ሁኔታ ጥቂት ፈጣን ጥያቄዎችን ይመልሱ።',
+    often:'ብዙ ጊዜ', sometimes:'አንዳንድ ጊዜ', rarely:'እምብዛም', result:'ውጤቴን አሳይ',
+    servicesTitle:'በልጅዎ ፍላጎት ላይ የተመሰረተ ድጋፍ',
+    planTitle:'ለእያንዳንዱ ልጅ የተለየ አቀራረብ',
+    planText:'የትምህርት ደረጃ፣ ጥንካሬ፣ ችግር፣ ግብ፣ የጥናት ልምድ እና የሚመች የመማሪያ መንገድ እንመለከታለን።',
+    tipsTitle:'ወላጆች ዛሬ ሊያደርጉት የሚችሉት',
+    howTitle:'StudyCare እንዴት ይሰራል?',
+    resourcesTitle:'ነፃ የትምህርት መረጃ',
+    faqTitle:'ተደጋጋሚ ጥያቄዎች',
+    finalTitle:'ልጅዎ በተደራጀ መንገድ እንዲማር ዝግጁ ነዎት?',
+    finalText:'ነፃውን የጥናት መመሪያ ያግኙ ወይም StudyCareን ያነጋግሩ።',
+    submit:'ነፃ መመሪያዬን አግኝ', close:'ዝጋ',
+    parentName:'የወላጅ ስም', phone:'ስልክ / WhatsApp', grade:'የልጅ ክፍል',
+    city:'ከተማ / አካባቢ', area:'አካባቢ (አማራጭ)', country:'ሀገር',
+    challenge:'ዋና የትምህርት ችግር', language:'የሚመርጡት ቋንቋ', source:'StudyCareን እንዴት አገኙ?',
+    select:'ይምረጡ', english:'እንግሊዝኛ', amharic:'አማርኛ', optional:'አማራጭ',
+    success:'ነፃው የጥናት መመሪያ ዝግጁ ነው!', successText:'አሁን ያውርዱት። ለልጅዎ የተለየ የጥናት እቅድ ከፈለጉ StudyCareን ያነጋግሩ።',
+    download:'የጥናት መመሪያውን ይክፈቱ', start:'ስለ ልጄ እንነጋገር', privacy:'መረጃዎን የምንጠቀመው ለጥያቄዎ ምላሽ ለመስጠት ብቻ ነው።',
+    services:['የቤት ስራ ድጋፍ','ሁሉም ትምህርቶች','የቋንቋ ክህሎት','የፈተና ዝግጅት','ግላዊ የጥናት እቅድ'],
+    signs:['ትምህርትን ወይም የቤት ስራን ይርቃል','ትምህርቱን ለመረዳት ይቸገራል','የተማረውን በፍጥነት ይረሳል','የጥናት ልማድ ለመጠበቅ ይቸገራል','ትኩረት ለማድረግ ይቸገራል','ከትምህርቱ ወደኋላ የሚቀር ይመስላል','በጥናት ጊዜ በራስ መተማመን ያነሰዋል','ስለ ፈተና ጭንቀት ይሰማዋል','ለአስፈላጊ ፈተና ዝግጅት ድጋፍ ይፈልጋል'],
+    questions:['ልጅዎ የቤት ስራ ለመጀመር ብዙ ጊዜ ይቸገራል?','ትምህርትን ለመረዳት ተደጋጋሚ ማብራሪያ ይፈልጋል?','የጥናት ልማድን በመጠበቅ ይቸገራል?','ከጥናት በኋላ ትምህርቱን በፍጥነት ይረሳል?','በጥናት ጊዜ በራስ መተማመን ያነሰዋል?','የተደራጀ የፈተና ዝግጅት ድጋፍ ይፈልጋል?'],
+    tips:['የተወሰነ የጥናት ሰዓት ያዘጋጁ','ትልልቅ ስራዎችን ወደ ትንንሽ ግቦች ይከፋፍሉ','ስለ ውጤቱ ብቻ ሳይሆን ምን እንደሚያስቸግረው ይጠይቁ'],
+    steps:['ስለ ልጅዎ ይንገሩን','ፍላጎቱን እንረዳለን','ተገቢውን የድጋፍ አቀራረብ እንለያለን','ተደራጀ ድጋፍ ይከተላል','እድገት ይገመገማል','ወላጆች መረጃ ያገኛሉ'],
+    faqs:[['StudyCare ለየትኞቹ ክፍሎች ነው?','StudyCare ከKG እስከ Grade 12 ድረስ ይደግፋል።'],['ልጄ የትኞቹን ትምህርቶች ሊማር ይችላል?','ድጋፍ በልጁ ፍላጎት መሰረት ሁሉንም ትምህርቶች ሊያካትት ይችላል።'],['ድጋፉ ግላዊ ነው?','አዎ። የልጁን ሁኔታ፣ ጥንካሬ፣ ችግር፣ ግብ እና የጥናት ልምድ እንመለከታለን።'],['በኦንላይን መማር ይችላል?','አዎ። ለልጅዎ ተገቢውን አማራጭ ለመወያየት ያግኙን።'],['ነፃው መመሪያ ምንድነው?','የጥናት ልማድ፣ የቤት ስራ እና የፈተና ዝግጅትን የሚመለከት ተግባራዊ መመሪያ ነው።'],['ካነጋገርኩ StudyCare ምን ይከሰታል?','የልጅዎን ሁኔታ በመወያየት ተገቢውን የድጋፍ አይነት መወሰን ይችላሉ።'],['ውጤት ዋስትና አለ?','አይ። የተጋነኑ የውጤት ተስፋዎችን አንሰጥም።'],['እንዴት እጀምራለሁ?','ነፃውን መመሪያ ያግኙ ወይም StudyCareን በቀጥታ ያነጋግሩ።']]
+  }
 }
-
 
 function App() {
-if (window.location.pathname === '/onboarding') {
-  return <Onboarding />
-}
-  const [showForm, setShowForm] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [language,setLanguage] = useState(localStorage.getItem('studycareLanguage') || 'en')
+  const [menu,setMenu] = useState(false)
+  const [modal,setModal] = useState(false)
+  const [success,setSuccess] = useState(false)
+  const [openFaq,setOpenFaq] = useState(null)
+  const [answers,setAnswers] = useState({})
+  const [assessmentDone,setAssessmentDone] = useState(false)
+  const [form,setForm] = useState({parentName:'',phone:'',grade:'',city:'',area:'',country:'Ethiopia',challenge:'',preferredLanguage:'en',marketingSource:''})
+  const [loading,setLoading] = useState(false)
+  const t=text[language]
 
-  const [showPrivacy, setShowPrivacy] = useState(
-    window.location.pathname === '/privacy-policy'
-  )
-  if (window.location.pathname === '/onboarding') {
-    return <Onboarding />
-  }
+  const changeLanguage=(v)=>{setLanguage(v);localStorage.setItem('studycareLanguage',v)}
+  const whatsapp=(message)=>window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`,'_blank')
+  const update=(e)=>setForm({...form,[e.target.name]:e.target.value})
 
-  const openPrivacy = () => {
-    window.history.pushState({}, '', '/privacy-policy')
-    setShowPrivacy(true)
-    window.scrollTo(0, 0)
-  }
-
-
-  const closePrivacy = () => {
-    window.history.pushState({}, '', '/')
-    setShowPrivacy(false)
-    window.scrollTo(0, 0)
-  }
-
-
-  const handleSubmit = async (e) => {
+  async function submit(e){
     e.preventDefault()
-
+    if(!form.parentName || !form.phone || !form.grade || !form.city) return
     setLoading(true)
-    setError('')
-
-    const formData = new FormData(e.target)
-
-    const lead = {
-      parentName: formData.get('parentName'),
-      phone: formData.get('phone'),
-      grade: formData.get('grade'),
-      subject: formData.get('subject')
-    }
-
-    try {
-      const response = await fetch(
-        'https://studycare-backend.onrender.com/api/leads',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(lead)
-        }
-      )
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong.')
-      }
-
-      setSubmitted(true)
-
-    } catch (err) {
-
-      console.error(err)
-
-      setError(
-        'Unable to submit the form. Make sure the backend server is running.'
-      )
-
-    } finally {
-
-      setLoading(false)
-
-    }
+    try{
+      const r=await fetch(`${API}/api/leads`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...form,location:form.city,heardAbout:form.marketingSource,landingPage:window.location.href,referrer:document.referrer})})
+      if(!r.ok) throw new Error()
+      setSuccess(true)
+    }catch{ alert(language==='am'?'እባክዎ እንደገና ይሞክሩ።':'Please try again.') }
+    finally{setLoading(false)}
   }
 
+  if(window.location.pathname==='/onboarding') return <Onboarding/>
 
-  /* PRIVACY POLICY PAGE */
+  const score=Object.values(answers).reduce((a,v)=>a+v,0)
 
-  if (showPrivacy) {
-    return (
-      <PrivacyPolicy
-        onBack={closePrivacy}
-      />
-    )
-  }
+  return <div className="site">
+    <nav className="nav">
+      <a className="logo" href="#home">Study<span>Care</span></a>
+      <button className="menu-btn" onClick={()=>setMenu(!menu)}>☰</button>
+      <div className={`nav-links ${menu?'show':''}`}>
+        <a href="#home">{t.navHome}</a><a href="#services">{t.navServices}</a><a href="#how">{t.navHow}</a><a href="#resources">{t.navResources}</a>
+        <select value={language} onChange={e=>changeLanguage(e.target.value)}><option value="en">EN</option><option value="am">አማ</option></select>
+      </div>
+    </nav>
 
-
-  return (
-    <div className="website">
-
-      {/* NAVBAR */}
-
-      <nav className="navbar">
-
-        <div className="logo">
-          <span>📚</span> StudyCare
-        </div>
-
-        <button
-          className="nav-button"
-          onClick={() => setShowForm(true)}
-        >
-          Get Free Guide
-        </button>
-
-      </nav>
-
-
-      {/* HERO */}
-
-      <section className="hero-section">
-
+    <main>
+      <section id="home" className="hero">
         <div className="hero-content">
-
-          <div className="badge">
-            🎓 KG – Grade 12
+          <div className="badge">KG–12 • Personalized Academic Support</div>
+          <h1>{t.heroTitle}</h1>
+          <p>{t.heroText}</p>
+          <div className="chips">{t.services.map((x,i)=><span key={i}>{x}</span>)}</div>
+          <div className="actions">
+            <button className="btn primary" onClick={()=>setModal(true)}>{t.guide}</button>
+            <button className="btn secondary" onClick={()=>whatsapp(t.start)}>{t.talk}</button>
           </div>
-
-          <h1>
-            Help Your Child
-            <span> Learn With Confidence</span>
-          </h1>
-
-          <p>
-            Personalized study support, homework assistance,
-            and exam preparation designed for students from
-            KG to Grade 12.
-          </p>
-
-          <button
-            className="primary-button"
-            onClick={() => setShowForm(true)}
-          >
-            🎁 Get Your FREE Study Guide
-          </button>
-
-          <p className="small-text">
-            No payment required • Simple registration
-          </p>
-
+          <small>{t.trust}</small>
         </div>
-
-
         <div className="hero-card">
-
-          <div className="student-icon">
-            👩‍🎓
-          </div>
-
-          <h3>
-            Better Study. Better Results.
-          </h3>
-
-          <p>
-            Give your child the personalized support
-            they need to succeed.
-          </p>
-
-          <div className="stats">
-
-            <div>
-              <strong>KG–12</strong>
-              <small>Students</small>
-            </div>
-
-            <div>
-              <strong>📚</strong>
-              <small>Study Support</small>
-            </div>
-
-            <div>
-              <strong>🎯</strong>
-              <small>Personalized</small>
-            </div>
-
-          </div>
-
+          <div className="hero-card-icon">📚</div>
+          <h3>StudyCare</h3>
+          <p>{t.planText}</p>
+          <button onClick={()=>whatsapp(t.start)}>{t.talk} →</button>
         </div>
-
       </section>
 
-
-      {/* PROBLEM */}
-
-      <section className="problem-section">
-
-        <div className="section-title">
-
-          <span>
-            Is your child struggling with...
-          </span>
-
-          <h2>
-            School shouldn't feel overwhelming.
-          </h2>
-
-          <p>
-            Every student learns differently. The right support
-            can make studying easier and more effective.
-          </p>
-
-        </div>
-
-
-        <div className="problem-grid">
-
-          <div className="problem-card">
-
-            <div>📖</div>
-
-            <h3>
-              Homework
-            </h3>
-
-            <p>
-              Having difficulty understanding or completing homework?
-            </p>
-
-          </div>
-
-
-          <div className="problem-card">
-
-            <div>🧮</div>
-
-            <h3>
-              Subjects
-            </h3>
-
-            <p>
-              Struggling with Mathematics, English, Science or other subjects?
-            </p>
-
-          </div>
-
-
-          <div className="problem-card">
-
-            <div>📝</div>
-
-            <h3>
-              Exams
-            </h3>
-
-            <p>
-              Need better preparation and a structured study plan?
-            </p>
-
-          </div>
-
-        </div>
-
+      <section className="section">
+        <div className="heading"><span>01</span><h2>{t.problemTitle}</h2><p>{t.problemText}</p></div>
+        <div className="sign-grid">{t.signs.map((x,i)=><div className="sign" key={i}><b>✓</b>{x}</div>)}</div>
       </section>
 
-
-      {/* SERVICES */}
-
-      <section className="services-section">
-
-        <div className="section-title">
-
-          <span>
-            WHAT WE OFFER
-          </span>
-
-          <h2>
-            Support designed for your child
-          </h2>
-
-          <p>
-            We help students build understanding, confidence,
-            and better study habits.
-          </p>
-
+      <section className="section tinted">
+        <div className="heading"><span>02</span><h2>{t.assessmentTitle}</h2><p>{t.assessmentText}</p></div>
+        <div className="assessment">
+          {t.questions.map((q,i)=><div className="question" key={i}><b>{i+1}. {q}</b><div className="answers">{[[2,t.often],[1,t.sometimes],[0,t.rarely]].map(([v,label])=><button className={answers[i]===v?'selected':''} onClick={()=>setAnswers({...answers,[i]:v})} key={label}>{label}</button>)}</div></div>)}
+          <button className="btn primary" disabled={Object.keys(answers).length<6} onClick={()=>setAssessmentDone(true)}>{t.result}</button>
+          {assessmentDone&&<div className="result"><strong>{score>=8?'Your child may benefit from additional structure and learning support.':'Your answers suggest that your child may be doing well in some areas, while still benefiting from consistent study habits.'}</strong><button onClick={()=>whatsapp('I completed the StudyCare Parent Learning Check and would like to discuss my child.')}>{t.talk} →</button></div>}
         </div>
-
-
-        <div className="services-grid">
-
-          <div className="service-card">
-
-            <span>📚</span>
-
-            <h3>
-              Homework Support
-            </h3>
-
-            <p>
-              Help your child understand lessons and complete
-              assignments with confidence.
-            </p>
-
-          </div>
-
-
-          <div className="service-card">
-
-            <span>🌐</span>
-
-            <h3>
-              Languages
-            </h3>
-
-            <p>
-              Improve language skills through personalized learning and practice.
-            </p>
-
-          </div>
-
-
-          <div className="service-card">
-
-            <span>📚</span>
-
-            <h3>
-              All Subjects
-            </h3>
-
-            <p>
-              Get support across all school subjects based on your child's needs.
-            </p>
-
-          </div>
-
-
-          <div className="service-card">
-
-            <span>📝</span>
-
-            <h3>
-              Exam Preparation
-            </h3>
-
-            <p>
-              Prepare effectively with structured revision and exam-focused study.
-            </p>
-
-          </div>
-
-
-          <div className="service-card">
-
-            <span>🎯</span>
-
-            <h3>
-              Personalized Study Plan
-            </h3>
-
-            <p>
-              A study approach based on your child's grade and needs.
-            </p>
-
-          </div>
-
-        </div>
-
       </section>
 
-
-      {/* GRADES */}
-
-      <section className="grades-section">
-
-        <div className="section-title">
-
-          <span>
-            FOR EVERY STAGE
-          </span>
-
-          <h2>
-            KG through Grade 12
-          </h2>
-
-          <p>
-            Support changes as your child grows. That's why
-            we organize learning around their grade level.
-          </p>
-
-        </div>
-
-
-        <div className="grades-grid">
-
-          <div className="grade-card">
-
-            <span>🌱</span>
-
-            <h3>
-              KG – Grade 4
-            </h3>
-
-            <p>
-              Reading, writing, basic mathematics,
-              homework and learning foundations.
-            </p>
-
-          </div>
-
-
-          <div className="grade-card">
-
-            <span>📘</span>
-
-            <h3>
-              Grade 5 – 8
-            </h3>
-
-            <p>
-              Core subjects, homework support,
-              study habits and academic improvement.
-            </p>
-
-          </div>
-
-
-          <div className="grade-card">
-
-            <span>🎓</span>
-
-            <h3>
-              Grade 9 – 10
-            </h3>
-
-            <p>
-              Subject support, revision and
-              exam preparation.
-            </p>
-
-          </div>
-
-
-          <div className="grade-card">
-
-            <span>🏆</span>
-
-            <h3>
-              Grade 11 – 12
-            </h3>
-
-            <p>
-              Advanced subjects, intensive revision
-              and exam-focused preparation.
-            </p>
-
-          </div>
-
-        </div>
-
+      <section id="services" className="section">
+        <div className="heading"><span>03</span><h2>{t.servicesTitle}</h2></div>
+        <div className="service-grid">{t.services.map((x,i)=><div className="service" key={x}><div className="number">0{i+1}</div><h3>{x}</h3><p>Structured support designed around the student's current needs and learning goals.</p><button onClick={()=>whatsapp(`I am interested in ${x}. I would like to know more.`)}>Ask About This →</button></div>)}</div>
       </section>
 
-
-      {/* FREE GUIDE */}
-
-      <section className="guide-section">
-
-        <div className="guide-content">
-
-          <div className="guide-icon">
-            🎁
-          </div>
-
-          <span>
-            FREE RESOURCE FOR PARENTS
-          </span>
-
-          <h2>
-            Get Your Free
-            <strong> Study Guide</strong>
-          </h2>
-
-          <p>
-            Get practical study tips and strategies that
-            can help your child develop better study habits.
-          </p>
-
-          <ul>
-
-            <li>
-              ✓ Better study routines
-            </li>
-
-            <li>
-              ✓ Homework tips
-            </li>
-
-            <li>
-              ✓ Exam preparation strategies
-            </li>
-
-            <li>
-              ✓ Time management tips
-            </li>
-
-          </ul>
-
-          <button
-            className="primary-button"
-            onClick={() => setShowForm(true)}
-          >
-            Get My Free Guide →
-          </button>
-
-        </div>
-
+      <section className="plan">
+        <div><span>04</span><h2>{t.planTitle}</h2><p>{t.planText}</p><button className="btn primary" onClick={()=>whatsapp(t.start)}>{t.start}</button></div>
+        <div className="plan-list">{['Academic performance','Strengths & challenges','Goals & interests','Study habits','Learning preferences','Schedule & environment','Parent expectations','Progress over time'].map(x=><div key={x}>✓ {x}</div>)}</div>
       </section>
 
-
-      {/* PAID SERVICE */}
-
-      <section className="paid-section">
-
-        <div className="section-title">
-
-          <span>
-            NEED MORE SUPPORT?
-          </span>
-
-          <h2>
-            Give Your Child
-            <span> Personalized Support</span>
-          </h2>
-
-          <p>
-            If your child needs more than a study guide,
-            our personalized tutoring service can provide
-            ongoing academic support.
-          </p>
-
-        </div>
-
-
-        <div className="paid-grid">
-
-          <div>
-            ✓ Personalized lessons
-          </div>
-
-          <div>
-            ✓ Homework assistance
-          </div>
-
-          <div>
-            ✓ Exam preparation
-          </div>
-
-          <div>
-            ✓ Flexible learning
-          </div>
-
-          <div>
-            ✓ Progress support
-          </div>
-
-          <div>
-            ✓ KG–Grade 12
-          </div>
-
-        </div>
-
-
-        <button
-          className="primary-button"
-          onClick={() => setShowForm(true)}
-        >
-          Request a Free Assessment
-        </button>
-
+      <section className="section">
+        <div className="heading"><span>05</span><h2>{t.tipsTitle}</h2></div>
+        <div className="tip-grid">{t.tips.map((x,i)=><div className="tip" key={i}><strong>{i+1}</strong><p>{x}</p></div>)}</div>
       </section>
 
-
-      {/* FOOTER */}
-
-      <footer>
-
-        <div className="logo">
-          <span>📚</span> StudyCare
-        </div>
-
-        <p>
-          Helping students learn, grow and succeed.
-        </p>
-
-        <button
-          className="privacy-link"
-          onClick={openPrivacy}
-        >
-          Privacy Policy
-        </button>
-
-        <p className="copyright">
-          © 2026 StudyCare. All rights reserved.
-        </p>
-
-      </footer>
-
-
-      {/* FORM MODAL */}
-
-      {showForm && (
-
-        <div
-          className="modal-overlay"
-          onClick={() => setShowForm(false)}
-        >
-
-          <div
-            className="form-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-
-            <button
-              className="close-button"
-              onClick={() => setShowForm(false)}
-            >
-              ×
-            </button>
-
-
-            {!submitted ? (
-
-              <>
-
-                <div className="form-icon">
-                  🎁
-                </div>
-
-                <h2>
-                  Get Your Free Study Guide
-                </h2>
-
-                <p>
-                  Tell us a little about your child so we
-                  can provide the right guide.
-                </p>
-
-
-                <form onSubmit={handleSubmit}>
-
-                  <label>
-                    Parent / Guardian Name
-                  </label>
-
-                  <input
-                    type="text"
-                    name="parentName"
-                    placeholder="Your name"
-                    required
-                  />
-
-
-                  <label>
-                    Phone / WhatsApp Number
-                  </label>
-
-                  <input
-                    type="tel"
-                    name="phone"
-                    placeholder="09XXXXXXXX"
-                    required
-                  />
-
-
-                  <label>
-                    Child's Grade
-                  </label>
-
-                  <select
-                    name="grade"
-                    required
-                  >
-
-                    <option value="">
-                      Select grade
-                    </option>
-
-                    <option>KG 1</option>
-                    <option>KG 2</option>
-                    <option>Grade 1</option>
-                    <option>Grade 2</option>
-                    <option>Grade 3</option>
-                    <option>Grade 4</option>
-                    <option>Grade 5</option>
-                    <option>Grade 6</option>
-                    <option>Grade 7</option>
-                    <option>Grade 8</option>
-                    <option>Grade 9</option>
-                    <option>Grade 10</option>
-                    <option>Grade 11</option>
-                    <option>Grade 12</option>
-
-                  </select>
-
-
-                  <label>
-                    Subject needing help
-                  </label>
-
-                  <input
-                    type="text"
-                    name="subject"
-                    placeholder="Example: Mathematics"
-                  />
-
-
-                  <button
-                    type="submit"
-                    className="submit-button"
-                    disabled={loading}
-                  >
-
-                    {loading
-                      ? 'Submitting...'
-                      : 'Get My Free Guide →'}
-
-                  </button>
-
-
-                  <small>
-                    By submitting this form, you agree that we
-                    may contact you about the study guide and
-                    our tutoring services.
-                  </small>
-
-                </form>
-
-              </>
-
-            ) : (
-
-              /* SUCCESS MESSAGE */
-
-              <div className="success-message">
-
-                <div className="success-icon">
-                  🎉
-                </div>
-
-                <h2>
-                  Your Study Guide Is Ready!
-                </h2>
-
-                <p className="success-intro">
-                  Thank you for registering. Your free KG–Grade 12
-                  Study Success Guide is ready.
-                </p>
-
-
-                <a
-                  href="/study-guide.pdf"
-                  download="Study-Success-Guide.pdf"
-                  className="submit-button"
-                >
-                  📥 Download Free Study Guide
-                </a>
-
-
-                <div className="tutoring-offer">
-
-                  <h3>
-                    📚 Need More Support for Your Child?
-                  </h3>
-
-                  <p>
-                    Every student learns differently. If your child needs
-                    additional academic support, we're here to help.
-                  </p>
-
-
-                  <div className="support-list">
-
-                    <div>
-                      📖 <strong>All School Subjects</strong>
-                    </div>
-
-                    <div>
-                      🇬🇧 <strong>English Language Support</strong>
-                    </div>
-
-                    <div>
-                      📝 <strong>Homework & Assignments</strong>
-                    </div>
-
-                    <div>
-                      📄 <strong>Exam Preparation & Practice</strong>
-                    </div>
-
-                    <div>
-                      🎯 <strong>Personalized Study Support</strong>
-                    </div>
-
-                    <div>
-                      💻 <strong>Online & In-Person Learning</strong>
-                    </div>
-
-                  </div>
-
-
-                  <h3>
-                    🎯 Start With a Free Student Assessment
-                  </h3>
-
-                  <p>
-                    We'll learn about your child's grade, subjects,
-                    challenges, and learning goals, then recommend
-                    the right support.
-                  </p>
-
-
-                  <div className="contact-box">
-
-                    <a href="tel:0908075506">
-                      📞 Call: 0908075506
-                    </a>
-
-                    <a href="tel:0945440089">
-                      💬 WhatsApp: 0945440089
-                    </a>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            )}
-
-
-            {error && (
-
-              <p className="error-message">
-                {error}
-              </p>
-
-            )}
-
-          </div>
-
-        </div>
-
-      )}
-
-    </div>
-  )
+      <section id="how" className="section tinted">
+        <div className="heading"><span>06</span><h2>{t.howTitle}</h2></div>
+        <div className="steps">{t.steps.map((x,i)=><div key={i}><strong>{i+1}</strong><p>{x}</p></div>)}</div>
+      </section>
+
+      <section id="resources" className="section">
+        <div className="heading"><span>07</span><h2>{t.resourcesTitle}</h2></div>
+        <div className="resource"><div>📖</div><div><h3>FREE Study Guide</h3><p>{t.planText}</p><button onClick={()=>setModal(true)}>{t.guide} →</button></div></div>
+      </section>
+
+      <section className="section faq">
+        <div className="heading"><span>08</span><h2>{t.faqTitle}</h2></div>
+        {t.faqs.map((f,i)=><div className="faq-item" key={i}><button onClick={()=>setOpenFaq(openFaq===i?null:i)}>{f[0]} <span>{openFaq===i?'−':'+'}</span></button>{openFaq===i&&<p>{f[1]}</p>}</div>)}
+      </section>
+
+      <section className="final">
+        <h2>{t.finalTitle}</h2><p>{t.finalText}</p>
+        <div className="actions"><button className="btn primary" onClick={()=>setModal(true)}>{t.guide}</button><button className="btn secondary" onClick={()=>whatsapp(t.start)}>{t.talk}</button></div>
+      </section>
+    </main>
+
+    <footer><div><a className="logo" href="#home">Study<span>Care</span></a><p>{t.privacy}</p></div><button onClick={()=>whatsapp(t.start)}>WhatsApp</button></footer>
+
+    {modal&&<div className="modal-bg" onClick={()=>setModal(false)}><div className="modal" onClick={e=>e.stopPropagation()}>
+      {!success?<><button className="close" onClick={()=>setModal(false)}>×</button><h2>{t.guide}</h2><p>Tell us a little about you and your child.</p>
+      <form onSubmit={submit}>
+        <input name="parentName" placeholder={t.parentName} value={form.parentName} onChange={update} required/>
+        <input name="phone" placeholder={t.phone} value={form.phone} onChange={update} required/>
+        <select name="grade" value={form.grade} onChange={update} required><option value="">{t.grade}</option>{grades.map(g=><option key={g}>{g}</option>)}</select>
+        <input name="city" placeholder={t.city} value={form.city} onChange={update} required/>
+        <input name="area" placeholder={t.area} value={form.area} onChange={update}/>
+        <input name="country" placeholder={t.country} value={form.country} onChange={update}/>
+        <select name="preferredLanguage" value={form.preferredLanguage} onChange={update}><option value="en">{t.english}</option><option value="am">{t.amharic}</option></select>
+        <textarea name="challenge" placeholder={t.challenge} value={form.challenge} onChange={update}/>
+        <select name="marketingSource" value={form.marketingSource} onChange={update}><option value="">{t.source}</option>{['Facebook','Instagram','TikTok','Google','Friend/Family','WhatsApp','Other'].map(x=><option key={x}>{x}</option>)}</select>
+        <button className="btn primary" disabled={loading}>{loading?'Sending...':t.submit}</button>
+      </form></>:<div className="success"><div>✓</div><h2>{t.success}</h2><p>{t.successText}</p><a className="btn primary" href={GUIDE} target="_blank" rel="noreferrer">{t.download}</a><button className="btn secondary" onClick={()=>whatsapp(t.start)}>{t.start}</button></div>}
+    </div></div>}
+  </div>
 }
 
 export default App
