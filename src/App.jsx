@@ -88,6 +88,12 @@ const text = {
   }
 }
 
+function trackEvent(name, data = {}) {
+  if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+    window.fbq('trackCustom', name, data)
+  }
+}
+
 function App() {
   const [language,setLanguage] = useState(localStorage.getItem('studycareLanguage') || 'en')
   const [menu,setMenu] = useState(false)
@@ -98,6 +104,25 @@ function App() {
   const [assessmentDone,setAssessmentDone] = useState(false)
   const [form,setForm] = useState({parentName:'',phone:'',grade:'',city:'',area:'',country:'Ethiopia',challenge:'',preferredLanguage:'en',marketingSource:''})
   const [loading,setLoading] = useState(false)
+
+  const getTracking = () => {
+    const params = new URLSearchParams(window.location.search)
+    return {
+      marketingSource:
+        params.get('utm_source') ||
+        form.marketingSource ||
+        (document.referrer.includes('facebook') ? 'Facebook' :
+         document.referrer.includes('instagram') ? 'Instagram' :
+         document.referrer.includes('tiktok') ? 'TikTok' :
+         document.referrer.includes('google') ? 'Google' :
+         document.referrer ? 'Referral' : 'Direct'),
+      utmSource: params.get('utm_source') || '',
+      utmMedium: params.get('utm_medium') || '',
+      utmCampaign: params.get('utm_campaign') || '',
+      utmContent: params.get('utm_content') || '',
+      utmTerm: params.get('utm_term') || ''
+    }
+  }
   const t=text[language]
 
   const changeLanguage=(v)=>{setLanguage(v);localStorage.setItem('studycareLanguage',v)}
@@ -105,11 +130,20 @@ function App() {
   const update=(e)=>setForm({...form,[e.target.name]:e.target.value})
 
   async function submit(e){
+    trackEvent('StudyGuideSubmitted', { grade: form.grade, city: form.city })
+
     e.preventDefault()
     if(!form.parentName || !form.phone || !form.grade || !form.city) return
     setLoading(true)
     try{
-      const r=await fetch(`${API}/api/leads`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...form,location:form.city,heardAbout:form.marketingSource,landingPage:window.location.href,referrer:document.referrer})})
+      const r=await fetch(`${API}/api/leads`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        ...form,
+        ...getTracking(),
+        location:form.city,
+        heardAbout:form.marketingSource,
+        landingPage:window.location.href,
+        referrer:document.referrer
+      })})
       if(!r.ok) throw new Error()
       setSuccess(true)
     }catch{ alert(language==='am'?'እባክዎ እንደገና ይሞክሩ።':'Please try again.') }
@@ -138,8 +172,8 @@ function App() {
           <p>{t.heroText}</p>
           <div className="chips">{t.services.map((x,i)=><span key={i}>{x}</span>)}</div>
           <div className="actions">
-            <button className="btn primary" onClick={()=>setModal(true)}>{t.guide}</button>
-            <button className="btn secondary" onClick={()=>whatsapp(t.start)}>{t.talk}</button>
+            <button className="btn primary" onClick={()=>{trackEvent('StudyGuideFormStarted');setModal(true)}}>{t.guide}</button>
+            <button className="btn secondary" onClick={()=>{trackEvent('WhatsAppClicked');whatsapp(t.start)}}>{t.talk}</button>
           </div>
           <small>{t.trust}</small>
         </div>
@@ -160,7 +194,7 @@ function App() {
         <div className="heading"><span>02</span><h2>{t.assessmentTitle}</h2><p>{t.assessmentText}</p></div>
         <div className="assessment">
           {t.questions.map((q,i)=><div className="question" key={i}><b>{i+1}. {q}</b><div className="answers">{[[2,t.often],[1,t.sometimes],[0,t.rarely]].map(([v,label])=><button className={answers[i]===v?'selected':''} onClick={()=>setAnswers({...answers,[i]:v})} key={label}>{label}</button>)}</div></div>)}
-          <button className="btn primary" disabled={Object.keys(answers).length<6} onClick={()=>setAssessmentDone(true)}>{t.result}</button>
+          <button className="btn primary" disabled={Object.keys(answers).length<6} onClick={()=>{trackEvent('ParentAssessmentCompleted');setAssessmentDone(true)}}>{t.result}</button>
           {assessmentDone&&<div className="result"><strong>{score>=8?'Your child may benefit from additional structure and learning support.':'Your answers suggest that your child may be doing well in some areas, while still benefiting from consistent study habits.'}</strong><button onClick={()=>whatsapp('I completed the StudyCare Parent Learning Check and would like to discuss my child.')}>{t.talk} →</button></div>}
         </div>
       </section>
@@ -187,7 +221,7 @@ function App() {
 
       <section id="resources" className="section">
         <div className="heading"><span>07</span><h2>{t.resourcesTitle}</h2></div>
-        <div className="resource"><div>📖</div><div><h3>FREE Study Guide</h3><p>{t.planText}</p><button onClick={()=>setModal(true)}>{t.guide} →</button></div></div>
+        <div className="resource"><div>📖</div><div><h3>FREE Study Guide</h3><p>{t.planText}</p><button onClick={()=>{trackEvent('PaidServiceClicked');setModal(true)}}>{t.guide} →</button></div></div>
       </section>
 
       <section className="section faq">
