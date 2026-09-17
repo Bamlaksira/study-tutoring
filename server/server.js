@@ -1,7 +1,70 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const examPurchaseSchema = new mongoose.Schema(
+  {
+    customerName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    email: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    productId: {
+      type: String,
+      required: true,
+    },
+
+    productName: {
+      type: String,
+      required: true,
+    },
+
+    amount: {
+      type: Number,
+      required: true,
+    },
+
+    transactionReference: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Approved", "Rejected"],
+      default: "Pending",
+    },
+
+    accessStatus: {
+      type: String,
+      enum: ["Locked", "Unlocked"],
+      default: "Locked",
+    },
+
+    paidAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const ExamPurchase = mongoose.model("ExamPurchase", examPurchaseSchema);
 const app = express();
 
 app.use(cors());
@@ -216,7 +279,70 @@ const Lead = mongoose.model("Lead", leadSchema);
 // ===============================
 // SAVE FREE GUIDE LEAD
 // ===============================
+app.post("/api/exam-purchases", async (req, res) => {
+  try {
+    const {
+      customerName,
+      phone,
+      email,
+      productId,
+      productName,
+      amount,
+      transactionReference,
+    } = req.body;
 
+    if (
+      !customerName ||
+      !phone ||
+      !productId ||
+      !productName ||
+      !amount ||
+      !transactionReference
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide all required payment information.",
+      });
+    }
+
+    const existingPurchase = await ExamPurchase.findOne({
+      transactionReference: transactionReference.trim(),
+    });
+
+    if (existingPurchase) {
+      return res.status(409).json({
+        success: false,
+        message: "This transaction reference has already been submitted.",
+      });
+    }
+
+    const purchase = await ExamPurchase.create({
+      customerName: customerName.trim(),
+      phone: phone.trim(),
+      email: email ? email.trim() : "",
+      productId,
+      productName,
+      amount,
+      transactionReference: transactionReference.trim(),
+      paymentStatus: "Pending",
+      accessStatus: "Locked",
+    });
+
+    res.status(201).json({
+      success: true,
+      message:
+        "Payment information submitted successfully. Your payment will be verified before access is granted.",
+      purchaseId: purchase._id,
+    });
+  } catch (error) {
+    console.error("Exam purchase error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to submit payment information.",
+    });
+  }
+});
 app.post("/api/leads", async (req, res) => {
   try {
     const parentName = clean(req.body.parentName);
@@ -314,7 +440,90 @@ app.get("/api/leads", requireAdmin, async (req, res) => {
     });
   }
 });
+app.get("/api/exam-purchases", async (req, res) => {
+  try {
+    if (req.headers["x-admin-key"] !== process.env.ADMIN_KEY) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
 
+    const purchases = await ExamPurchase.find()
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      purchases,
+    });
+  } catch (error) {
+    console.error("Exam purchases fetch error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch exam purchases.",
+    });
+  }
+});
+
+app.patch("/api/exam-purchases/:id/status", async (req, res) => {
+  try {
+    if (req.headers["x-admin-key"] !== process.env.ADMIN_KEY) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const { paymentStatus } = req.body;
+
+    if (!["Approved", "Rejected", "Pending"].includes(paymentStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment status.",
+      });
+    }
+
+    const update = {
+      paymentStatus,
+    };
+
+    if (paymentStatus === "Approved") {
+      update.accessStatus = "Unlocked";
+      update.paidAt = new Date();
+    } else {
+      update.accessStatus = "Locked";
+      update.paidAt = null;
+    }
+
+    const purchase = await ExamPurchase.findByIdAndUpdate(
+      req.params.id,
+      update,
+      { new: true }
+    );
+
+    if (!purchase) {
+      return res.status(404).json({
+        success: false,
+        message: "Purchase not found.",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `Payment ${paymentStatus.toLowerCase()} successfully.`,
+      purchase,
+    });
+  } catch (error) {
+    console.error("Exam purchase status error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to update payment status.",
+    });
+  }
+});
 // ===============================
 // UPDATE LEAD STATUS - ADMIN
 // ===============================

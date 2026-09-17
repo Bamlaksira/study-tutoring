@@ -1,3 +1,4 @@
+import ExamPractice from './exams/ExamPractice.jsx'
 import { StrictMode, Component } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
@@ -29,8 +30,13 @@ class ErrorBoundary extends Component {
 }
 
 const path = window.location.pathname
-const Page = path === '/admin' ? Admin : App
 
+const Page =
+  path === '/admin'
+    ? Admin
+    : path === '/exams'
+      ? ExamPractice
+      : App
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>

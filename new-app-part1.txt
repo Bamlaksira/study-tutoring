@@ -1,0 +1,1288 @@
+import { useEffect, useRef, useState } from 'react'
+import './App.css'
+import Onboarding from './Onboarding.jsx'
+
+const API = 'https://studycare-backend.onrender.com'
+const GUIDE = '/study-guide.pdf'
+
+const WHATSAPP_NUMBER = '251908075506'
+const PHONE = '0908075506'
+
+const grades = [
+  'KG1', 'KG2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4',
+  'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9',
+  'Grade 10', 'Grade 11', 'Grade 12'
+]
+
+const sources = [
+  ['facebook', 'Facebook'],
+  ['instagram', 'Instagram'],
+  ['tiktok', 'TikTok'],
+  ['google', 'Google'],
+  ['friend_family', 'Friend / Family'],
+  ['whatsapp', 'WhatsApp'],
+  ['other', 'Other']
+]
+
+const translations = {
+  en: {
+    navHome: 'Home',
+    navServices: 'Services',
+    navHow: 'How It Works',
+    navResources: 'Resources',
+    navContact: 'Talk to StudyCare',
+    heroTitle: 'Help Your Child Study Smarter — Not Just Harder',
+    heroText: 'Personalized academic support for KG–12 students, built around your child’s needs, goals, habits, and learning challenges.',
+    freeGuide: 'Get Your FREE Study Guide',
+    talk: 'Talk to StudyCare',
+    trust: 'Homework support • All subjects • Languages • Exam preparation • Personalized study plans',
+    problemTitle: 'Could Your Child Benefit From More Learning Support?',
+    problemIntro: 'Every child learns differently. Extra support may be useful when studying starts becoming frustrating or difficult.',
+    assessmentTitle: 'Parent Learning Check',
+    assessmentIntro: 'Answer a few simple questions to reflect on your child’s current study experience.',
+    often: 'Often',
+    sometimes: 'Sometimes',
+    rarely: 'Rarely',
+    checkResult: 'See My Result',
+    servicesTitle: 'How StudyCare Can Help',
+    planTitle: 'A Study Plan Built Around Your Child',
+    tipsTitle: 'What Parents Can Do Today',
+    howTitle: 'How StudyCare Works',
+    resourcesTitle: 'Free Resources',
+    guideTitle: 'Get Your FREE Study Guide',
+    guideText: 'A practical guide to building better study routines, reducing common study struggles, supporting homework, and preparing for exams.',
+    parentName: 'Parent / Guardian Name',
+    phone: 'Phone / WhatsApp',
+    grade: 'Child Grade',
+    city: 'City / Town',
+    area: 'Area / Sub-city (optional)',
+    challenge: 'Main Learning Challenge',
+    language: 'Preferred Language',
+    source: 'How did you hear about StudyCare?',
+    select: 'Select',
+    submit: 'Get My Free Guide',
+    successTitle: 'Your FREE Study Guide is Ready',
+    successText: 'You can open the guide now. After reviewing it, you can talk to StudyCare about support specifically for your child.',
+    openGuide: 'Open FREE Study Guide',
+    personalized: 'Want help creating a study plan specifically for your child?',
+    startPlan: 'Start Personalized Support',
+    footer: 'StudyCare — Structured learning support for KG–12 students.',
+    english: 'English',
+    amharic: 'አማርኛ'
+  },
+
+  am: {
+    navHome: 'መነሻ',
+    navServices: 'አገልግሎቶች',
+    navHow: 'እንዴት እንደምንሰራ',
+    navResources: 'መረጃዎች',
+    navContact: 'ከStudyCare ጋር ይነጋገሩ',
+    heroTitle: 'ልጅዎ በብዙ ጥረት ብቻ ሳይሆን በብልህነት እንዲማር ይርዱት',
+    heroText: 'ለKG–12 ተማሪዎች በፍላጎታቸው፣ በግባቸው፣ በየትምህርት ልምዳቸው እና በሚያጋጥሟቸው ችግሮች ላይ የተመሰረተ የጥናት ድጋፍ።',
+    freeGuide: 'ነፃ የጥናት መመሪያዎን ያግኙ',
+    talk: 'ከStudyCare ጋር ይነጋገሩ',
+    trust: 'የቤት ስራ ድጋፍ • ሁሉም ትምህርቶች • ቋንቋዎች • የፈተና ዝግጅት • ግላዊ የጥናት እቅድ',
+    problemTitle: 'ልጅዎ ተጨማሪ የትምህርት ድጋፍ ሊፈልግ ይችላል?',
+    problemIntro: 'እያንዳንዱ ልጅ በተለየ መንገድ ይማራል። ትምህርት አስቸጋሪ ወይም አስጨናቂ ሲሆን ተጨማሪ ድጋፍ ሊጠቅም ይችላል።',
+    assessmentTitle: 'የወላጅ የጥናት ምርመራ',
+    assessmentIntro: 'ስለልጅዎ የአሁኑን የጥናት ሁኔታ ለመገንዘብ ጥቂት ቀላል ጥያቄዎችን ይመልሱ።',
+    often: 'ብዙ ጊዜ',
+    sometimes: 'አንዳንድ ጊዜ',
+    rarely: 'እምብዛም',
+    checkResult: 'ውጤቴን አሳየኝ',
+    servicesTitle: 'StudyCare እንዴት ሊረዳ ይችላል?',
+    planTitle: 'ለልጅዎ የተዘጋጀ የጥናት እቅድ',
+    tipsTitle: 'ወላጆች ዛሬ ማድረግ የሚችሏቸው',
+    howTitle: 'StudyCare እንዴት ይሰራል?',
+    resourcesTitle: 'ነፃ መረጃዎች',
+    guideTitle: 'ነፃ የጥናት መመሪያ ያግኙ',
+    guideText: 'የተሻለ የጥናት ልምድ ለመገንባት፣ የጥናት ችግሮችን ለመቀነስ፣ የቤት ስራን ለመደገፍ እና ለፈተና ለመዘጋጀት የሚረዳ ተግባራዊ መመሪያ።',
+    parentName: 'የወላጅ / አሳዳጊ ስም',
+    phone: 'ስልክ / WhatsApp',
+    grade: 'የልጅ ክፍል',
+    city: 'ከተማ / ከተማ አካባቢ',
+    area: 'አካባቢ / ክፍለ ከተማ (አማራጭ)',
+    challenge: 'ዋናው የትምህርት ችግር',
+    language: 'የሚመርጡት ቋንቋ',
+    source: 'ስለ StudyCare እንዴት አወቁ?',
+    select: 'ይምረጡ',
+    submit: 'ነፃ መመሪያዬን አግኝ',
+    successTitle: 'ነፃ የጥናት መመሪያዎ ዝግጁ ነው',
+    successText: 'መመሪያውን አሁን መክፈት ይችላሉ። ካነበቡት በኋላ ለልጅዎ ተስማሚ ስለሆነ ድጋፍ ከStudyCare ጋር መነጋገር ይችላሉ።',
+    openGuide: 'ነፃ መመሪያውን ይክፈቱ',
+    personalized: 'በተለይ ለልጅዎ የጥናት እቅድ እንዲዘጋጅለት ይፈልጋሉ?',
+    startPlan: 'የግል ድጋፍ ይጀምሩ',
+    footer: 'StudyCare — ለKG–12 ተማሪዎች የተዋቀረ የትምህርት ድጋፍ።',
+    english: 'English',
+    amharic: 'አማርኛ'
+  }
+}
+function track(eventName, data = {}) {
+  try {
+    if (typeof window.fbq === 'function') {
+      window.fbq('trackCustom', eventName, data)
+    }
+  } catch {}
+}
+
+function getTrackingData() {
+  const params = new URLSearchParams(window.location.search)
+
+  return {
+    utmSource: params.get('utm_source') || '',
+    utmMedium: params.get('utm_medium') || '',
+    utmCampaign: params.get('utm_campaign') || '',
+    utmContent: params.get('utm_content') || '',
+    utmTerm: params.get('utm_term') || '',
+    landingPage: window.location.href,
+    referrer: document.referrer || ''
+  }
+}
+
+function makeWhatsAppLink(message) {
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
+}
+
+const assessmentQuestions = [
+  'Does your child avoid or delay studying?',
+  'Does your child often struggle to understand lessons?',
+  'Is homework frequently difficult to complete?',
+  'Does your child forget what they studied soon after learning it?',
+  'Does your child struggle to maintain a regular study routine?',
+  'Does your child need extra preparation or support before exams?'
+]
+
+const problemSigns = [
+  'Avoiding or delaying study time',
+  'Homework taking much longer than expected',
+  'Difficulty understanding lessons',
+  'Forgetting material after studying',
+  'Irregular study routines',
+  'Difficulty concentrating',
+  'Falling behind in some topics',
+  'Low confidence when learning',
+  'Feeling stressed about exams'
+]
+
+const services = [
+  {
+    title: 'Homework Support',
+    text: 'Help your child understand assignments, organize tasks, and develop better homework habits.',
+    who: 'Useful when homework regularly becomes frustrating or difficult.'
+  },
+  {
+    title: 'All Subjects',
+    text: 'Structured academic support across the subjects your child needs help with.',
+    who: 'Useful when support is needed in more than one subject.'
+  },
+  {
+    title: 'Languages',
+    text: 'Support for language learning, reading, writing, vocabulary, and communication skills.',
+    who: 'Useful when language skills are affecting classroom learning.'
+  },
+  {
+    title: 'Exam Preparation',
+    text: 'Organized revision, practice questions, exam sheets, and preparation routines.',
+    who: 'Useful when an important exam is approaching.'
+  },
+  {
+    title: 'Personalized Study Plans',
+    text: 'A structured approach based on your child’s strengths, challenges, goals, habits, and schedule.',
+    who: 'Useful when your child needs a more individual learning approach.'
+  }
+]
+
+const howItWorks = [
+  'Parent tells us about the child’s needs',
+  'We understand strengths, challenges, and goals',
+  'We choose a personalized learning approach',
+  'Your child receives structured academic support',
+  'Progress and learning needs are reviewed',
+  'Parents receive appropriate communication and guidance'
+]
+
+const tips = [
+  {
+    title: 'Keep a consistent study time',
+    text: 'A predictable routine can make it easier for children to know when it is time to study.'
+  },
+  {
+    title: 'Break large tasks into smaller goals',
+    text: 'Instead of saying “finish everything,” focus on one manageable task at a time.'
+  },
+  {
+    title: 'Ask what makes studying difficult',
+    text: 'Try asking about the difficulty behind the struggle, not only about the grade.'
+  }
+]
+
+const faqs = [
+  ['What grades does StudyCare support?', 'StudyCare provides academic support for KG–12 students.'],
+  ['What subjects can my child get help with?', 'Support can cover all subjects, with the approach adjusted to the child’s needs.'],
+  ['Is the support personalized?', 'Yes. StudyCare aims to understand the child’s academic situation, strengths, challenges, goals, habits, preferences, and schedule before creating an appropriate support approach.'],
+  ['Can my child study online?', 'StudyCare can provide online academic support. Contact StudyCare to discuss what is suitable for your child.'],
+  ['What is the free study guide?', 'It is a practical resource covering study routines, homework support, common study struggles, and exam preparation.'],
+  ['How do I contact StudyCare?', 'You can contact StudyCare through WhatsApp or the contact options provided on this website.'],
+  ['What happens after I contact StudyCare?', 'You can discuss your child’s needs and determine what type of support may be appropriate.'],
+  ['Does StudyCare guarantee a specific grade?', 'No. StudyCare does not promise unrealistic academic results. The focus is structured support and reviewing progress over time.']
+]
+function App() {
+  if (window.location.pathname === '/onboarding') {
+    return <Onboarding />
+  }
+
+  const [language, setLanguage] = useState(
+    () => localStorage.getItem('studycareLanguage') || 'en'
+  )
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [showGuideForm, setShowGuideForm] = useState(false)
+  const [showPrivacy, setShowPrivacy] = useState(
+    window.location.pathname === '/privacy-policy'
+  )
+  const [guideSuccess, setGuideSuccess] = useState(false)
+  const [formError, setFormError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [assessmentStarted, setAssessmentStarted] = useState(false)
+  const [assessmentAnswers, setAssessmentAnswers] = useState({})
+  const [assessmentComplete, setAssessmentComplete] = useState(false)
+  const [openFaq, setOpenFaq] = useState(null)
+
+  const guideFormRef = useRef(null)
+
+  const t = translations[language]
+
+  useEffect(() => {
+    localStorage.setItem('studycareLanguage', language)
+  }, [language])
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setShowPrivacy(window.location.pathname === '/privacy-policy')
+    }
+
+    window.addEventListener('popstate', handlePopState)
+
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  function goTo(path) {
+    window.history.pushState({}, '', path)
+    setShowPrivacy(path === '/privacy-policy')
+    setMenuOpen(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function scrollToSection(id) {
+    setMenuOpen(false)
+
+    if (window.location.pathname !== '/') {
+      window.history.pushState({}, '', '/')
+      setShowPrivacy(false)
+      setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+      }, 50)
+      return
+    }
+
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  function openGuide() {
+    track('StudyGuideFormStarted')
+    setShowGuideForm(true)
+    setGuideSuccess(false)
+    setFormError('')
+  }
+
+  function closeGuide() {
+    if (!submitting) {
+      setShowGuideForm(false)
+      setFormError('')
+    }
+  }
+
+  function startAssessment() {
+    setAssessmentStarted(true)
+    setAssessmentComplete(false)
+    track('ParentAssessmentStarted')
+    setTimeout(() => {
+      document.getElementById('assessment')?.scrollIntoView({
+        behavior: 'smooth'
+      })
+    }, 50)
+  }
+
+  function answerAssessment(index, answer) {
+    setAssessmentAnswers(prev => ({
+      ...prev,
+      [index]: answer
+    }))
+  }
+
+  function completeAssessment() {
+    if (Object.keys(assessmentAnswers).length < assessmentQuestions.length) {
+      return
+    }
+
+    setAssessmentComplete(true)
+    track('ParentAssessmentCompleted', {
+      answeredQuestions: assessmentQuestions.length
+    })
+  }
+
+  function getAssessmentResult() {
+    const scores = {
+      Often: 2,
+      Sometimes: 1,
+      Rarely: 0
+    }
+
+    const score = Object.values(assessmentAnswers).reduce(
+      (total, answer) => total + (scores[answer] || 0),
+      0
+    )
+
+    if (score >= 8) {
+      return {
+        title: language === 'am'
+          ? 'የተዋቀረ ተጨማሪ ድጋፍ ሊጠቅም ይችላል'
+          : 'Your child may benefit from structured extra support.',
+        text: language === 'am'
+          ? 'ይህ የምርመራ ውጤት ህክምናዊ ወይም የሙያ ምርመራ አይደለም። የጥናት ልምድን ለመገንዘብ የሚረዳ አጠቃላይ መመሪያ ብቻ ነው።'
+          : 'This is not a diagnosis or professional assessment. It is only a general educational reflection on your child’s study experience.'
+      }
+    }
+
+    if (score >= 4) {
+      return {
+        title: language === 'am'
+          ? 'አንዳንድ የጥናት ድጋፍ ሊጠቅም ይችላል'
+          : 'Some additional study support may be useful.',
+        text: language === 'am'
+          ? 'ይህ ውጤት የልጅዎን የጥናት ልምድ ለመመልከት የሚረዳ አጠቃላይ መመሪያ ነው።'
+          : 'This is a general educational reflection, not a diagnosis or professional assessment.'
+      }
+    }
+
+    return {
+      title: language === 'am'
+        ? 'የአሁኑን የጥናት ልምድ መቀጠል ይችላሉ'
+        : 'Your child may be managing their current study experience reasonably well.',
+      text: language === 'am'
+        ? 'እንደ ፍላጎት የጥናት ልምዶችን ማሻሻል እና መከታተል ጠቃሚ ነው።'
+        : 'It can still be useful to continue observing study habits and support needs over time.'
+    }
+  }
+
+  async function handleGuideSubmit(event) {
+    event.preventDefault()
+    setFormError('')
+
+    const formData = new FormData(event.currentTarget)
+
+    const parentName = formData.get('parentName')?.trim()
+    const phone = formData.get('phone')?.trim()
+    const grade = formData.get('grade')
+    const city = formData.get('city')?.trim()
+    const country = formData.get('country')?.trim()
+
+    if (!parentName || !phone || !grade || !city || !country) {
+      setFormError(
+        language === 'am'
+          ? 'እባክዎ የሚያስፈልጉትን መስኮች በሙሉ ይሙሉ።'
+          : 'Please complete all required fields.'
+      )
+      return
+    }
+
+    setSubmitting(true)
+
+    const tracking = getTrackingData()
+
+    const payload = {
+      parentName,
+      phone,
+      grade,
+      city,
+      location: city,
+      area: formData.get('area')?.trim() || '',
+      country,
+      preferredLanguage: formData.get('preferredLanguage') || language,
+      mainLearningChallenge:
+        formData.get('mainLearningChallenge')?.trim() || '',
+      marketingSource: formData.get('marketingSource') || '',
+      heardAbout: formData.get('marketingSource') || '',
+      ...tracking
+    }
+
+    try {
+      const response = await fetch(`${API}/api/leads`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+
+      const data = await response.json().catch(() => ({}))
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Unable to submit form')
+      }
+
+      track('StudyGuideSubmitted', {
+        grade,
+        preferredLanguage: payload.preferredLanguage,
+        marketingSource: payload.marketingSource
+      })
+
+      setGuideSuccess(true)
+      event.currentTarget.reset()
+    } catch (error) {
+      setFormError(
+        language === 'am'
+          ? 'መረጃዎን ማስገባት አልተቻለም። እባክዎ እንደገና ይሞክሩ።'
+          : 'We could not submit your information. Please try again.'
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  function handleGuideDownload() {
+    track('StudyGuideDownloaded')
+  }
+
+  function handleWhatsApp(message) {
+    track('WhatsAppClicked')
+    window.open(makeWhatsAppLink(message), '_blank', 'noopener,noreferrer')
+  }
+
+  function handlePaidClick() {
+    track('PaidServiceClicked')
+    goTo('/onboarding')
+  }
+
+  if (showPrivacy) {
+    return (
+      <div className="privacy-page">
+        <div className="container privacy-content">
+          <button className="back-button" onClick={() => goTo('/')}>
+            ← {t.navHome}
+          </button>
+
+          <h1>Privacy Policy</h1>
+          <p>Last updated: August 31, 2026</p>
+
+          <h2>Information We Collect</h2>
+          <p>
+            When you use StudyCare forms, we may collect information such as
+            your name, phone number, child’s grade, location, preferred
+            language, learning challenge, and how you heard about StudyCare.
+          </p>
+
+          <h2>How We Use Information</h2>
+          <p>
+            We use submitted information to respond to inquiries, provide
+            requested resources, understand learning support needs, and
+            communicate with parents about StudyCare services.
+          </p>
+
+          <h2>Contact</h2>
+          <p>
+            If you have questions about information submitted through the
+            website, please contact StudyCare.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <header className="navbar">
+        <div className="container nav-inner">
+          <button className="logo" onClick={() => scrollToSection('home')}>
+            StudyCare
+          </button>
+
+          <button
+            className="mobile-menu-button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle navigation"
+          >
+            ☰
+          </button>
+
+          <nav className={menuOpen ? 'nav-links open' : 'nav-links'}>
+            <button onClick={() => scrollToSection('home')}>
+              {t.navHome}
+            </button>
+            <button onClick={() => scrollToSection('services')}>
+              {t.navServices}
+            </button>
+            <button onClick={() => scrollToSection('how-it-works')}>
+              {t.navHow}
+            </button>
+            <button onClick={() => scrollToSection('resources')}>
+              {t.navResources}
+            </button>
+            <button
+              className="nav-cta"
+              onClick={() =>
+                handleWhatsApp(
+                  language === 'am'
+                    ? 'ሰላም StudyCare፣ ስለ ልጄ የትምህርት ድጋፍ ማወቅ እፈልጋለሁ።'
+                    : 'Hello StudyCare, I would like to learn more about academic support for my child.'
+                )
+              }
+            >
+              {t.navContact}
+            </button>
+
+            <div className="language-switcher">
+              <button
+                className={language === 'en' ? 'active' : ''}
+                onClick={() => setLanguage('en')}
+              >
+                {t.english}
+              </button>
+              <button
+                className={language === 'am' ? 'active' : ''}
+                onClick={() => setLanguage('am')}
+              >
+                {t.amharic}
+              </button>
+            </div>
+          </nav>
+        </div>
+      </header>
+      <main>
+        <section id="home" className="hero">
+          <div className="container hero-content">
+            <div className="hero-text">
+              <span className="eyebrow">StudyCare</span>
+
+              <h1>{t.heroTitle}</h1>
+
+              <p>{t.heroText}</p>
+
+              <div className="hero-buttons">
+                <button className="primary-button" onClick={openGuide}>
+                  {t.freeGuide}
+                </button>
+
+                <button
+                  className="secondary-button"
+                  onClick={() =>
+                    handleWhatsApp(
+                      language === 'am'
+                        ? 'ሰላም StudyCare፣ ስለ ልጄ የትምህርት ድጋፍ ማወቅ እፈልጋለሁ።'
+                        : 'Hello StudyCare, I would like to learn more about academic support for my child.'
+                    )
+                  }
+                >
+                  {t.talk}
+                </button>
+              </div>
+
+              <p className="hero-trust">{t.trust}</p>
+            </div>
+
+            <div className="hero-card">
+              <div className="hero-card-icon">📚</div>
+              <h3>
+                {language === 'am'
+                  ? 'እያንዳንዱ ልጅ የተለየ ነው'
+                  : 'Every child is different'}
+              </h3>
+              <p>
+                {language === 'am'
+                  ? 'StudyCare የልጅዎን የጥናት ሁኔታ በመረዳት ተገቢ የሆነ የድጋፍ አቀራረብ ለመፍጠር ይሰራል።'
+                  : 'StudyCare looks beyond grades to understand your child’s learning needs and build an appropriate support approach.'}
+              </p>
+
+              <div className="hero-mini-list">
+                <span>✓ {language === 'am' ? 'ግላዊ አቀራረብ' : 'Personalized approach'}</span>
+                <span>✓ {language === 'am' ? 'የተዋቀረ ድጋፍ' : 'Structured support'}</span>
+                <span>✓ {language === 'am' ? 'የእድገት ክትትል' : 'Progress review'}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="problem-section">
+          <div className="container">
+            <div className="section-heading">
+              <span className="eyebrow">
+                {language === 'am' ? 'የጥናት ድጋፍ' : 'Learning Support'}
+              </span>
+
+              <h2>{t.problemTitle}</h2>
+              <p>{t.problemIntro}</p>
+            </div>
+
+            <div className="problem-grid">
+              {problemSigns.map((sign, index) => (
+                <div className="problem-item" key={index}>
+                  <span className="problem-check">✓</span>
+                  <span>
+                    {language === 'am'
+                      ? [
+                          'ትምህርትን መራቅ ወይም ማዘግየት',
+                          'የቤት ስራ ከሚጠበቀው በላይ ጊዜ መውሰድ',
+                          'ትምህርቶችን ለመረዳት መቸገር',
+                          'ካጠና በኋላ የተማረውን መርሳት',
+                          'መደበኛ የጥናት ልምድ አለመኖር',
+                          'ትኩረትን ማስቀጠል መቸገር',
+                          'በአንዳንድ ትምህርቶች ወደኋላ መቅረት',
+                          'በትምህርት ላይ ዝቅተኛ መተማመን',
+                          'ስለ ፈተና መጨነቅ'
+                        ][index]
+                      : sign}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="center-cta">
+              <button className="primary-button" onClick={startAssessment}>
+                {language === 'am'
+                  ? 'የወላጅ ምርመራውን ይጀምሩ'
+                  : 'Take the Parent Learning Check'}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section id="assessment" className="assessment-section">
+          <div className="container">
+            <div className="section-heading">
+              <span className="eyebrow">
+                {language === 'am' ? 'ፈጣን ምርመራ' : 'Quick Check'}
+              </span>
+
+              <h2>{t.assessmentTitle}</h2>
+              <p>{t.assessmentIntro}</p>
+            </div>
+
+            {!assessmentStarted && (
+              <div className="assessment-start">
+                <div className="assessment-icon">📝</div>
+
+                <h3>
+                  {language === 'am'
+                    ? 'ለመጀመር ዝግጁ ነዎት?'
+                    : 'Ready to begin?'}
+                </h3>
+
+                <p>
+                  {language === 'am'
+                    ? '6 ቀላል ጥያቄዎችን በመመለስ የልጅዎን የጥናት ልምድ ይመልከቱ።'
+                    : 'Answer 6 simple questions to reflect on your child’s current study experience.'}
+                </p>
+
+                <button className="primary-button" onClick={startAssessment}>
+                  {language === 'am' ? 'ጀምር' : 'Start Check'}
+                </button>
+              </div>
+            )}
+
+            {assessmentStarted && !assessmentComplete && (
+              <div className="assessment-box">
+                {assessmentQuestions.map((question, index) => (
+                  <div className="assessment-question" key={index}>
+                    <h3>
+                      {index + 1}.{' '}
+                      {language === 'am'
+                        ? [
+                            'ልጅዎ ትምህርትን ይራቃል ወይም ያዘገያል?',
+                            'ልጅዎ ትምህርቶችን ለመረዳት ብዙ ጊዜ ይቸገራል?',
+                            'የቤት ስራ ብዙ ጊዜ ለመጨረስ አስቸጋሪ ይሆናል?',
+                            'ልጅዎ ካጠና በኋላ የተማረውን በፍጥነት ይረሳል?',
+                            'ልጅዎ መደበኛ የጥናት ልምድ ለመጠበቅ ይቸገራል?',
+                            'ልጅዎ ከፈተና በፊት ተጨማሪ ዝግጅት ወይም ድጋፍ ይፈልጋል?'
+                          ][index]
+                        : question}
+                    </h3>
+
+                    <div className="assessment-options">
+                      {['Often', 'Sometimes', 'Rarely'].map(option => (
+                        <button
+                          key={option}
+                          className={
+                            assessmentAnswers[index] === option
+                              ? 'assessment-option selected'
+                              : 'assessment-option'
+                          }
+                          onClick={() => answerAssessment(index, option)}
+                        >
+                          {t[option.toLowerCase()]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  className="primary-button"
+                  onClick={completeAssessment}
+                  disabled={
+                    Object.keys(assessmentAnswers).length <
+                    assessmentQuestions.length
+                  }
+                >
+                  {t.checkResult}
+                </button>
+              </div>
+            )}
+
+            {assessmentComplete && (
+              <div className="assessment-result">
+                <div className="result-icon">✓</div>
+
+                <h3>{getAssessmentResult().title}</h3>
+
+                <p>{getAssessmentResult().text}</p>
+
+                <div className="result-actions">
+                  <button
+                    className="primary-button"
+                    onClick={() =>
+                      handleWhatsApp(
+                        language === 'am'
+                          ? 'ሰላም StudyCare፣ ስለ ልጄ የጥናት ድጋፍ ማወቅ እፈልጋለሁ።'
+                          : 'Hello StudyCare, I would like to discuss academic support for my child.'
+                      )
+                    }
+                  >
+                    {t.talk}
+                  </button>
+
+                  <button
+                    className="secondary-button"
+                    onClick={openGuide}
+                  >
+                    {t.freeGuide}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+        <section id="services" className="section services-section">
+          <div className="container">
+            <div className="section-heading">
+              <span className="eyebrow">{t.servicesEyebrow}</span>
+              <h2>{t.servicesTitle}</h2>
+              <p>{t.servicesText}</p>
+            </div>
+
+            <div className="services-grid">
+              {services.map((service) => (
+                <article className="service-card" key={service.key}>
+                  <div className="service-icon">{service.icon}</div>
+                  <h3>{service.title[language]}</h3>
+                  <p>{service.description[language]}</p>
+                  <div className="service-useful">
+                    <strong>{t.usefulFor}</strong>
+                    <span>{service.useful[language]}</span>
+                  </div>
+                  <button
+                    className="text-button"
+                    onClick={() => handlePaidClick(service.title[language])}
+                  >
+                    {t.askService}
+                    <span>→</span>
+                  </button>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="personalized" className="section personalized-section">
+          <div className="container">
+            <div className="personalized-layout">
+              <div className="personalized-content">
+                <span className="eyebrow">{t.planEyebrow}</span>
+                <h2>{t.planTitle}</h2>
+                <p className="lead-text">{t.planText}</p>
+
+                <div className="plan-points">
+                  <div className="plan-point">
+                    <span>✓</span>
+                    <p>{t.planPoint1}</p>
+                  </div>
+                  <div className="plan-point">
+                    <span>✓</span>
+                    <p>{t.planPoint2}</p>
+                  </div>
+                  <div className="plan-point">
+                    <span>✓</span>
+                    <p>{t.planPoint3}</p>
+                  </div>
+                  <div className="plan-point">
+                    <span>✓</span>
+                    <p>{t.planPoint4}</p>
+                  </div>
+                  <div className="plan-point">
+                    <span>✓</span>
+                    <p>{t.planPoint5}</p>
+                  </div>
+                  <div className="plan-point">
+                    <span>✓</span>
+                    <p>{t.planPoint6}</p>
+                  </div>
+                </div>
+
+                <div className="button-row">
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => handlePaidClick('Personalized Study Plan')}
+                  >
+                    {t.startStudyCare}
+                  </button>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => handleWhatsApp(t.whatsappPlan)}
+                  >
+                    {t.talk}
+                  </button>
+                </div>
+              </div>
+
+              <div className="plan-visual">
+                <div className="plan-card">
+                  <div className="plan-card-header">
+                    <div className="plan-avatar">SC</div>
+                    <div>
+                      <strong>{t.planCardTitle}</strong>
+                      <span>{t.planCardSubtitle}</span>
+                    </div>
+                  </div>
+
+                  <div className="plan-progress">
+                    <div className="progress-label">
+                      <span>{t.planProgress}</span>
+                      <strong>01</strong>
+                    </div>
+                    <div className="progress-bar">
+                      <div className="progress-fill"></div>
+                    </div>
+                  </div>
+
+                  <div className="plan-mini-list">
+                    <div>
+                      <span>✓</span>
+                      {t.planMini1}
+                    </div>
+                    <div>
+                      <span>✓</span>
+                      {t.planMini2}
+                    </div>
+                    <div>
+                      <span>✓</span>
+                      {t.planMini3}
+                    </div>
+                    <div>
+                      <span>✓</span>
+                      {t.planMini4}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="floating-note note-one">
+                  <span>✓</span>
+                  {t.planNote1}
+                </div>
+
+                <div className="floating-note note-two">
+                  <span>★</span>
+                  {t.planNote2}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="tips" className="section tips-section">
+          <div className="container">
+            <div className="section-heading">
+              <span className="eyebrow">{t.tipsEyebrow}</span>
+              <h2>{t.tipsTitle}</h2>
+              <p>{t.tipsText}</p>
+            </div>
+
+            <div className="tips-grid">
+              {tips.map((tip, index) => (
+                <article className="tip-card" key={tip.title.en}>
+                  <div className="tip-number">0{index + 1}</div>
+                  <h3>{tip.title[language]}</h3>
+                  <p>{tip.description[language]}</p>
+                </article>
+              ))}
+            </div>
+
+            <div className="section-cta">
+              <button className="btn btn-primary" onClick={openGuide}>
+                {t.getGuide}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section id="how-it-works" className="section how-section">
+          <div className="container">
+            <div className="section-heading">
+              <span className="eyebrow">{t.howEyebrow}</span>
+              <h2>{t.howTitle}</h2>
+              <p>{t.howText}</p>
+            </div>
+
+            <div className="steps-grid">
+              {howItWorks.map((step, index) => (
+                <article className="step-card" key={step.title.en}>
+                  <div className="step-number">{index + 1}</div>
+                  <div>
+                    <h3>{step.title[language]}</h3>
+                    <p>{step.description[language]}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section id="resources" className="section resources-section">
+          <div className="container">
+            <div className="section-heading">
+              <span className="eyebrow">{t.resourcesEyebrow}</span>
+              <h2>{t.resourcesTitle}</h2>
+              <p>{t.resourcesText}</p>
+            </div>
+
+            <div className="resource-card">
+              <div className="resource-icon">📘</div>
+              <div className="resource-content">
+                <span className="resource-label">{t.freeResource}</span>
+                <h3>{t.guideTitle}</h3>
+                <p>{t.guideDescription}</p>
+
+                <div className="resource-list">
+                  <span>✓ {t.guidePoint1}</span>
+                  <span>✓ {t.guidePoint2}</span>
+                  <span>✓ {t.guidePoint3}</span>
+                  <span>✓ {t.guidePoint4}</span>
+                </div>
+
+                <button className="btn btn-primary" onClick={openGuide}>
+                  {t.getGuide}
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="faq" className="section faq-section">
+          <div className="container faq-container">
+            <div className="section-heading">
+              <span className="eyebrow">{t.faqEyebrow}</span>
+              <h2>{t.faqTitle}</h2>
+              <p>{t.faqText}</p>
+            </div>
+
+            <div className="faq-list">
+              {faqs.map((faq, index) => (
+                <div className={`faq-item ${openFaq === index ? 'open' : ''}`} key={faq.question.en}>
+                  <button
+                    className="faq-question"
+                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                    aria-expanded={openFaq === index}
+                  >
+                    <span>{faq.question[language]}</span>
+                    <span className="faq-icon">{openFaq === index ? '−' : '+'}</span>
+                  </button>
+
+                  {openFaq === index && (
+                    <div className="faq-answer">
+                      <p>{faq.answer[language]}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="contact" className="final-cta-section">
+          <div className="container">
+            <div className="final-cta">
+              <div>
+                <span className="eyebrow">{t.ctaEyebrow}</span>
+                <h2>{t.ctaTitle}</h2>
+                <p>{t.ctaText}</p>
+              </div>
+
+              <div className="final-cta-actions">
+                <button className="btn btn-light" onClick={() => handleWhatsApp(t.whatsappGeneral)}>
+                  {t.talk}
+                </button>
+
+                <button className="btn btn-outline-light" onClick={openGuide}>
+                  {t.getGuide}
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <footer className="site-footer">
+          <div className="container">
+            <div className="footer-grid">
+              <div className="footer-brand">
+                <div className="brand-mark">SC</div>
+                <h3>StudyCare</h3>
+                <p>{t.footerText}</p>
+              </div>
+
+              <div className="footer-column">
+                <h4>{t.footerExplore}</h4>
+                <button onClick={() => scrollToSection('services')}>{t.services}</button>
+                <button onClick={() => scrollToSection('personalized')}>{t.personalized}</button>
+                <button onClick={() => scrollToSection('resources')}>{t.resources}</button>
+                <button onClick={() => scrollToSection('faq')}>{t.faq}</button>
+              </div>
+
+              <div className="footer-column">
+                <h4>{t.footerSupport}</h4>
+                <button onClick={() => handleWhatsApp(t.whatsappGeneral)}>
+                  WhatsApp
+                </button>
+                <button onClick={openGuide}>{t.getGuide}</button>
+                <button onClick={() => handlePaidClick('StudyCare')}>
+                  {t.startStudyCare}
+                </button>
+              </div>
+
+              <div className="footer-column">
+                <h4>{t.footerContact}</h4>
+                <a href={`tel:${PHONE}`}>{PHONE}</a>
+                <button onClick={() => handleWhatsApp(t.whatsappGeneral)}>
+                  {t.talk}
+                </button>
+              </div>
+            </div>
+
+            <div className="footer-bottom">
+              <span>© {new Date().getFullYear()} StudyCare. {t.footerRights}</span>
+              <button
+                onClick={() => {
+                  window.history.pushState({}, '', '/privacy-policy')
+                  setShowPrivacy(true)
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}
+              >
+                {t.privacy}
+              </button>
+            </div>
+          </div>
+        </footer>
+      </main>
+
+      {guideModalOpen && (
+        <div className="modal-overlay" onClick={closeGuide}>
+          <div
+            className="guide-modal"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="guide-modal-title"
+          >
+            <button
+              className="modal-close"
+              onClick={closeGuide}
+              aria-label={t.close}
+            >
+              ×
+            </button>
+
+            {!guideSuccess ? (
+              <>
+                <div className="modal-heading">
+                  <span className="eyebrow">{t.freeResource}</span>
+                  <h2 id="guide-modal-title">{t.formTitle}</h2>
+                  <p>{t.formText}</p>
+                </div>
+
+                <form onSubmit={handleGuideSubmit} className="guide-form">
+                  <div className="form-group">
+                    <label htmlFor="parentName">{t.parentName} *</label>
+                    <input
+                      id="parentName"
+                      name="parentName"
+                      type="text"
+                      required
+                      placeholder={t.parentNamePlaceholder}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="phone">{t.phone} *</label>
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      required
+                      placeholder={t.phonePlaceholder}
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="grade">{t.grade} *</label>
+                      <select id="grade" name="grade" required defaultValue="">
+                        <option value="" disabled>{t.selectGrade}</option>
+                        {grades.map((grade) => (
+                          <option key={grade} value={grade}>
+                            {grade}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="country">{t.country} *</label>
+                      <input
+                        id="country"
+                        name="country"
+                        type="text"
+                        required
+                        defaultValue="Ethiopia"
+                        placeholder={t.countryPlaceholder}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="city">{t.city} *</label>
+                      <input
+                        id="city"
+                        name="city"
+                        type="text"
+                        required
+                        placeholder={t.cityPlaceholder}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="area">
+                        {t.area} <span className="optional">{t.optional}</span>
+                      </label>
+                      <input
+                        id="area"
+                        name="area"
+                        type="text"
+                        placeholder={t.areaPlaceholder}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="preferredLanguage">{t.preferredLanguage}</label>
+                    <select
+                      id="preferredLanguage"
+                      name="preferredLanguage"
+                      defaultValue={language}
+                    >
+                      <option value="en">English</option>
+                      <option value="am">አማርኛ</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="mainLearningChallenge">
+                      {t.challenge}
+                    </label>
+                    <textarea
+                      id="mainLearningChallenge"
+                      name="mainLearningChallenge"
+                      rows="3"
+                      placeholder={t.challengePlaceholder}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="marketingSource">{t.source}</label>
+                    <select
+                      id="marketingSource"
+                      name="marketingSource"
+                      defaultValue=""
+                    >
+                      <option value="" disabled>{t.selectSource}</option>
+                      {sources.map((source) => (
+                        <option key={source.value} value={source.value}>
+                          {source[language]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {guideError && (
+                    <div className="error-message" role="alert">
+                      {guideError}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary form-submit"
+                    disabled={guideSubmitting}
+                  >
+                    {guideSubmitting ? t.submitting : t.submitGuide}
+                  </button>
+
+                  <p className="form-note">{t.formNote}</p>
+                </form>
+              </>
+            ) : (
+              <div className="guide-success">
+                <div className="success-icon">✓</div>
+                <span className="eyebrow">{t.successEyebrow}</span>
+                <h2>{t.successTitle}</h2>
+                <p>{t.successText}</p>
+
+                <a
+                  className="btn btn-primary"
+                  href={GUIDE}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={handleGuideDownload}
+                >
+                  {t.downloadGuide}
+                </a>
+
+                <div className="success-divider">
+                  <span>{t.or}</span>
+                </div>
+
+                <p className="success-next">{t.successNext}</p>
+
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => handleWhatsApp(t.whatsappGeneral)}
+                >
+                  {t.talk}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+export default App
+tail -20 new-app-part1.txt
+tail -20 new-app-part1.txt
+cd ~/study-tutoring
+cd ~/study-tutoring
