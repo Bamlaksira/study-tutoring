@@ -1820,7 +1820,7 @@ heroTitle: {
     marginTop: '18px',
     padding: '18px',
     borderRadius: '12px',
-    background: '#eef5ff',
+    background: '#dceaff',
     lineHeight: '1.6',
     display: 'grid',
     gap: '10px',
