@@ -1,22 +1,97 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { EXAM_GRADES, getProductsByGrade } from './examData'
 
 const FREE_QUESTIONS = 3
 
+// Your backend URL
+const API_URL = 'https://studycare-backend.onrender.com'
+
+// Replace this with your real CBE account number
+const CBE_ACCOUNT_NAME = 'Bamlaksira Abebe'
+const CBE_ACCOUNT_NUMBER = '1000385393257'
+
 export default function ExamPractice() {
   const [selectedGrade, setSelectedGrade] = useState('')
   const [selectedProduct, setSelectedProduct] = useState(null)
+
   const [selectedOptions, setSelectedOptions] = useState({})
   const [showAnswers, setShowAnswers] = useState({})
+
+  const [showPurchaseForm, setShowPurchaseForm] = useState(false)
+  const [purchaseSubmitting, setPurchaseSubmitting] = useState(false)
+  const [checkingAccess, setCheckingAccess] = useState(false)
+
+  const [purchaseMessage, setPurchaseMessage] = useState('')
+  const [purchaseError, setPurchaseError] = useState('')
+
+  const [accessStatus, setAccessStatus] = useState('Locked')
+  const [purchaseId, setPurchaseId] = useState('')
+
+  const [purchaseForm, setPurchaseForm] = useState({
+    customerName: '',
+    phone: '',
+    email: '',
+    transactionReference: '',
+  })
 
   const products = selectedGrade
     ? getProductsByGrade(selectedGrade)
     : []
 
+  /*
+    Load a previously submitted purchase when the student
+    opens a product again.
+  */
+  useEffect(() => {
+    if (!selectedProduct) return
+
+    const storageKey = `studycare_exam_purchase_${selectedProduct.id}`
+    const saved = localStorage.getItem(storageKey)
+
+    if (!saved) {
+      setPurchaseForm({
+        customerName: '',
+        phone: '',
+        email: '',
+        transactionReference: '',
+      })
+      setPurchaseId('')
+      setAccessStatus('Locked')
+      setPurchaseMessage('')
+      setPurchaseError('')
+      return
+    }
+
+    try {
+      const data = JSON.parse(saved)
+
+      if (data.form) {
+        setPurchaseForm(data.form)
+      }
+
+      if (data.purchaseId) {
+        setPurchaseId(data.purchaseId)
+      }
+
+      if (data.accessStatus) {
+        setAccessStatus(data.accessStatus)
+      }
+
+      if (data.form?.phone && data.form?.transactionReference) {
+        checkAccess(data.form)
+      }
+    } catch (error) {
+      console.error('Saved purchase error:', error)
+    }
+  }, [selectedProduct])
+
   const openProduct = (product) => {
     setSelectedProduct(product)
     setSelectedOptions({})
     setShowAnswers({})
+    setShowPurchaseForm(false)
+    setPurchaseMessage('')
+    setPurchaseError('')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -24,6 +99,9 @@ export default function ExamPractice() {
     setSelectedProduct(null)
     setSelectedOptions({})
     setShowAnswers({})
+    setShowPurchaseForm(false)
+    setPurchaseMessage('')
+    setPurchaseError('')
   }
 
   const selectOption = (questionId, option) => {
@@ -72,9 +150,274 @@ export default function ExamPractice() {
     }
   }
 
+  const updatePurchaseForm = (field, value) => {
+    setPurchaseForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  /*
+    Submit the CBE transaction information to the backend.
+  */
+  const submitPurchase = async (event) => {
+    event.preventDefault()
+
+    setPurchaseError('')
+    setPurchaseMessage('')
+
+    if (
+      !purchaseForm.customerName.trim() ||
+      !purchaseForm.phone.trim() ||
+      !purchaseForm.transactionReference.trim()
+    ) {
+      setPurchaseError(
+        'Please enter your name, phone number, and CBE transaction reference.'
+      )
+      return
+    }
+
+    setPurchaseSubmitting(true)
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/exam-purchases`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            customerName: purchaseForm.customerName.trim(),
+            phone: purchaseForm.phone.trim(),
+            email: purchaseForm.email.trim(),
+            productId: selectedProduct.id,
+            productName: selectedProduct.title,
+            amount: selectedProduct.price,
+            transactionReference:
+              purchaseForm.transactionReference.trim(),
+          }),
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || 'Failed to submit payment information.'
+        )
+      }
+
+      setPurchaseId(data.purchaseId)
+      setAccessStatus('Locked')
+
+      localStorage.setItem(
+        `studycare_exam_purchase_${selectedProduct.id}`,
+        JSON.stringify({
+          purchaseId: data.purchaseId,
+          form: purchaseForm,
+          accessStatus: 'Locked',
+        })
+      )
+
+      setPurchaseMessage(
+        'Your payment information has been submitted. StudyCare will verify your CBE transfer before unlocking the exam.'
+      )
+
+      setShowPurchaseForm(false)
+    } catch (error) {
+      console.error('Purchase submission error:', error)
+
+      setPurchaseError(
+        error.message ||
+          'Something went wrong while submitting your payment.'
+      )
+    } finally {
+      setPurchaseSubmitting(false)
+    }
+  }
+
+  /*
+    Ask the backend whether this purchase has been approved.
+  */
+  const checkAccess = async (form = purchaseForm) => {
+    if (
+      !selectedProduct ||
+      !form.phone.trim() ||
+      !form.transactionReference.trim()
+    ) {
+      return
+    }
+
+    setCheckingAccess(true)
+    setPurchaseError('')
+    setPurchaseMessage('')
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/exam-purchases/check-access`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phone: form.phone.trim(),
+            transactionReference:
+              form.transactionReference.trim(),
+            productId: selectedProduct.id,
+          }),
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || 'Purchase could not be found.'
+        )
+      }
+
+      setAccessStatus(data.accessStatus)
+
+      localStorage.setItem(
+        `studycare_exam_purchase_${selectedProduct.id}`,
+        JSON.stringify({
+          purchaseId: data.purchaseId || purchaseId,
+          form,
+          accessStatus: data.accessStatus,
+        })
+      )
+
+      if (data.accessStatus === 'Unlocked') {
+        setPurchaseMessage(
+          'Payment approved! Full exam practice is now unlocked.'
+        )
+      } else {
+        setPurchaseMessage(
+          'Your payment is still being verified. Please check again after StudyCare approves the payment.'
+        )
+      }
+    } catch (error) {
+      console.error('Access check error:', error)
+
+      setPurchaseError(
+        error.message ||
+          'Unable to check your payment status.'
+      )
+    } finally {
+      setCheckingAccess(false)
+    }
+  }
+
+  const isUnlocked = accessStatus === 'Unlocked'
+
+  /*
+    Reusable question content.
+  */
+  const renderQuestionContent = (item) => {
+    const selected = selectedOptions[item.id]
+    const answered = Boolean(selected)
+    const isCorrect = selected === item.correctAnswer
+
+    return (
+      <>
+        <h3 style={styles.questionText}>
+          {item.question}
+        </h3>
+
+        {item.options?.length > 0 && (
+          <div style={styles.options}>
+            {item.options.map((option, index) => (
+              <button
+                key={option}
+                onClick={() =>
+                  selectOption(item.id, option)
+                }
+                disabled={answered}
+                style={getOptionStyle(item, option)}
+              >
+                <span style={styles.optionLetter}>
+                  {String.fromCharCode(65 + index)}
+                </span>
+
+                <span style={styles.optionText}>
+                  {option}
+                </span>
+
+                {answered &&
+                  option === item.correctAnswer && (
+                    <span style={styles.optionResult}>
+                      ✓
+                    </span>
+                  )}
+
+                {answered &&
+                  option === selected &&
+                  option !== item.correctAnswer && (
+                    <span style={styles.optionResult}>
+                      ✕
+                    </span>
+                  )}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {answered && (
+          <div
+            style={{
+              ...styles.resultBox,
+              ...(isCorrect
+                ? styles.correctResult
+                : styles.wrongResult),
+            }}
+          >
+            <strong>
+              {isCorrect
+                ? '✓ Correct!'
+                : '✕ Incorrect'}
+            </strong>
+
+            {!isCorrect && (
+              <p>
+                The correct answer is:{' '}
+                <strong>
+                  {item.correctAnswer}
+                </strong>
+              </p>
+            )}
+          </div>
+        )}
+
+        <button
+          onClick={() => toggleAnswer(item.id)}
+          style={styles.answerButton}
+        >
+          {showAnswers[item.id]
+            ? 'Hide Answer & Explanation'
+            : 'Show Answer & Explanation'}
+        </button>
+
+        {showAnswers[item.id] && (
+          <div style={styles.answerBox}>
+            <div>
+              <strong>Answer</strong>
+              <p>{item.correctAnswer}</p>
+            </div>
+
+            <div>
+              <strong>Explanation</strong>
+              <p>{item.explanation}</p>
+            </div>
+          </div>
+        )}
+      </>
+    )
+  }
+
   return (
     <div style={styles.page}>
-      {/* HEADER */}
       <header style={styles.header}>
         <a href="/" style={styles.logo}>
           Study<span>Care</span>
@@ -85,9 +428,6 @@ export default function ExamPractice() {
         </a>
       </header>
 
-      {/* =========================
-          GRADE + SUBJECT SELECTION
-      ========================== */}
       {!selectedProduct ? (
         <main style={styles.container}>
           <section style={styles.hero}>
@@ -111,7 +451,6 @@ export default function ExamPractice() {
             </div>
           </section>
 
-          {/* GRADES */}
           <section style={styles.section}>
             <div style={styles.sectionHeading}>
               <span style={styles.eyebrow}>
@@ -121,7 +460,8 @@ export default function ExamPractice() {
               <h2>Choose Your Grade</h2>
 
               <p>
-                Select your grade to see available subjects.
+                Select your grade to see available
+                subjects.
               </p>
             </div>
 
@@ -129,7 +469,9 @@ export default function ExamPractice() {
               {EXAM_GRADES.map((grade) => (
                 <button
                   key={grade}
-                  onClick={() => setSelectedGrade(grade)}
+                  onClick={() =>
+                    setSelectedGrade(grade)
+                  }
                   style={{
                     ...styles.gradeCard,
                     ...(selectedGrade === grade
@@ -151,7 +493,6 @@ export default function ExamPractice() {
             </div>
           </section>
 
-          {/* SUBJECTS */}
           {selectedGrade && (
             <section style={styles.section}>
               <div style={styles.sectionHeading}>
@@ -162,7 +503,8 @@ export default function ExamPractice() {
                 <h2>Choose a Subject</h2>
 
                 <p>
-                  Choose the subject you want to practice.
+                  Choose the subject you want to
+                  practice.
                 </p>
               </div>
 
@@ -172,11 +514,13 @@ export default function ExamPractice() {
                     📚
                   </div>
 
-                  <h3>Subjects Coming Soon</h3>
+                  <h3>
+                    Subjects Coming Soon
+                  </h3>
 
                   <p>
-                    Exam practice for this grade is currently
-                    being prepared.
+                    Exam practice for this grade
+                    is currently being prepared.
                   </p>
                 </div>
               ) : (
@@ -198,13 +542,21 @@ export default function ExamPractice() {
                         {product.title}
                       </h3>
 
-                      <p style={styles.productDescription}>
+                      <p
+                        style={
+                          styles.productDescription
+                        }
+                      >
                         {product.description}
                       </p>
 
-                      <div style={styles.productInfo}>
+                      <div
+                        style={styles.productInfo}
+                      >
                         <span>
-                          🎯 {product.questions.length > 0
+                          🎯{' '}
+                          {product.questions.length >
+                          0
                             ? `${product.questions.length}+ questions`
                             : 'Questions coming soon'}
                         </span>
@@ -218,13 +570,21 @@ export default function ExamPractice() {
                         </span>
                       </div>
 
-                      <div style={styles.productBottom}>
+                      <div
+                        style={styles.productBottom}
+                      >
                         <div>
-                          <small style={styles.priceLabel}>
+                          <small
+                            style={
+                              styles.priceLabel
+                            }
+                          >
                             PRICE
                           </small>
 
-                          <strong style={styles.price}>
+                          <strong
+                            style={styles.price}
+                          >
                             {product.price > 0
                               ? `${product.price} ETB`
                               : 'Coming soon'}
@@ -232,7 +592,9 @@ export default function ExamPractice() {
                         </div>
 
                         <button
-                          onClick={() => openProduct(product)}
+                          onClick={() =>
+                            openProduct(product)
+                          }
                           style={styles.primaryButton}
                         >
                           Practice Now →
@@ -245,7 +607,6 @@ export default function ExamPractice() {
             </section>
           )}
 
-          {/* WHY PRACTICE */}
           <section style={styles.infoSection}>
             <div style={styles.infoCard}>
               <span style={styles.infoIcon}>
@@ -253,12 +614,15 @@ export default function ExamPractice() {
               </span>
 
               <div>
-                <h3>Learn from Every Question</h3>
+                <h3>
+                  Learn from Every Question
+                </h3>
 
                 <p>
-                  Don't just check whether your answer is
-                  correct. Use the explanations to understand
-                  why the answer is correct.
+                  Don't just check whether your
+                  answer is correct. Use the
+                  explanations to understand why
+                  the answer is correct.
                 </p>
               </div>
             </div>
@@ -272,18 +636,15 @@ export default function ExamPractice() {
                 <h3>Start for Free</h3>
 
                 <p>
-                  Try the first 3 questions free before
-                  deciding whether to unlock the complete
-                  practice set.
+                  Try the first 3 questions free
+                  before deciding whether to unlock
+                  the complete practice set.
                 </p>
               </div>
             </div>
           </section>
         </main>
       ) : (
-        /* =========================
-           PRODUCT / QUESTIONS PAGE
-        ========================== */
         <main style={styles.container}>
           <button
             onClick={backToSubjects}
@@ -344,19 +705,19 @@ export default function ExamPractice() {
 
               <div>
                 <strong>
-                  Try the first {FREE_QUESTIONS} questions FREE
+                  Try the first {FREE_QUESTIONS}{' '}
+                  questions FREE
                 </strong>
 
                 <p>
-                  Answer the free questions and see the
-                  explanations before unlocking the complete
-                  practice set.
+                  Answer the free questions and see
+                  the explanations before unlocking
+                  the complete practice set.
                 </p>
               </div>
             </div>
           </section>
 
-          {/* QUESTIONS */}
           <section style={styles.questionsSection}>
             <div style={styles.questionsHeading}>
               <div>
@@ -364,9 +725,7 @@ export default function ExamPractice() {
                   PRACTICE
                 </span>
 
-                <h2>
-                  Questions
-                </h2>
+                <h2>Questions</h2>
               </div>
 
               <span style={styles.freeCounter}>
@@ -374,256 +733,477 @@ export default function ExamPractice() {
               </span>
             </div>
 
-            {selectedProduct.questions.length === 0 ? (
+            {selectedProduct.questions.length ===
+            0 ? (
               <div style={styles.empty}>
                 <div style={styles.emptyIcon}>
                   📝
                 </div>
 
-                <h3>Questions Coming Soon</h3>
+                <h3>
+                  Questions Coming Soon
+                </h3>
 
                 <p>
-                  We are preparing questions for this subject.
+                  We are preparing questions for
+                  this subject.
                 </p>
               </div>
             ) : (
-              selectedProduct.questions.map((item) => {
-                const isFree =
-                  item.order <= FREE_QUESTIONS
+              selectedProduct.questions.map(
+                (item) => {
+                  const isFree =
+                    item.order <= FREE_QUESTIONS
 
-                const selected =
-                  selectedOptions[item.id]
+                  const canAccess =
+                    isFree || isUnlocked
 
-                const answered =
-                  Boolean(selected)
-
-                const isCorrect =
-                  selected === item.correctAnswer
-
-                return (
-                  <article
-                    key={item.id}
-                    style={{
-                      ...styles.questionCard,
-                      ...(isFree
-                        ? {}
-                        : styles.lockedCard),
-                    }}
-                  >
-                    <div style={styles.questionTop}>
-                      <span style={styles.questionNumber}>
-                        Question {item.order}
-                      </span>
-
-                      {isFree ? (
-                        <span style={styles.freeBadge}>
-                          FREE
-                        </span>
-                      ) : (
-                        <span style={styles.lockBadge}>
-                          🔒 LOCKED
-                        </span>
-                      )}
-                    </div>
-
-                    {isFree ? (
-                      <>
-                        <h3 style={styles.questionText}>
-                          {item.question}
-                        </h3>
-
-                        {item.options?.length > 0 && (
-                          <div style={styles.options}>
-                            {item.options.map(
-                              (option, index) => (
-                                <button
-                                  key={option}
-                                  onClick={() =>
-                                    selectOption(
-                                      item.id,
-                                      option
-                                    )
-                                  }
-                                  disabled={answered}
-                                  style={getOptionStyle(
-                                    item,
-                                    option
-                                  )}
-                                >
-                                  <span
-                                    style={
-                                      styles.optionLetter
-                                    }
-                                  >
-                                    {String.fromCharCode(
-                                      65 + index
-                                    )}
-                                  </span>
-
-                                  <span
-                                    style={
-                                      styles.optionText
-                                    }
-                                  >
-                                    {option}
-                                  </span>
-
-                                  {answered &&
-                                    option ===
-                                      item.correctAnswer && (
-                                      <span
-                                        style={
-                                          styles.optionResult
-                                        }
-                                      >
-                                        ✓
-                                      </span>
-                                    )}
-
-                                  {answered &&
-                                    option === selected &&
-                                    option !==
-                                      item.correctAnswer && (
-                                      <span
-                                        style={
-                                          styles.optionResult
-                                        }
-                                      >
-                                        ✕
-                                      </span>
-                                    )}
-                                </button>
-                              )
-                            )}
-                          </div>
-                        )}
-
-                        {answered && (
-                          <div
-                            style={{
-                              ...styles.resultBox,
-                              ...(isCorrect
-                                ? styles.correctResult
-                                : styles.wrongResult),
-                            }}
-                          >
-                            <strong>
-                              {isCorrect
-                                ? '✓ Correct!'
-                                : '✕ Incorrect'}
-                            </strong>
-
-                            {!isCorrect && (
-                              <p>
-                                The correct answer is:{' '}
-                                <strong>
-                                  {item.correctAnswer}
-                                </strong>
-                              </p>
-                            )}
-                          </div>
-                        )}
-
-                        <button
-                          onClick={() =>
-                            toggleAnswer(item.id)
+                  return (
+                    <article
+                      key={item.id}
+                      style={{
+                        ...styles.questionCard,
+                        ...(!canAccess
+                          ? styles.lockedCard
+                          : {}),
+                      }}
+                    >
+                      <div style={styles.questionTop}>
+                        <span
+                          style={
+                            styles.questionNumber
                           }
-                          style={styles.answerButton}
                         >
-                          {showAnswers[item.id]
-                            ? 'Hide Answer & Explanation'
-                            : 'Show Answer & Explanation'}
-                        </button>
+                          Question {item.order}
+                        </span>
 
-                        {showAnswers[item.id] && (
-                          <div style={styles.answerBox}>
-                            <div>
-                              <strong>
-                                Answer
-                              </strong>
-
-                              <p>
-                                {item.correctAnswer}
-                              </p>
-                            </div>
-
-                            <div>
-                              <strong>
-                                Explanation
-                              </strong>
-
-                              <p>
-                                {item.explanation}
-                              </p>
-                            </div>
-                          </div>
+                        {isFree ? (
+                          <span
+                            style={styles.freeBadge}
+                          >
+                            FREE
+                          </span>
+                        ) : isUnlocked ? (
+                          <span
+                            style={
+                              styles.unlockedBadge
+                            }
+                          >
+                            ✓ UNLOCKED
+                          </span>
+                        ) : (
+                          <span
+                            style={
+                              styles.lockBadge
+                            }
+                          >
+                            🔒 LOCKED
+                          </span>
                         )}
-                      </>
-                    ) : (
-                      <div style={styles.lockedContent}>
-                        <div style={styles.lockIcon}>
-                          🔒
-                        </div>
-
-                        <h3>
-                          This question is locked
-                        </h3>
-
-                        <p>
-                          Unlock the full practice set to
-                          see this question, answer, and
-                          explanation.
-                        </p>
-
-                        <button
-                          style={styles.unlockButton}
-                        >
-                          Unlock Full Exam Practice
-                        </button>
                       </div>
-                    )}
-                  </article>
-                )
-              })
+
+                      {canAccess ? (
+                        renderQuestionContent(item)
+                      ) : (
+                        <div
+                          style={
+                            styles.lockedContent
+                          }
+                        >
+                          <div
+                            style={
+                              styles.lockIcon
+                            }
+                          >
+                            🔒
+                          </div>
+
+                          <h3>
+                            This question is
+                            locked
+                          </h3>
+
+                          <p>
+                            Unlock the full
+                            practice set to see
+                            this question, answer,
+                            and explanation.
+                          </p>
+
+                          <button
+                            onClick={() => {
+                              setShowPurchaseForm(
+                                true
+                              )
+
+                              setPurchaseError('')
+                              setPurchaseMessage('')
+
+                              window.scrollTo({
+                                top: document.body
+                                  .scrollHeight,
+                                behavior: 'smooth',
+                              })
+                            }}
+                            style={
+                              styles.unlockButton
+                            }
+                          >
+                            Unlock Full Exam
+                            Practice
+                          </button>
+                        </div>
+                      )}
+                    </article>
+                  )
+                }
+              )
             )}
 
-            {/* PURCHASE CTA */}
             {selectedProduct.questions.length >
               FREE_QUESTIONS && (
               <section style={styles.purchaseBox}>
-                <div style={styles.purchaseIcon}>
-                  🎯
-                </div>
+                {isUnlocked ? (
+                  <>
+                    <div
+                      style={styles.successIcon}
+                    >
+                      🎉
+                    </div>
 
-                <span style={styles.purchaseEyebrow}>
-                  FULL ACCESS
-                </span>
+                    <span
+                      style={
+                        styles.purchaseEyebrow
+                      }
+                    >
+                      FULL ACCESS UNLOCKED
+                    </span>
 
-                <h2>
-                  Ready to practice the full set?
-                </h2>
+                    <h2>
+                      You can now access the
+                      complete practice set
+                    </h2>
 
-                <p>
-                  Unlock all questions, answers, and
-                  detailed explanations for this subject.
-                </p>
+                    <p>
+                      Your payment has been
+                      approved by StudyCare.
+                      All questions, answers, and
+                      explanations are unlocked.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div
+                      style={styles.purchaseIcon}
+                    >
+                      🎯
+                    </div>
 
-                <div style={styles.purchasePrice}>
-                  {selectedProduct.price} ETB
-                </div>
+                    <span
+                      style={
+                        styles.purchaseEyebrow
+                      }
+                    >
+                      FULL ACCESS
+                    </span>
 
-                <button style={styles.primaryLarge}>
-                  Unlock Full Exam Practice
-                </button>
+                    <h2>
+                      Ready to practice the full
+                      set?
+                    </h2>
 
-                <small>
-                  Secure payment will be connected here.
-                </small>
+                    <p>
+                      Unlock all questions, answers,
+                      and detailed explanations for
+                      this subject.
+                    </p>
+
+                    <div
+                      style={styles.purchasePrice}
+                    >
+                      {selectedProduct.price} ETB
+                    </div>
+
+                    {!showPurchaseForm ? (
+                      <>
+                        <button
+                          onClick={() => {
+                            setShowPurchaseForm(
+                              true
+                            )
+                            setPurchaseError('')
+                            setPurchaseMessage('')
+                          }}
+                          style={
+                            styles.primaryLarge
+                          }
+                        >
+                          Unlock Full Exam
+                          Practice
+                        </button>
+
+                        {purchaseMessage && (
+                          <div
+                            style={
+                              styles.messageBox
+                            }
+                          >
+                            {purchaseMessage}
+                          </div>
+                        )}
+
+                        {purchaseError && (
+                          <div
+                            style={
+                              styles.errorBox
+                            }
+                          >
+                            {purchaseError}
+                          </div>
+                        )}
+
+                        {purchaseId && (
+                          <button
+                            onClick={() =>
+                              checkAccess()
+                            }
+                            disabled={
+                              checkingAccess
+                            }
+                            style={
+                              styles.checkButton
+                            }
+                          >
+                            {checkingAccess
+                              ? 'Checking...'
+                              : 'Check Payment Status'}
+                          </button>
+                        )}
+
+                        <small
+                          style={
+                            styles.purchaseSmall
+                          }
+                        >
+                          Payment is made by CBE
+                          bank transfer and
+                          verified manually by
+                          StudyCare.
+                        </small>
+                      </>
+                    ) : (
+                      <form
+                        onSubmit={submitPurchase}
+                        style={styles.purchaseForm}
+                      >
+                        <div
+                          style={
+                            styles.paymentInstruction
+                          }
+                        >
+                          <strong>
+                            CBE Transfer
+                            Instructions
+                          </strong>
+
+                          <p>
+                            Send{' '}
+                            <strong>
+                              {
+                                selectedProduct.price
+                              }{' '}
+                              ETB
+                            </strong>{' '}
+                            to the StudyCare CBE
+                            account, then enter
+                            your transaction
+                            reference below.
+                          </p>
+
+                          <div
+                            style={
+                              styles.bankDetails
+                            }
+                          >
+                            <div>
+                              <span>
+                                Account Name
+                              </span>
+
+                              <strong>
+                                {
+                                  CBE_ACCOUNT_NAME
+                                }
+                              </strong>
+                            </div>
+
+                            <div>
+                              <span>
+                                CBE Account
+                              </span>
+
+                              <strong>
+                                {
+                                  CBE_ACCOUNT_NUMBER
+                                }
+                              </strong>
+                            </div>
+                          </div>
+                        </div>
+
+                        <label
+                          style={styles.formLabel}
+                        >
+                          Full Name *
+                          <input
+                            type="text"
+                            value={
+                              purchaseForm.customerName
+                            }
+                            onChange={(e) =>
+                              updatePurchaseForm(
+                                'customerName',
+                                e.target.value
+                              )
+                            }
+                            placeholder="Enter your full name"
+                            style={
+                              styles.formInput
+                            }
+                            required
+                          />
+                        </label>
+
+                        <label
+                          style={styles.formLabel}
+                        >
+                          Phone Number *
+                          <input
+                            type="tel"
+                            value={
+                              purchaseForm.phone
+                            }
+                            onChange={(e) =>
+                              updatePurchaseForm(
+                                'phone',
+                                e.target.value
+                              )
+                            }
+                            placeholder="09XXXXXXXX"
+                            style={
+                              styles.formInput
+                            }
+                            required
+                          />
+                        </label>
+
+                        <label
+                          style={styles.formLabel}
+                        >
+                          Email
+                          <input
+                            type="email"
+                            value={
+                              purchaseForm.email
+                            }
+                            onChange={(e) =>
+                              updatePurchaseForm(
+                                'email',
+                                e.target.value
+                              )
+                            }
+                            placeholder="Optional"
+                            style={
+                              styles.formInput
+                            }
+                          />
+                        </label>
+
+                        <label
+                          style={styles.formLabel}
+                        >
+                          CBE Transaction Reference *
+                          <input
+                            type="text"
+                            value={
+                              purchaseForm.transactionReference
+                            }
+                            onChange={(e) =>
+                              updatePurchaseForm(
+                                'transactionReference',
+                                e.target.value
+                              )
+                            }
+                            placeholder="Enter transaction/reference number"
+                            style={
+                              styles.formInput
+                            }
+                            required
+                          />
+                        </label>
+
+                        {purchaseError && (
+                          <div
+                            style={
+                              styles.errorBox
+                            }
+                          >
+                            {purchaseError}
+                          </div>
+                        )}
+
+                        <div
+                          style={
+                            styles.formButtons
+                          }
+                        >
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowPurchaseForm(
+                                false
+                              )
+                            }
+                            style={
+                              styles.cancelButton
+                            }
+                          >
+                            Cancel
+                          </button>
+
+                          <button
+                            type="submit"
+                            disabled={
+                              purchaseSubmitting
+                            }
+                            style={
+                              styles.primaryLarge
+                            }
+                          >
+                            {purchaseSubmitting
+                              ? 'Submitting...'
+                              : 'Submit Payment Information'}
+                          </button>
+                        </div>
+
+                        <p
+                          style={
+                            styles.formNote
+                          }
+                        >
+                          After submission, your
+                          payment will remain locked
+                          until StudyCare verifies
+                          the CBE transfer.
+                        </p>
+                      </form>
+                    )}
+                  </>
+                )}
               </section>
             )}
           </section>
 
-          {/* TUTORING CTA */}
           <section style={styles.tutoringCTA}>
             <div>
               <span style={styles.eyebrow}>
@@ -631,12 +1211,14 @@ export default function ExamPractice() {
               </span>
 
               <h2>
-                Want personalized exam preparation?
+                Want personalized exam
+                preparation?
               </h2>
 
               <p>
-                StudyCare also provides personalized tutoring
-                and exam preparation support for students.
+                StudyCare also provides
+                personalized tutoring and exam
+                preparation support for students.
               </p>
             </div>
 
@@ -656,8 +1238,8 @@ export default function ExamPractice() {
         </strong>
 
         <p>
-          Helping students prepare, practice, and learn
-          with confidence.
+          Helping students prepare, practice,
+          and learn with confidence.
         </p>
       </footer>
     </div>
@@ -688,6 +1270,10 @@ const styles = {
     fontSize: '25px',
     fontWeight: '800',
     color: '#172033',
+  },
+
+  "logo span": {
+    color: '#1769aa',
   },
 
   homeLink: {
@@ -791,7 +1377,8 @@ const styles = {
 
   gradeCardSelected: {
     border: '2px solid #1769aa',
-    boxShadow: '0 8px 25px rgba(23,105,170,0.10)',
+    boxShadow:
+      '0 8px 25px rgba(23,105,170,0.10)',
   },
 
   gradeIcon: {
@@ -811,7 +1398,8 @@ const styles = {
     border: '1px solid #e1e5eb',
     borderRadius: '20px',
     padding: '25px',
-    boxShadow: '0 5px 20px rgba(23,32,51,0.03)',
+    boxShadow:
+      '0 5px 20px rgba(23,32,51,0.03)',
   },
 
   subjectIcon: {
@@ -977,6 +1565,25 @@ const styles = {
     marginTop: '28px',
   },
 
+  "productStats div": {
+    background: '#f7f8fa',
+    borderRadius: '14px',
+    padding: '15px',
+    textAlign: 'center',
+  },
+
+  "productStats strong": {
+    display: 'block',
+    fontSize: '20px',
+  },
+
+  "productStats span": {
+    display: 'block',
+    marginTop: '5px',
+    color: '#697180',
+    fontSize: '12px',
+  },
+
   freeNotice: {
     display: 'flex',
     gap: '15px',
@@ -1056,6 +1663,15 @@ const styles = {
     borderRadius: '20px',
     background: '#e4e5e8',
     color: '#555',
+    fontSize: '11px',
+    fontWeight: '800',
+  },
+
+  unlockedBadge: {
+    padding: '5px 10px',
+    borderRadius: '20px',
+    background: '#dff3e5',
+    color: '#176b32',
     fontSize: '11px',
     fontWeight: '800',
   },
@@ -1193,6 +1809,10 @@ const styles = {
     fontSize: '38px',
   },
 
+  successIcon: {
+    fontSize: '45px',
+  },
+
   purchaseEyebrow: {
     display: 'block',
     color: '#1769aa',
@@ -1217,6 +1837,124 @@ const styles = {
     fontWeight: '800',
     cursor: 'pointer',
     fontSize: '15px',
+  },
+
+  purchaseSmall: {
+    display: 'block',
+    marginTop: '15px',
+    color: '#777',
+  },
+
+  purchaseForm: {
+    maxWidth: '600px',
+    margin: '25px auto 0',
+    textAlign: 'left',
+  },
+
+  paymentInstruction: {
+    background: '#eef5ff',
+    border: '1px solid #d5e5f8',
+    borderRadius: '15px',
+    padding: '20px',
+    marginBottom: '20px',
+    lineHeight: '1.6',
+  },
+
+  bankDetails: {
+    display: 'grid',
+    gap: '10px',
+    marginTop: '15px',
+  },
+
+  "bankDetails div": {
+    background: '#ffffff',
+    borderRadius: '10px',
+    padding: '12px 15px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '15px',
+    flexWrap: 'wrap',
+  },
+
+  "bankDetails span": {
+    color: '#697180',
+  },
+
+  formLabel: {
+    display: 'block',
+    fontWeight: '700',
+    fontSize: '14px',
+    marginBottom: '15px',
+  },
+
+  formInput: {
+    display: 'block',
+    width: '100%',
+    boxSizing: 'border-box',
+    marginTop: '7px',
+    padding: '13px 14px',
+    borderRadius: '10px',
+    border: '1px solid #d6dbe2',
+    fontSize: '15px',
+    outline: 'none',
+  },
+
+  formButtons: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '10px',
+    flexWrap: 'wrap',
+    marginTop: '20px',
+  },
+
+  cancelButton: {
+    border: '1px solid #ccd2da',
+    background: '#ffffff',
+    color: '#172033',
+    padding: '13px 18px',
+    borderRadius: '10px',
+    fontWeight: '700',
+    cursor: 'pointer',
+  },
+
+  formNote: {
+    textAlign: 'center',
+    color: '#697180',
+    fontSize: '13px',
+    lineHeight: '1.6',
+    marginTop: '18px',
+  },
+
+  messageBox: {
+    background: '#e7f7ec',
+    color: '#176b32',
+    border: '1px solid #b8e5c4',
+    borderRadius: '10px',
+    padding: '13px 15px',
+    marginTop: '18px',
+    lineHeight: '1.5',
+  },
+
+  errorBox: {
+    background: '#fdeaea',
+    color: '#a51d16',
+    border: '1px solid #f2b8b5',
+    borderRadius: '10px',
+    padding: '13px 15px',
+    marginTop: '15px',
+    lineHeight: '1.5',
+  },
+
+  checkButton: {
+    display: 'block',
+    margin: '15px auto 0',
+    border: '1px solid #172033',
+    background: '#ffffff',
+    color: '#172033',
+    padding: '11px 17px',
+    borderRadius: '10px',
+    fontWeight: '700',
+    cursor: 'pointer',
   },
 
   tutoringCTA: {
@@ -1264,6 +2002,10 @@ const styles = {
   "footer strong": {
     color: '#172033',
     fontSize: '20px',
+  },
+
+  "footer strong span": {
+    color: '#1769aa',
   },
 
   "footer p": {

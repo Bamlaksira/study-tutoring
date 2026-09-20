@@ -343,6 +343,55 @@ app.post("/api/exam-purchases", async (req, res) => {
     });
   }
 });
+app.post("/api/exam-purchases/check-access", async (req, res) => {
+  try {
+    const {
+      phone,
+      transactionReference,
+      productId,
+    } = req.body;
+
+    if (!phone || !transactionReference || !productId) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Please provide your phone number, transaction reference, and product.",
+      });
+    }
+
+    const purchase = await ExamPurchase.findOne({
+      phone: phone.trim(),
+      transactionReference: transactionReference.trim(),
+      productId,
+    });
+
+    if (!purchase) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "No purchase was found with these details.",
+      });
+    }
+
+    res.json({
+      success: true,
+      purchaseId: purchase._id,
+      paymentStatus: purchase.paymentStatus,
+      accessStatus: purchase.accessStatus,
+    });
+  } catch (error) {
+    console.error(
+      "Exam access check error:",
+      error
+    );
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Failed to check exam access.",
+    });
+  }
+});
 app.post("/api/leads", async (req, res) => {
   try {
     const parentName = clean(req.body.parentName);
