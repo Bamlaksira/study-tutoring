@@ -159,7 +159,7 @@ function App() {
       <a className="logo" href="#home">Study<span>Care</span></a>
       <button className="menu-btn" onClick={()=>setMenu(!menu)}>☰</button>
       <div className={`nav-links ${menu?'show':''}`}>
-        <a href="#home">{t.navHome}</a><a href="#services">{t.navServices}</a><a href="#how">{t.navHow}</a><a href="#resources">{t.navResources}</a>
+       <a href="#home">{t.navHome}</a><a href="#services">{t.navServices}</a><a href="#how">{t.navHow}</a><a href="#resources">{t.navResources}</a><a href="/exams" onClick={()=>setMenu(false)}>Exam Practice</a>
         <select value={language} onChange={e=>changeLanguage(e.target.value)}><option value="en">EN</option><option value="am">አማ</option></select>
       </div>
     </nav>
