@@ -15,6 +15,7 @@ export default function ExamPractice() {
   const [selectedProduct, setSelectedProduct] = useState(null)
 
   const [selectedOptions, setSelectedOptions] = useState({})
+  const [paidQuestions, setPaidQuestions] = useState([])
   const [showAnswers, setShowAnswers] = useState({})
 
   const [showPurchaseForm, setShowPurchaseForm] = useState(false)
@@ -86,8 +87,9 @@ export default function ExamPractice() {
   }, [selectedProduct])
 
   const openProduct = (product) => {
-    setSelectedProduct(product)
-    setSelectedOptions({})
+  setSelectedProduct(product)
+  setPaidQuestions([])
+  setSelectedOptions({})
     setShowAnswers({})
     setShowPurchaseForm(false)
     setPurchaseMessage('')
@@ -96,8 +98,9 @@ export default function ExamPractice() {
   }
 
   const backToSubjects = () => {
-    setSelectedProduct(null)
-    setSelectedOptions({})
+  setSelectedProduct(null)
+  setPaidQuestions([])
+  setSelectedOptions({})
     setShowAnswers({})
     setShowPurchaseForm(false)
     setPurchaseMessage('')
@@ -293,6 +296,7 @@ export default function ExamPractice() {
         setPurchaseMessage(
           'Payment approved! Full exam practice is now unlocked.'
         )
+       await loadPaidQuestions(form)
       } else {
         setPurchaseMessage(
           'Your payment is still being verified. Please check again after StudyCare approves the payment.'
@@ -311,7 +315,50 @@ export default function ExamPractice() {
   }
 
   const isUnlocked = accessStatus === 'Unlocked'
+    const loadPaidQuestions = async (form = purchaseForm) => {
+    if (
+      !selectedProduct ||
+      !form.phone.trim() ||
+      !form.transactionReference.trim()
+    ) {
+      return
+    }
 
+    try {
+      const response = await fetch(
+        `${API_URL}/api/exams/paid-content`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phone: form.phone.trim(),
+            transactionReference:
+              form.transactionReference.trim(),
+            productId: selectedProduct.id,
+          }),
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            'Paid exam content could not be loaded.'
+        )
+      }
+
+      setPaidQuestions(data.questions || [])
+    } catch (error) {
+      console.error(
+        'Paid exam content error:',
+        error
+      )
+      setPaidQuestions([])
+    }
+  }
   /*
     Reusable question content.
   */
@@ -675,7 +722,7 @@ export default function ExamPractice() {
             <div style={styles.productStats}>
               <div>
                 <strong>
-                  {selectedProduct.questions.length}
+                {selectedProduct.questions.length + paidQuestions.length}
                 </strong>
 
                 <span>Questions</span>
@@ -733,8 +780,7 @@ export default function ExamPractice() {
               </span>
             </div>
 
-            {selectedProduct.questions.length ===
-            0 ? (
+           {selectedProduct.questions.length === 0 && !isUnlocked ? (
               <div style={styles.empty}>
                 <div style={styles.emptyIcon}>
                   📝
@@ -750,7 +796,7 @@ export default function ExamPractice() {
                 </p>
               </div>
             ) : (
-              selectedProduct.questions.map(
+              [...selectedProduct.questions, ...paidQuestions].map(
                 (item) => {
                   const isFree =
                     item.order <= FREE_QUESTIONS
@@ -860,8 +906,7 @@ export default function ExamPractice() {
               )
             )}
 
-            {selectedProduct.questions.length >
-              FREE_QUESTIONS && (
+             {selectedProduct.questions.length >= FREE_QUESTIONS && (
               <section style={styles.purchaseBox}>
                 {isUnlocked ? (
                   <>

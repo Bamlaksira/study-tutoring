@@ -392,6 +392,72 @@ app.post("/api/exam-purchases/check-access", async (req, res) => {
     });
   }
 });
+
+// ===============================
+// PAID EXAM CONTENT
+// ===============================
+
+const paidExamQuestions = {
+  "grade6-mathematics": [
+    {
+      id: "g6math-4",
+      order: 4,
+      question: "What is 6 × 9?",
+      options: ["45", "54", "63", "72"],
+      correctAnswer: "54",
+      explanation: "6 × 9 = 54.",
+    },
+  ],
+};
+
+app.post("/api/exams/paid-content", async (req, res) => {
+  try {
+    const {
+      phone,
+      transactionReference,
+      productId,
+    } = req.body;
+
+    if (!phone || !transactionReference || !productId) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Please provide your phone number, transaction reference, and product.",
+      });
+    }
+
+    const purchase = await ExamPurchase.findOne({
+      phone: phone.trim(),
+      transactionReference: transactionReference.trim(),
+      productId,
+      paymentStatus: "Approved",
+      accessStatus: "Unlocked",
+    });
+
+    if (!purchase) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Full access has not been approved for this exam.",
+      });
+    }
+
+    const questions = paidExamQuestions[productId] || [];
+
+    res.json({
+      success: true,
+      productId,
+      questions,
+    });
+  } catch (error) {
+    console.error("Paid exam content error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to load paid exam content.",
+    });
+  }
+});
 app.post("/api/leads", async (req, res) => {
   try {
     const parentName = clean(req.body.parentName);

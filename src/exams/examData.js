@@ -36,15 +36,7 @@ export const examProducts = [
         explanation:
           "100 − 45 = 55.",
       },
-      {
-        id: "g6math-4",
-        order: 4,
-        question: "What is 6 × 9?",
-        options: ["45", "54", "63", "72"],
-        correctAnswer: "54",
-        explanation:
-          "6 × 9 = 54.",
-      },
+
     ],
   },
 
