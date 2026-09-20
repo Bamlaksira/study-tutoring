@@ -1659,6 +1659,7 @@ heroTitle: {
   },
 
   questionsHeading: {
+    color: '#172033',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'end',
@@ -1675,6 +1676,7 @@ heroTitle: {
   },
 
   questionCard: {
+    color: '#172033',
     background: '#ffffff',
     border: '1px solid #e1e5eb',
     borderRadius: '20px',
@@ -1738,6 +1740,7 @@ heroTitle: {
   },
 
   option: {
+    color: '#172033',
     width: '100%',
     boxSizing: 'border-box',
     display: 'flex',
@@ -1753,11 +1756,13 @@ heroTitle: {
   },
 
   optionLetter: {
+    color: '#172033',
     fontWeight: '800',
     minWidth: '25px',
   },
 
   optionText: {
+    color: '#172033',
     flex: 1,
   },
 
