@@ -81,7 +81,7 @@ export default function ExamPractice() {
       if (data.form?.phone && data.form?.transactionReference) {
         checkAccess(data.form)
       }
-    } catch (error) {
+        } catch (error) {
       console.error('Saved purchase error:', error)
     }
   }, [selectedProduct])
@@ -1352,11 +1352,13 @@ const styles = {
     letterSpacing: '1px',
   },
 
-  heroTitle: {
-    fontSize: '42px',
-    lineHeight: '1.1',
-    margin: '18px 0 15px',
-  },
+      
+heroTitle: {
+  fontSize: '42px',
+  lineHeight: '1.1',
+  margin: '18px 0 15px',
+  color: '#172033',
+},
 
   heroText: {
     fontSize: '18px',
@@ -1410,15 +1412,16 @@ const styles = {
   },
 
   gradeCard: {
-    border: '1px solid #e1e5eb',
-    background: '#ffffff',
-    borderRadius: '18px',
-    padding: '25px',
-    textAlign: 'left',
-    cursor: 'pointer',
-    minHeight: '155px',
-    transition: '0.2s',
-  },
+  border: '1px solid #e1e5eb',
+  background: '#ffffff',
+  borderRadius: '18px',
+  padding: '25px',
+  textAlign: 'left',
+  cursor: 'pointer',
+  minHeight: '155px',
+  transition: '0.2s',
+  color: '#172033',
+},
 
   gradeCardSelected: {
     border: '2px solid #1769aa',
@@ -1461,9 +1464,10 @@ const styles = {
   },
 
   productTitle: {
-    fontSize: '20px',
-    margin: '8px 0',
-  },
+  fontSize: '20px',
+  margin: '8px 0',
+  color: '#172033',
+},
 
   productDescription: {
     color: '#687180',
