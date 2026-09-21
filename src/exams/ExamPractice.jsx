@@ -1808,10 +1808,11 @@ heroTitle: {
   },
 
   answerButton: {
-    border: '1px solid #172033',
-    background: '#ffffff',
+    border: 'none',
+    background: '#172033',
+    color: '#ffffff',
     borderRadius: '10px',
-    padding: '10px 14px',
+    padding: '12px 18px',
     fontWeight: '700',
     cursor: 'pointer',
   },
