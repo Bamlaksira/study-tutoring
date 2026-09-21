@@ -46,7 +46,7 @@ a{text-decoration:none;color:inherit}
 .section.tinted{background:#f1f5f9}
 .heading{max-width:760px;margin:0 auto 45px;text-align:center}
 .heading>span{display:inline-block;color:var(--blue);font-size:13px;font-weight:900;letter-spacing:2px;margin-bottom:10px}
-.heading h2{font-size:clamp(30px,4vw,42px);line-height:1.15;margin-bottom:14px;letter-spacing:-1px}
+.heading h2{color:var(--text);font-size:clamp(30px,4vw,42px);line-height:1.15;margin-bottom:14px;letter-spacing:-1px}
 .heading p{color:var(--muted);line-height:1.7}
 
 /* SIGNS */
@@ -106,13 +106,13 @@ a{text-decoration:none;color:inherit}
 /* FAQ */
 .faq{max-width:100%;background:white}
 .faq-item{max-width:850px;margin:0 auto;border-bottom:1px solid var(--border)}
-.faq-item button{width:100%;padding:20px 4px;border:0;background:transparent;text-align:left;font-weight:800;font-size:16px;display:flex;justify-content:space-between;gap:15px}
+.faq-item button{color:var(--text);width:100%;padding:20px 4px;border:0;background:transparent;text-align:left;font-weight:800;font-size:16px;display:flex;justify-content:space-between;gap:15px}
 .faq-item button span{font-size:22px;color:var(--blue)}
 .faq-item p{color:var(--muted);line-height:1.7;padding:0 4px 20px}
 
 /* FINAL */
 .final{padding:90px 7%;text-align:center;background:linear-gradient(135deg,#eff6ff,#dbeafe)}
-.final h2{font-size:clamp(30px,4vw,44px);margin-bottom:15px}
+.final h2{color:var(--text);font-size:clamp(30px,4vw,44px);margin-bottom:15px}
 .final p{color:var(--muted);margin-bottom:25px}
 
 /* FOOTER */
