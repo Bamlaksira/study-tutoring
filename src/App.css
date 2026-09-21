@@ -29,7 +29,7 @@ a{text-decoration:none;color:inherit}
 .hero{min-height:650px;padding:80px 7%;display:flex;align-items:center;justify-content:space-between;gap:60px;background:linear-gradient(135deg,#eff6ff,#fff)}
 .hero-content{max-width:680px}
 .badge{display:inline-block;background:#dbeafe;color:#1d4ed8;padding:9px 15px;border-radius:30px;font-size:14px;font-weight:800;margin-bottom:22px}
-.hero h1{font-size:clamp(42px,6vw,68px);line-height:1.05;letter-spacing:-2px;margin-bottom:24px}
+.hero h1{color:var(--text);font-size:clamp(42px,6vw,68px);line-height:1.05;letter-spacing:-2px;margin-bottom:24px}
 .hero-content>p{font-size:18px;line-height:1.7;color:var(--muted);margin-bottom:25px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
 .chips span{background:white;border:1px solid #dbeafe;color:#334155;padding:8px 12px;border-radius:20px;font-size:13px;font-weight:700}
