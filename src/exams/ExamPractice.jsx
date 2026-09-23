@@ -766,6 +766,18 @@ export default function ExamPractice() {
           </section>
 
           <section style={styles.questionsSection}>
+{selectedProduct.passage && (
+  <div style={styles.passageBox}>
+    <h3 style={styles.passageTitle}>Reading Passage</h3>
+    <div style={styles.passageText}>
+      {selectedProduct.passage.split("\n").map((paragraph, index) => (
+        <p key={index}>
+          {paragraph}
+        </p>
+      ))}
+    </div>
+  </div>
+)}
             <div style={styles.questionsHeading}>
               <div>
                 <span style={styles.eyebrow}>
@@ -1657,7 +1669,25 @@ heroTitle: {
     display: 'grid',
     gap: '20px',
   },
+passageBox: {
+  background: '#f5f7fb',
+  border: '1px solid #d9e0ea',
+  borderRadius: '14px',
+  padding: '20px',
+  marginBottom: '24px',
+},
 
+passageTitle: {
+  margin: '0 0 14px',
+  color: '#172033',
+  fontSize: '20px',
+},
+
+passageText: {
+  color: '#172033',
+  lineHeight: '1.7',
+  fontSize: '15px',
+},
   questionsHeading: {
     color: '#172033',
     display: 'flex',
