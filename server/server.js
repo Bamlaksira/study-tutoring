@@ -65,6 +65,73 @@ const examPurchaseSchema = new mongoose.Schema(
 );
 
 const ExamPurchase = mongoose.model("ExamPurchase", examPurchaseSchema);
+const freeQuizLeadSchema = new mongoose.Schema(
+  {
+    studentName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    parentName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    parentPhone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    parentEmail: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    region: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    preferredLanguage: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    subject: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    score: {
+      type: Number,
+      required: true,
+    },
+    totalQuestions: {
+      type: Number,
+      required: true,
+    },
+    percentage: {
+      type: Number,
+      required: true,
+    },
+    marketingConsent: {
+      type: Boolean,
+      default: false,
+    },
+    marketingConsentAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  { timestamps: true }
+);
+
+const FreeQuizLead = mongoose.model("FreeQuizLead", freeQuizLeadSchema);
 const app = express();
 
 app.use(cors());
@@ -340,6 +407,71 @@ app.post("/api/exam-purchases", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to submit payment information.",
+    });
+  }
+});
+
+app.post("/api/free-quiz-leads", async (req, res) => {
+  try {
+    const {
+      studentName,
+      parentName,
+      parentPhone,
+      parentEmail,
+      region,
+      city,
+      preferredLanguage,
+      subject,
+      score,
+      totalQuestions,
+      percentage,
+      marketingConsent,
+    } = req.body;
+
+    if (
+      !studentName ||
+      !parentName ||
+      !parentPhone ||
+      !region ||
+      !city ||
+      !subject ||
+      score === undefined ||
+      totalQuestions === undefined ||
+      percentage === undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Please complete all required information.",
+      });
+    }
+
+    const lead = await FreeQuizLead.create({
+      studentName: studentName.trim(),
+      parentName: parentName.trim(),
+      parentPhone: parentPhone.trim(),
+      parentEmail: parentEmail?.trim() || "",
+      region: region.trim(),
+      city: city.trim(),
+      preferredLanguage: preferredLanguage?.trim() || "",
+      subject: subject.trim(),
+      score: Number(score),
+      totalQuestions: Number(totalQuestions),
+      percentage: Number(percentage),
+      marketingConsent: Boolean(marketingConsent),
+      marketingConsentAt: marketingConsent ? new Date() : null,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Quiz result saved successfully.",
+      leadId: lead._id,
+    });
+  } catch (error) {
+    console.error("Free quiz lead error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to save quiz result.",
     });
   }
 });
@@ -850,6 +982,35 @@ app.get("/api/leads", requireAdmin, async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Unable to retrieve leads.",
+    });
+  }
+});
+
+app.get("/api/free-quiz-leads", async (req, res) => {
+  try {
+    const adminKey = req.headers["x-admin-key"];
+
+    if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized.",
+      });
+    }
+
+    const leads = await FreeQuizLead.find()
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      leads,
+    });
+  } catch (error) {
+    console.error("Free quiz leads error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to load free quiz leads.",
     });
   }
 });

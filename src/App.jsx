@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './App.css'
 import Onboarding from './Onboarding'
-
+import Grade6Quiz from './quizzes/Grade6Quiz'
 const API = 'https://studycare-backend.onrender.com'
 const GUIDE = '/study-guide.pdf'
 const WHATSAPP = '251908075506'
@@ -150,7 +150,8 @@ function App() {
     finally{setLoading(false)}
   }
 
-  if(window.location.pathname==='/onboarding') return <Onboarding/>
+ if(window.location.pathname==='/onboarding') return <Onboarding/>
+if(window.location.pathname==='/grade-6-quiz') return <Grade6Quiz/>
 
   const score=Object.values(answers).reduce((a,v)=>a+v,0)
 
@@ -159,6 +160,8 @@ function App() {
       <a className="logo" href="#home">Study<span>Care</span></a>
       <button className="menu-btn" onClick={()=>setMenu(!menu)}>☰</button>
       <div className={`nav-links ${menu?'show':''}`}>
+<a href="/grade-6-quiz" onClick={()=>setMenu(false)}>Free Grade 6 Quiz</a>
+<a href="/exams" onClick={()=>setMenu(false)}>Exam Practice</a>
        <a href="#home">{t.navHome}</a><a href="#services">{t.navServices}</a><a href="#how">{t.navHow}</a><a href="#resources">{t.navResources}</a><a href="/exams" onClick={()=>setMenu(false)}>Exam Practice</a>
         <select value={language} onChange={e=>changeLanguage(e.target.value)}><option value="en">EN</option><option value="am">አማ</option></select>
       </div>
