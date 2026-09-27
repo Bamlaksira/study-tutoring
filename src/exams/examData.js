@@ -119,7 +119,7 @@ Using flashcards, practice tests, and self-quizzing can make review more effecti
         id: "g6science-1",
         order: 1,
         question:
-          "ለምሳሌ ሌማ ለሀይሌ ከ Friendship Park በስተደቡብ እንደሚገኝ ቢነግረው ይህ የትኛው የመገኛ ዓይነት ነው?",
+          "ለማ ለጓደኛው ሀይሌ ያለበትን ቦታ ከወዳጅነት ፓርክ  በስተደቡብ እገኛለሁ በማለት በስልክ ነገረው:: ይህ አይነቱ የመገኛ አገላለፅ ምን ይባላል?",
         options: ["ግምታዊ", "አንፃራዊ", "ፍፁማዊ", "የካርታ"],
         correctAnswer: "አንፃራዊ",
         explanation:
@@ -129,7 +129,7 @@ Using flashcards, practice tests, and self-quizzing can make review more effecti
         id: "g6science-2",
         order: 2,
         question:
-          "ከሚከተሉት ሀገራት ውስጥ የኢትዮጵያ ጎረቤት የሆነችው የትኛዋ ናት?",
+          "ከሚከተሉት ሀገራት ውስጥ የኢትዮጵያ አጎራባች የሆነችው የትኛዋ ናት?",
         options: ["ብሩንዲ", "ሩዋንዳ", "ታንዛኒያ", "ጅቡቲ"],
         correctAnswer: "ጅቡቲ",
         explanation:
@@ -139,7 +139,7 @@ Using flashcards, practice tests, and self-quizzing can make review more effecti
         id: "g6science-3",
         order: 3,
         question:
-          "የቲያ ሐውልቶች ፍፁማዊ መገኛ የትኛው ነው?",
+          "በኢትዬጵያ የጥያ ትክል ዲንጋይ ትክክለኛ ፍፁማዊ መገኛ የትኛው ነው?",
         options: [
           "8°25’58\" N, 38°36’35\" E",
           "9°25’58\" N, 38°36’35\" E",
