@@ -12,7 +12,7 @@ export const examProducts = [
       {
         id: "g6math-1",
         order: 1,
-        question: "የአንድ አራት ማዕዘን ርዝመት 4 ሜትር እና ስፋቱ 5 ሜትር ከሆነ ስፋቱ ስንት ነው?",
+        question: "የጎን ርዝመቱ 4ሜ ወርዱ 5ሜ የሆነ ሬክታንግል ስፋቱ ስንት ነው?",
         options: ["16 ካሬ ሜትር", "12 ካሬ ሜትር", "20 ካሬ ሜትር", "24 ካሬ ሜትር"],
         correctAnswer: "20 ካሬ ሜትር",
         explanation: "የአራት ማዕዘን ስፋት = ርዝመት × ስፋት = 4 × 5 = 20 ካሬ ሜትር።",
@@ -28,7 +28,7 @@ export const examProducts = [
       {
         id: "g6math-3",
         order: 3,
-        question: "ትክክለኛ የሆነው የክፍልፋይ ንፅፅር የቱ ነው?",
+        question: "ከሚከተሉት ንፅፅሮች ትክክለኛ የሁነው የቱ ነው? ",
         options: [
           "2/3 = 4/9",
           "1/2 < 1/3",
