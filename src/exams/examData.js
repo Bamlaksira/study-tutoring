@@ -4,7 +4,7 @@ export const examProducts = [
     grade: "Grade 6",
     subject: "Mathematics",
     title: "Grade 6 Mathematics Exam Practice",
-    price: 50,
+    price: 65,
     description:
       "Practice Grade 6 Mathematics questions with answers and explanations.",
     active: true,
@@ -12,76 +12,95 @@ export const examProducts = [
       {
         id: "g6math-1",
         order: 1,
-        question: "What is 25 + 37?",
-        options: ["52", "62", "72", "82"],
-        correctAnswer: "62",
-        explanation:
-          "25 + 37 = 62. Add the ones first: 5 + 7 = 12, then add the tens.",
+        question: "የአንድ አራት ማዕዘን ርዝመት 4 ሜትር እና ስፋቱ 5 ሜትር ከሆነ ስፋቱ ስንት ነው?",
+        options: ["16 ካሬ ሜትር", "12 ካሬ ሜትር", "20 ካሬ ሜትር", "24 ካሬ ሜትር"],
+        correctAnswer: "20 ካሬ ሜትር",
+        explanation: "የአራት ማዕዘን ስፋት = ርዝመት × ስፋት = 4 × 5 = 20 ካሬ ሜትር።",
       },
       {
         id: "g6math-2",
         order: 2,
-        question: "What is 8 × 7?",
-        options: ["54", "56", "64", "72"],
-        correctAnswer: "56",
-        explanation:
-          "8 × 7 = 56.",
+        question: "3 ሜ³ ስንት ሊትር ነው?",
+        options: ["3000 ሊትር", "300 ሊትር", "30 ሊትር", "30000 ሊትር"],
+        correctAnswer: "3000 ሊትር",
+        explanation: "1 ሜ³ = 1000 ሊትር። ስለዚህ 3 × 1000 = 3000 ሊትር።",
       },
       {
         id: "g6math-3",
         order: 3,
-        question: "What is 100 − 45?",
-        options: ["45", "50", "55", "65"],
-        correctAnswer: "55",
-        explanation:
-          "100 − 45 = 55.",
+        question: "ትክክለኛ የሆነው የክፍልፋይ ንፅፅር የቱ ነው?",
+        options: [
+          "2/3 = 4/9",
+          "1/2 < 1/3",
+          "4/3 > 5/3",
+          "1/5 = 3/15",
+        ],
+        correctAnswer: "1/5 = 3/15",
+        explanation: "1/5 እና 3/15 ተመጣጣኝ ክፍልፋዮች ናቸው።",
       },
-
     ],
   },
 
   {
-  id: "grade6-english",
-  grade: "Grade 6",
-  subject: "English",
-  title: "Grade 6 English Exam Practice",
-  price: 65,
-  description:
-    "Practice Grade 6 English questions with answers and explanations.",
-  active: true,
-  passage: `Effective Study Skills
-
+    id: "grade6-english",
+    grade: "Grade 6",
+    subject: "English",
+    title: "Grade 6 English Exam Practice",
+    price: 65,
+    description:
+      "Practice Grade 6 English questions with answers and explanations.",
+    active: true,
+    passage: `Effective Study Skills
 1 Effective study skills are essential for students to succeed in their academic pursuits. Developing good study habits starts with setting clear goals and creating a structured schedule. When students know what they need to learn and when they need to complete their tasks, they can manage their time more efficiently.
-
 2 It is also important to find a quiet, comfortable place to study where distractions are minimized. This helps students stay focused and retain information better. Additionally, active learning techniques such as taking notes, summarizing key points, and teaching the material to someone else can greatly enhance understanding and memory.
-
-3 Another key aspect of study skills is the use of different learning methods to suit individual needs. Some students may benefit from visual aids like diagrams or charts, while others may prefer listening to lectures or reading textbooks. It is important to experiment with various techniques to find what works best for each person. Regular review and practice are also crucial. Revisiting material periodically helps reinforce learning and prevents information from being forgotten. Using flashcards, practice tests, and self-quizzing can make review more effective and engaging.
-
+3 Another key aspect of study skills is the use of different learning methods to suit individual needs. Some students may benefit from visual aids like diagrams or charts, while others may prefer listening to lectures or reading textbooks. It is important to experiment with various techniques to find what works best for each person. Regular review and practice are also crucial. Revisiting material periodically helps reinforce learning and prevents information from being forgotten.
+Using flashcards, practice tests, and self-quizzing can make review more effective and engaging.
 4 Finally, maintaining a healthy lifestyle is an important part of developing strong study skills. Adequate sleep, proper nutrition, and regular exercise contribute to better concentration and overall well-being. Students who take care of their physical and mental health are more likely to stay motivated and perform well in their studies. By combining effective study strategies with a balanced lifestyle, students can achieve their academic goals and build a foundation for lifelong learning.`,
-  questions: [
+    questions: [
       {
         id: "g6eng-1",
         order: 1,
-        question: "According to the passage, which one of the following is Not Correct?",
-        options: ["Developing good study habits starts with setting clear goals.","A healthy life style is part of effective study skills.","Effective study skills include finding a quiet and comfortable place.","Distractions are parts of effective study skills."],
+        question:
+          "According to the passage, which one of the following is Not Correct?",
+        options: [
+          "Developing good study habits starts with setting clear goals.",
+          "A healthy life style is part of effective study skills.",
+          "Effective study skills include finding a quiet and comfortable place.",
+          "Distractions are parts of effective study skills.",
+        ],
         correctAnswer: "Distractions are parts of effective study skills.",
-        explanation: "The passage says that distractions should be minimized because a quiet place helps students stay focused. Therefore, distractions are not a part of effective study skills.",
+        explanation:
+          "The passage says that distractions should be minimized because a quiet place helps students stay focused. Therefore, distractions are not a part of effective study skills.",
       },
       {
         id: "g6eng-2",
         order: 2,
-        question: "In the passage, which one is not mentioned as an active learning method?",
-        options: ["Taking notes","Simply listening to the teacher","Teaching materials to other people","Summarizing key points"],
+        question:
+          "In the passage, which one is not mentioned as an active learning method?",
+        options: [
+          "Taking notes",
+          "Simply listening to the teacher",
+          "Teaching materials to other people",
+          "Summarizing key points",
+        ],
         correctAnswer: "Simply listening to the teacher",
-        explanation: "The passage specifically mentions taking notes, summarizing key points, and teaching the material to someone else. Simply listening to the teacher is not mentioned as an active learning technique.",
+        explanation:
+          "The passage specifically mentions taking notes, summarizing key points, and teaching the material to someone else. Simply listening to the teacher is not mentioned as an active learning technique.",
       },
       {
         id: "g6eng-3",
         order: 3,
         question: "What is the main idea of paragraph 2?",
-        options: ["The use of different suitable learning methods","The importance of revisiting learning materials","The importance of setting goals and studying schedule","The importance of finding quiet and appropriate place to study"],
-        correctAnswer: "The importance of finding quiet and appropriate place to study",
-        explanation: "Paragraph 2 explains the importance of having a quiet, comfortable place with fewer distractions. It also explains how this improves concentration and memory.",
+        options: [
+          "The use of different suitable learning methods",
+          "The importance of revisiting learning materials",
+          "The importance of setting goals and studying schedule",
+          "The importance of finding quiet and appropriate place to study",
+        ],
+        correctAnswer:
+          "The importance of finding quiet and appropriate place to study",
+        explanation:
+          "Paragraph 2 explains the importance of having a quiet, comfortable place with fewer distractions. It also explains how this improves concentration and memory.",
       },
     ],
   },
@@ -89,13 +108,49 @@ export const examProducts = [
   {
     id: "grade6-science",
     grade: "Grade 6",
-    subject: "General Science",
-    title: "Grade 6 General Science Exam Practice",
-    price: 50,
+    subject: "አካባቢ ሳይንስ",
+    title: "Grade 6 አካባቢ ሳይንስ Exam Practice",
+    price: 65,
     description:
-      "Practice Grade 6 General Science questions with answers and explanations.",
+      "Practice Grade 6 አካባቢ ሳይንስ questions with answers and explanations.",
     active: true,
-    questions: [],
+    questions: [
+      {
+        id: "g6science-1",
+        order: 1,
+        question:
+          "ለምሳሌ ሌማ ለሀይሌ ከ Friendship Park በስተደቡብ እንደሚገኝ ቢነግረው ይህ የትኛው የመገኛ ዓይነት ነው?",
+        options: ["ግምታዊ", "አንፃራዊ", "ፍፁማዊ", "የካርታ"],
+        correctAnswer: "አንፃራዊ",
+        explanation:
+          "አንፃራዊ መገኛ አንድን ቦታ ከሌላ ቦታ ጋር በማዛመድ የሚገልጽ ነው።",
+      },
+      {
+        id: "g6science-2",
+        order: 2,
+        question:
+          "ከሚከተሉት ሀገራት ውስጥ የኢትዮጵያ ጎረቤት የሆነችው የትኛዋ ናት?",
+        options: ["ብሩንዲ", "ሩዋንዳ", "ታንዛኒያ", "ጅቡቲ"],
+        correctAnswer: "ጅቡቲ",
+        explanation:
+          "ጅቡቲ ከኢትዮጵያ ጋር የምትዋሰን የጎረቤት ሀገር ናት።",
+      },
+      {
+        id: "g6science-3",
+        order: 3,
+        question:
+          "የቲያ ሐውልቶች ፍፁማዊ መገኛ የትኛው ነው?",
+        options: [
+          "8°25’58\" N, 38°36’35\" E",
+          "9°25’58\" N, 38°36’35\" E",
+          "8°25’58\" N, 39°36’35\" E",
+          "7°25’58\" N, 38°36’35\" E",
+        ],
+        correctAnswer: "8°25’58\" N, 38°36’35\" E",
+        explanation:
+          "ፍፁማዊ መገኛ ቦታን በኬክሮስና ኬንትሮስ መጋጠሚያ የሚገልጽ ነው።",
+      },
+    ],
   },
 
   {
