@@ -5,33 +5,37 @@ const subjects = [
     id: "amharic",
     name: "Amharic",
     amharic: "አማርኛ",
-    pdf: "/model-exams/2015/amharic.pdf",
   },
   {
     id: "mathematics",
     name: "Mathematics",
     amharic: "ሂሳብ",
-    pdf: "/model-exams/2015/mathematics.pdf",
   },
   {
     id: "english",
     name: "English",
     amharic: "እንግሊዝኛ",
-    pdf: "/model-exams/2015/english.pdf",
   },
   {
     id: "science",
     name: "Environmental Science",
     amharic: "አካባቢ ሳይንስ",
-    pdf: "/model-exams/2015/science.pdf",
   },
   {
     id: "civics",
     name: "Civics",
     amharic: "ግብረ ገብ",
-    pdf: null,
   },
 ];
+
+const availableYears = [2015, 2016, 2017, 2018];
+
+const availableSubjectsByYear = {
+  2015: ["amharic", "mathematics", "english", "science"],
+  2016: ["amharic", "mathematics", "english", "science", "civics"],
+  2017: ["amharic", "mathematics", "english", "science", "civics"],
+  2018: ["amharic", "mathematics", "science", "civics"],
+};
 
 function ModelExams() {
   const path = window.location.pathname;
@@ -42,46 +46,17 @@ function ModelExams() {
 
   const subject = subjects.find((item) => item.id === subjectId);
 
+  const isSubjectAvailable =
+    year &&
+    subject &&
+    availableSubjectsByYear[year]?.includes(subject.id);
+
+  const subjectPdf = isSubjectAvailable
+    ? `/model-exams/${year}/${subject.id}.pdf`
+    : null;
+
   // Subject page
   if (year && subjectId && subject) {
-    if (!subject.pdf) {
-      return (
-        <div style={styles.page}>
-          <header style={styles.header}>
-            <a href="/model-exams" style={styles.logo}>
-              StudyCare
-            </a>
-          </header>
-
-          <main style={styles.container}>
-            <a href={`/model-exams/${year}`} style={styles.back}>
-              ← Back to {year} Model Exams
-            </a>
-
-            <div style={styles.centerBox}>
-              <div style={styles.bigIcon}>📚</div>
-
-              <h1>
-                Grade 6 {subject.name}
-              </h1>
-
-              <p style={styles.muted}>
-                {subject.amharic}
-              </p>
-
-              <p>
-                The {year} Civics model exam will be available soon.
-              </p>
-
-              <a href="/exams" style={styles.button}>
-                Practice Ministry Exams
-              </a>
-            </div>
-          </main>
-        </div>
-      );
-    }
-
     return (
       <div style={styles.page}>
         <header style={styles.header}>
@@ -95,54 +70,82 @@ function ModelExams() {
             ← Back to {year} Model Exams
           </a>
 
-          <div style={styles.center}>
-            <div style={styles.year}>{year}</div>
+          {!isSubjectAvailable ? (
+            <div style={styles.centerBox}>
+              <div style={styles.bigIcon}>📄</div>
 
-            <h1>
-              Grade 6 {subject.name}
-            </h1>
+              <div style={styles.year}>{year}</div>
 
-            <p style={styles.muted}>
-              {subject.amharic}
-            </p>
+              <h1>Grade 6 {subject.name}</h1>
 
-            <p style={styles.description}>
-              Free Grade 6 {subject.name} model exam.
-            </p>
-          </div>
+              <p style={styles.muted}>{subject.amharic}</p>
 
-          <div style={styles.pdfContainer}>
-            <iframe
-              src={subject.pdf}
-              title={`${year} Grade 6 ${subject.name} Model Exam`}
-              style={styles.pdf}
-            />
-          </div>
+              <p style={styles.description}>
+                The {year} Grade 6 {subject.name} model exam is not available
+                yet.
+              </p>
 
-          <div style={styles.download}>
-            <a href={subject.pdf} download style={styles.outlineButton}>
-              Download PDF
-            </a>
-          </div>
+              <p style={styles.muted}>
+                Please check back later for this subject.
+              </p>
 
-          {/* Promotion after the free exam */}
-          <section style={styles.promotion}>
-            <div style={styles.bigIcon}>🎯</div>
+              <a
+                href={`/model-exams/${year}`}
+                style={styles.button}
+              >
+                Back to {year} Exams
+              </a>
+            </div>
+          ) : (
+            <>
+              <div style={styles.center}>
+                <div style={styles.year}>{year}</div>
 
-            <h2>
-              Finished the Free Model Exam?
-            </h2>
+                <h1>Grade 6 {subject.name}</h1>
 
-            <p>
-              Ready to prepare more seriously for the Grade 6 Ministry Exam?
-              Continue your preparation with StudyCare's Grade 6 Ministry
-              Exam Practice.
-            </p>
+                <p style={styles.muted}>{subject.amharic}</p>
 
-            <a href="/exams" style={styles.lightButton}>
-              Practice the Ministry Exam →
-            </a>
-          </section>
+                <p style={styles.description}>
+                  Free Grade 6 {subject.name} model exam from {year}.
+                </p>
+              </div>
+
+              <div style={styles.pdfContainer}>
+                <iframe
+                  src={subjectPdf}
+                  title={`${year} Grade 6 ${subject.name} Model Exam`}
+                  style={styles.pdf}
+                />
+              </div>
+
+              <div style={styles.download}>
+                <a
+                  href={subjectPdf}
+                  download
+                  style={styles.outlineButton}
+                >
+                  Download PDF
+                </a>
+              </div>
+
+              {/* Promotion after the free exam */}
+              <section style={styles.promotion}>
+                <div style={styles.bigIcon}>🎯</div>
+
+                <h2>Finished the Free Model Exam?</h2>
+
+                <p>
+                  Ready to prepare more seriously for the Grade 6 Ministry
+                  Exam? Continue your preparation with StudyCare's Grade 6
+                  Ministry Exam Practice.
+                </p>
+
+                <a href="/exams" style={styles.lightButton}>
+                  Practice the Ministry Exam →
+                </a>
+              </section>
+            </>
+          )}
         </main>
       </div>
     );
@@ -150,6 +153,8 @@ function ModelExams() {
 
   // Year page
   if (year) {
+    const yearSubjects = availableSubjectsByYear[year] || [];
+
     return (
       <div style={styles.page}>
         <header style={styles.header}>
@@ -174,48 +179,48 @@ function ModelExams() {
           </div>
 
           <div style={styles.grid}>
-            {subjects.map((item) => (
-              <div key={item.id} style={styles.card}>
-                <div style={styles.cardIcon}>📄</div>
+            {subjects.map((item) => {
+              const isAvailable = yearSubjects.includes(item.id);
 
-                <h2>{item.name}</h2>
+              return (
+                <div key={item.id} style={styles.card}>
+                  <div style={styles.cardIcon}>📄</div>
 
-                <p style={styles.muted}>
-                  {item.amharic}
-                </p>
+                  <h2>{item.name}</h2>
 
-                {item.pdf ? (
-                  <>
-                    <p style={styles.available}>
-                      Free model exam available
-                    </p>
+                  <p style={styles.muted}>{item.amharic}</p>
 
-                    <a
-                      href={`/model-exams/${year}/${item.id}`}
-                      style={styles.button}
-                    >
-                      Open Exam
-                    </a>
-                  </>
-                ) : (
-                  <>
-                    <p style={styles.comingSoon}>
-                      Coming soon
-                    </p>
+                  {isAvailable ? (
+                    <>
+                      <p style={styles.available}>
+                        Free model exam available
+                      </p>
 
-                    <span style={styles.disabled}>
-                      Not Available Yet
-                    </span>
-                  </>
-                )}
-              </div>
-            ))}
+                      <a
+                        href={`/model-exams/${year}/${item.id}`}
+                        style={styles.button}
+                      >
+                        Open Exam
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <p style={styles.comingSoon}>
+                        Coming soon
+                      </p>
+
+                      <span style={styles.disabled}>
+                        Not Available Yet
+                      </span>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           <section style={styles.bottomPromotion}>
-            <h2>
-              Want more Grade 6 exam practice?
-            </h2>
+            <h2>Want more Grade 6 exam practice?</h2>
 
             <p>
               StudyCare also provides Grade 6 Ministry Exam Practice with
@@ -257,15 +262,23 @@ function ModelExams() {
         </h2>
 
         <div style={styles.yearGrid}>
-          <a href="/model-exams/2015" style={styles.yearCard}>
-            <strong>2015</strong>
+          {availableYears.map((item) => (
+            <a
+              key={item}
+              href={`/model-exams/${item}`}
+              style={styles.yearCard}
+            >
+              <strong style={styles.yearCardStrong}>
+                {item}
+              </strong>
 
-            <span>
-              Grade 6 Model Exams
-            </span>
+              <span>
+                Grade 6 Model Exams
+              </span>
 
-            <span style={styles.arrow}>→</span>
-          </a>
+              <span style={styles.arrow}>→</span>
+            </a>
+          ))}
         </div>
 
         <section style={styles.bottomPromotion}>
