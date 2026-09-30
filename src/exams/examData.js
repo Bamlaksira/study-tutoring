@@ -1,5 +1,52 @@
 export const examProducts = [
   {
+  id: "grade6-amharic",
+  grade: "Grade 6",
+  subject: "አማርኛ",
+  title: "Grade 6 አማርኛ Exam Practice",
+  price: 65,
+  description:
+    "Practice Grade 6 አማርኛ questions with answers and explanations.",
+  active: true,
+  questions: [
+    {
+      id: "g6amharic-1",
+      order: 1,
+      question:
+        "በምንባቡ መሰረት “ጥውልግ ብዬ” የሚለው ሀረግ አውዳዊ ፍቺው ምንድነው?",
+      options: ["ደክሜ", "ታምሜ", "ሰንፌ", "ወድቄ"],
+      correctAnswer: "ደክሜ",
+      explanation:
+        "በምንባቡ ውስጥ “ጥውልግ ብዬ” የሚለው ቃል በድካም ምክንያት መዛልንና አቅም ማጣትን ስለሚገልጽ አውዳዊ ፍቺው “ደክሜ” የሚለው ነው።",
+    },
+    {
+      id: "g6amharic-2",
+      order: 2,
+      question:
+        "በምንባቡ ውስጥ “ዳታን” የሚለው ቃል አውዳዊ ፍቺው ምንድነው?",
+      options: ["ጠረጴዛ", "ምጣድ", "ትሪ", "ድስት"],
+      correctAnswer: "ትሪ",
+      explanation:
+        "ምግብ ተደርጎበት የሚቀርብበትን ዕቃ ስለሚያመለክት ከቀረቡት አማራጮች “ትሪ” የሚለው ይስማማል።",
+    },
+    {
+      id: "g6amharic-3",
+      order: 3,
+      question:
+        "ከላይ የቀረበው ምንባብ ዋነኛ መልዕክቱ (ጭብጡ) ምንድነው?",
+      options: [
+        "ስስት",
+        "የመታቀፍ መድኃኒትነት",
+        "መጎሳቆል",
+        "የቤተሰብ ፍቅር",
+      ],
+      correctAnswer: "የቤተሰብ ፍቅር",
+      explanation:
+        "ምንባቡ በዋናው ገጸ-ባህሪ እና በአክስቱ መካከል ያለውን ጠበቀ ትስስር፣ መተሳሰብና ጥልቅ ፍቅር ያሳያል።",
+    },
+  ],
+},
+  {
     id: "grade6-mathematics",
     grade: "Grade 6",
     subject: "Mathematics",
