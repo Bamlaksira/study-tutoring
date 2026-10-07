@@ -1,4 +1,61 @@
 export const examProducts = [
+    {
+  id: "grade6-2016-english",
+  grade: "Grade 6",
+  subject: "english",
+  title: "Grade 6 2016 english Ministry Exam",
+  price: 65,
+  description:
+    "Practice the 2016 Grade 6 english Ministry Exam with answers and explanations.",
+  active: true,
+  questions: [
+    {
+      id: 1,
+      order: 1,
+      passage:`Healthy Drinks
+
+Drinking healthy beverages is just as important as eating healthy foods. Water is the best drink for our bodies because it keeps us hydrated and helps our organs work properly. It is important to drink plenty of water throughout the day, especially when we are playing or being active.
+
+Another healthy drink option is milk. Milk is rich in Calcium, which helps us have strong bones and teeth. It also provides us with protein and vitamins. Sometimes we may want something more sweetly. In this case, we can choose 100% fruit juice. Fruit juice contains natural sugars and vitamins`
+,
+      question: "What is the best drink for our body?",
+      options: [
+        "A.	Milk",
+        "B.	Juice",
+        "C.	Water",
+        "D.	Beer"
+      ],
+      correctAnswer: "C",
+      explanation: "The passage explicitly states that “Water is the best drink for our bodies” because it keeps the body hydrated and helps organs work properly."
+    },
+    {
+      id: 2,
+      order: 2,
+      question: "	When do we need to drink water?",
+      options: [
+        "A.	When we sleep",
+        "B.	When we exercise",
+        "C.	When we eat",
+        "D.	When we sit"
+      ],
+      correctAnswer: "B",
+      explanation: "The text mentions that it is important to drink water especially when “playing or being active,” which is synonymous with exercising."
+    },
+    {
+      id: 3,
+      order: 3,
+      question: "How many healthy drinks are told in the passage?",
+      options: [
+        "A.	One",
+        "B.	Two",
+        "C.	Three",
+        "D.	Four"
+      ],
+      correctAnswer: "C",
+      explanation: "The passage describes three specific healthy options: water, milk, and 100% fruit juice."
+    }
+  ]
+},
   {
   id: "grade6-2016-amharic",
   grade: "Grade 6",
@@ -80,11 +137,7 @@ export const examProducts = [
     {
       id: "g6amharic-2",
       order: 2,
-      passage: `ምንባብ እንድ
-
-ከዕለታት አንድ ቀን ፍሬው እንደተሸለቀቀበት የበቶለ‐ አገዳ ጥውልግ ብዬ አክስቴን ልጠይቃት ሄድሁ። አክስቴ የሺሀረግ አለማሁ ትባላለች፡፡ ሲበዛ ቅን፤ የመስጠት ጌታ ናት፡፡ ቤቷ ጭንቁርቁስ ያለ፤ ዕቃዎቿ ቢሽጡ ቢለወጡ ከጥቂት ብሮች የማይበልጡ ናቸው። እክስቴ የሺሀረግ ፊቷ ግን ብርት ያለ ነው፤ ሰላም የሰፈነበት፡፡ ዐይኗ በቅንነት የተሞላ። እዚህ ቤት’ ብዬ ጠዋት ተከፍቶ ማታ የሚዘጋውን በሯን አልፌ ገባሁ፡፡ “ኧረ ወይ ለሊቱ - ፍቅሩ?”
-
-“እክስቴ! እኔ ነኞ አልኳት፡፡ አገላብጣ ስማኝ! እኔ አፈር ልሁን አንተማ አይደለህም! ጥቁርቁር ብለህ፤ አመድህ ቡን ብሎ ብላ እቅፍ አደረገች’ዩ፡ መታቀፍ መድኃኒት መሆኑን ያወቅሁት ያኔ ነው፤ እክስቴ የሺሀረግ ዕንባዋን በነጠላዋ እየጠረገች አጠገቤ ቁጭ አለች፡፡ ትከሻዋ ላይ ራሴን ደገፍ አድርጌ በሁለት እጆቹ አቀፍኋት፡፡ ፍቅሯ፣ ሰላሟ ከሞቃት ወደ ቀዝቃዛ እንደሚፈስ ውሃ በመላ ሰውነቴ ሲፈስ ይሰማኛል። ከዚያ ቆይ እንድ ጊዜ ብላኝ በስሎ የሚንፈቀፈቀውን ድንች ከጣደችበት ምድጃ አወጣችና ዳታን ላይ እንጀራና እዋዜ አድርጋ አቀረበችው፡፡ በስስት ዐይን ዐይኔን እያየች ወዲያው ወዲያው እየላጠች እጎረሰችኝ።...`,
+      
 
       question:
         "በምንባቡ ውስጥ “ዳታን” የሚለው ቃል አውዳዊ ፍቺው ምንድነው?",
@@ -97,11 +150,7 @@ export const examProducts = [
     {
       id: "g6amharic-3",
       order: 3,
-      passage: `ምንባብ እንድ
-
-ከዕለታት አንድ ቀን ፍሬው እንደተሸለቀቀበት የበቶለ‐ አገዳ ጥውልግ ብዬ አክስቴን ልጠይቃት ሄድሁ። አክስቴ የሺሀረግ አለማሁ ትባላለች፡፡ ሲበዛ ቅን፤ የመስጠት ጌታ ናት፡፡ ቤቷ ጭንቁርቁስ ያለ፤ ዕቃዎቿ ቢሽጡ ቢለወጡ ከጥቂት ብሮች የማይበልጡ ናቸው። እክስቴ የሺሀረግ ፊቷ ግን ብርት ያለ ነው፤ ሰላም የሰፈነበት፡፡ ዐይኗ በቅንነት የተሞላ። እዚህ ቤት’ ብዬ ጠዋት ተከፍቶ ማታ የሚዘጋውን በሯን አልፌ ገባሁ፡፡ “ኧረ ወይ ለሊቱ - ፍቅሩ?”
-
-“እክስቴ! እኔ ነኞ አልኳት፡፡ አገላብጣ ስማኝ! እኔ አፈር ልሁን አንተማ አይደለህም! ጥቁርቁር ብለህ፤ አመድህ ቡን ብሎ ብላ እቅፍ አደረገች’ዩ፡ መታቀፍ መድኃኒት መሆኑን ያወቅሁት ያኔ ነው፤ እክስቴ የሺሀረግ ዕንባዋን በነጠላዋ እየጠረገች አጠገቤ ቁጭ አለች፡፡ ትከሻዋ ላይ ራሴን ደገፍ አድርጌ በሁለት እጆቹ አቀፍኋት፡፡ ፍቅሯ፣ ሰላሟ ከሞቃት ወደ ቀዝቃዛ እንደሚፈስ ውሃ በመላ ሰውነቴ ሲፈስ ይሰማኛል። ከዚያ ቆይ እንድ ጊዜ ብላኝ በስሎ የሚንፈቀፈቀውን ድንች ከጣደችበት ምድጃ አወጣችና ዳታን ላይ እንጀራና እዋዜ አድርጋ አቀረበችው፡፡ በስስት ዐይን ዐይኔን እያየች ወዲያው ወዲያው እየላጠች እጎረሰችኝ።...`,
+      
 
       question:
         "ከላይ የቀረበው ምንባብ ዋነኛ መልዕክቱ (ጭብጡ) ምንድነው?",
