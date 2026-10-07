@@ -4,8 +4,8 @@ import { EXAM_GRADES, getProductsByGrade } from "./examData";
 const FREE_QUESTIONS = 3;
 const API_URL = "https://studycare-backend.onrender.com";
 
-const CBE_ACCOUNT_NAME = "StudyCare";
-const CBE_ACCOUNT_NUMBER = "1000";
+const CBE_ACCOUNT_NAME = "Bamlaksira Abebe";
+const CBE_ACCOUNT_NUMBER = "1000385393257";
 
 const YEARS = ["2016", "2017", "2018"];
 
