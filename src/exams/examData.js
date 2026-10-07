@@ -1,6 +1,6 @@
 export const examProducts = [
   {
-  id: "grade6-english",
+  id: "grade6-2017-english",
   grade: "Grade 6",
   subject: "English",
   title: "Grade 6 2018 English Ministry Exam",

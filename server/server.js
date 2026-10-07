@@ -574,7 +574,7 @@ app.post("/api/exam-purchases/check-access", async (req, res) => {
 // ===============================
 
 const paidExamQuestions = {
-  "g6english":[
+  "grade-6-2017 english":[
   {
   id: "g6english-4",
   order: 4,
@@ -1107,7 +1107,7 @@ const paidExamQuestions = {
     'A compound sentence joins two independent clauses with a comma and a coordinating conjunction. Option C uses "and" correctly.'
 },
   ],
-  "grade6-science": [
+  "grade6-2017-science": [
   {
     id: "grade6-science-4",
     order: 4,
