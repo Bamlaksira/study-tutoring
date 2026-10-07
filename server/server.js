@@ -1,9 +1,20 @@
 const express = require("express");
 const cors = require("cors");
-const mongoose = require("mongoose");
-const examPurchaseSchema = new mongoose.Schema(
+const mongoose = require("mongoose");const examPurchaseSchema = new mongoose.Schema(
   {
     customerName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    studentName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    parentName: {
       type: String,
       required: true,
       trim: true,
@@ -19,6 +30,24 @@ const examPurchaseSchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: "",
+    },
+
+    grade: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    preferredLanguage: {
+      type: String,
+      required: true,
+      trim: true,
     },
 
     productId: {
@@ -349,23 +378,33 @@ const Lead = mongoose.model("Lead", leadSchema);
 app.post("/api/exam-purchases", async (req, res) => {
   try {
     const {
-      customerName,
-      phone,
-      email,
-      productId,
-      productName,
-      amount,
-      transactionReference,
-    } = req.body;
+  customerName,
+  studentName,
+  parentName,
+  phone,
+  email,
+  grade,
+  city,
+  preferredLanguage,
+  productId,
+  productName,
+  amount,
+  transactionReference,
+} = req.body;
 
     if (
-      !customerName ||
-      !phone ||
-      !productId ||
-      !productName ||
-      !amount ||
-      !transactionReference
-    ) {
+  !customerName ||
+  !studentName ||
+  !parentName ||
+  !phone ||
+  !grade ||
+  !city ||
+  !preferredLanguage ||
+  !productId ||
+  !productName ||
+  !amount ||
+  !transactionReference
+) {
       return res.status(400).json({
         success: false,
         message: "Please provide all required payment information.",
@@ -384,16 +423,21 @@ app.post("/api/exam-purchases", async (req, res) => {
     }
 
     const purchase = await ExamPurchase.create({
-      customerName: customerName.trim(),
-      phone: phone.trim(),
-      email: email ? email.trim() : "",
-      productId,
-      productName,
-      amount,
-      transactionReference: transactionReference.trim(),
-      paymentStatus: "Pending",
-      accessStatus: "Locked",
-    });
+  customerName: customerName.trim(),
+  studentName: studentName.trim(),
+  parentName: parentName.trim(),
+  phone: phone.trim(),
+  email: email ? email.trim() : "",
+  grade: grade.trim(),
+  city: city.trim(),
+  preferredLanguage: preferredLanguage.trim(),
+  productId,
+  productName,
+  amount,
+  transactionReference: transactionReference.trim(),
+  paymentStatus: "Pending",
+  accessStatus: "Locked",
+});
 
     res.status(201).json({
       success: true,
@@ -530,6 +574,503 @@ app.post("/api/exam-purchases/check-access", async (req, res) => {
 // ===============================
 
 const paidExamQuestions = {
+  "grade6-2016-amharic": [
+  {
+    id: 4,
+    order: 4,
+    question: "“ውጤት-ኣማ-ነት-ም” በትክክል ሲጻፍ የቱ ነው?",
+    options: [
+      "ሀ. ውጤትአማነትም",
+      "ለ. ውጤታ-ማነትም",
+      "ሐ. ውጤት-አማነት",
+      "መ. ውጤታማነትም"
+    ],
+    correctAnswer: "መ",
+    explanation: "“ውጤት-ኣማ-ነት-ም” በትክክል “ውጤታማነትም” ይሆናል።"
+  },
+  {
+    id: 5,
+    order: 5,
+    question: "“ደራ” የሚለው ቃል ተቃራኒ ፍቺ የቱ ነው?",
+    options: [
+      "ሀ. ቀዘቀዘ",
+      "ለ. ሞቀ",
+      "ሐ. ፈሰሰ",
+      "መ. ተንቀሳቀሰ"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "“ደራ” የሚለው ቃል ተቃራኒ ፍቺ “ቀዘቀዘ” ነው።"
+  },
+  {
+    id: 6,
+    order: 6,
+    question: "“ታረስ” የሚለው ቃል ቀጥተኛ ፍቺ የቱ ነው?",
+    options: [
+      "ሀ. ተዘራ",
+      "ለ. ተሰበሰበ",
+      "ሐ. እማሬያዊ",
+      "መ. ተቆፈረ"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "በተሰጠው አውድ የቃሉ ቀጥተኛ ፍቺ እማሬያዊ ነው።"
+  },
+  {
+    id: 7,
+    order: 7,
+    question: "“ዓይን” በምሳሌያዊ ፍቺ ሲጠቀም ምን ማለት ይችላል?",
+    options: [
+      "ሀ. እይታ",
+      "ለ. ዋና",
+      "ሐ. ፊት",
+      "መ. እውቀት"
+    ],
+    correctAnswer: "ለ",
+    explanation: "በተሰጠው አውድ “ዓይን” በምሳሌያዊ ፍቺ “ዋና” ማለት ነው።"
+  },
+  {
+    id: 8,
+    order: 8,
+    question: "“ልብስ” በተሰጠው አውድ ትክክለኛው ንባብ የቱ ነው?",
+    options: [
+      "ሀ. ልበስ",
+      "ለ. ልብስ",
+      "ሐ. ልብሰ",
+      "መ. ጠብቆ"
+    ],
+    correctAnswer: "መ",
+    explanation: "በተሰጠው አውድ ትክክለኛው መልስ “ጠብቆ” ነው።"
+  },
+  {
+    id: 9,
+    order: 9,
+    question: "“የህጻናትን” በቅርጸ ቃል ትክክለኛው ክፍፍል የቱ ነው?",
+    options: [
+      "ሀ. የ-ህጻናት-ን",
+      "ለ. የ-ህጻን-ኣት-ን",
+      "ሐ. የህጻን-ኣት-ን",
+      "መ. የ-ህጻን-ን"
+    ],
+    correctAnswer: "ለ",
+    explanation: "“የህጻናትን” በቅርጸ ቃል የ-ህጻን-ኣት-ን ተብሎ ይከፋፈላል።"
+  },
+  {
+    id: 10,
+    order: 10,
+    question: "“በየቤታችን” ውስጥ ነጻ ሞርፊም የቱ ነው?",
+    options: [
+      "ሀ. ቤት",
+      "ለ. በየ",
+      "ሐ. ኣችን",
+      "መ. በ"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "“ቤት” በራሱ ትርጉም የሚሰጥ ነጻ ሞርፊም ነው።"
+  },
+
+  {
+    id: 11,
+    order: 11,
+    question: "ለሚከተለው ንባብ ተስማሚ ርዕስ የቱ ነው?",
+    options: [
+      "ሀ. የሰው ልጅ ስኬት",
+      "ለ. የጤናማ አእምሮ ጥቅም",
+      "ሐ. የሀሳብ ጉልበት",
+      "መ. የሕይወት ችግሮች"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "ንባቡ የሰው ሀሳብ በስሜት፣ በስብዕና እና በሕይወት ላይ ያለውን ተፅዕኖ ስለሚያብራራ ተስማሚው ርዕስ “የሀሳብ ጉልበት” ነው።"
+  },
+  {
+    id: 12,
+    order: 12,
+    question: "እንደ ንባቡ አባባል የትኛው አስተሳሰብ ብሩህ ተስፋና ተነሳሽነት እንዲፈጠር ያደርጋል?",
+    options: [
+      "ሀ. አሉታዊ ማሰብ",
+      "ለ. ጨለምተኛ ማሰብ",
+      "ሐ. ተዛብቶ ማሰብ",
+      "መ. በጎ ማሰብ"
+    ],
+    correctAnswer: "መ",
+    explanation: "በጎ ሀሳብ ብሩህ ተስፋና ተነሳሽነት እንዲፈጠር ያደርጋል።"
+  },
+  {
+    id: 13,
+    order: 13,
+    question: "እንደ ንባቡ አባባል ለአሉታዊ ስሜት መፈጠር ምክንያት የሚሆነው ምንድነው?",
+    options: [
+      "ሀ. በጎ ሀሳብ",
+      "ለ. አሉታዊ ሀሳብ",
+      "ሐ. ብሩህ ተስፋ",
+      "መ. ተነሳሽነት"
+    ],
+    correctAnswer: "ለ",
+    explanation: "አሉታዊ ሀሳብ ለአሉታዊ ስሜት መፈጠር ምክንያት ነው።"
+  },
+  {
+    id: 14,
+    order: 14,
+    question: "የንባቡ ዋና ሀሳብ ምንድነው?",
+    options: [
+      "ሀ. የሰው ልጅ የሀሳቡ ውጤት መሆኑን ማሳየት",
+      "ለ. የሰው ልጅ የሰውነት ጤናን ማሳየት",
+      "ሐ. የሰው ልጅ የስራ ችሎታን ማሳየት",
+      "መ. የሰው ልጅ የሀብት ሁኔታን ማሳየት"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "ንባቡ ሰው ልጅ በሚያስበው ሀሳብ እና አስተሳሰብ የሚመራ መሆኑን ያሳያል።"
+  },
+  {
+    id: 15,
+    order: 15,
+    question: "“ጨለምተኛ” የሚለው ቃል በንባቡ አውድ የቱን ፍቺ ይወክላል?",
+    options: [
+      "ሀ. ተስፈኛ",
+      "ለ. ደስተኛ",
+      "ሐ. ተነሳሽ",
+      "መ. ተስፋ አስቆራጭ"
+    ],
+    correctAnswer: "መ",
+    explanation: "“ጨለምተኛ” በአውዱ ተስፋ አስቆራጭ የሚለውን ሀሳብ ይወክላል።"
+  },
+  {
+    id: 16,
+    order: 16,
+    question: "“ወደ ስኬትም ያደርሳል” በሚለው አረፍተ ነገር “ያደርሳል” የሚያመለክተው ምንድነው?",
+    options: [
+      "ሀ. ምክንያት",
+      "ለ. ሀሳብ",
+      "ሐ. ውጤት",
+      "መ. ስሜት"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "በዚህ አውድ “ውጤት” የሚለው መልስ ትክክል ነው።"
+  },
+
+  {
+    id: 17,
+    order: 17,
+    question: "የሚከተለው ዓረፍተ ነገር የትኛውን የጽሑፍ ዘዴ ይወክላል?",
+    options: [
+      "ሀ. በአመዛዛኝ",
+      "ለ. በተረክ",
+      "ሐ. በገላጭ",
+      "መ. በትንተና"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "የተሰጠው አቀራረብ በአመዛዛኝ ዘዴ የተጻፈ ነው።"
+  },
+  {
+    id: 18,
+    order: 18,
+    question: "የሚከተለው ዓረፍተ ነገር የትኛውን የጽሑፍ ዓይነት ይወክላል?",
+    options: [
+      "ሀ. በትረካ",
+      "ለ. በገላጭ",
+      "ሐ. በአከራካሪ",
+      "መ. በመግለጫ"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "የተሰጠው የጽሑፍ ዓይነት አከራካሪ ጽሑፍ ነው።"
+  },
+  {
+    id: 19,
+    order: 19,
+    question: "በሚከተለው አረፍተ ነገር የተጠቀሰው የሥርዓተ ነጥብ ምልክት የቱ ነው?",
+    options: [
+      "ሀ. ነጥብ",
+      "ለ. ድርብ ነጥብ",
+      "ሐ. ነጠላ ሠረዝ",
+      "መ. ጥያቄ ምልክት"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "የተጠቀሰው ምልክት ነጠላ ሠረዝ ነው።"
+  },
+  {
+    id: 20,
+    order: 20,
+    question: "በተሰጠው ዓረፍተ ነገር የተጠቀሰው የሥርዓተ ነጥብ ምልክት የቱ ነው?",
+    options: [
+      "ሀ. ነጠላ ሠረዝ",
+      "ለ. ድርብ ሠረዝ",
+      "ሐ. ነጥብ",
+      "መ. ጥያቄ ምልክት"
+    ],
+    correctAnswer: "ለ",
+    explanation: "ትክክለኛው መልስ ድርብ ሠረዝ ነው።"
+  },
+  {
+    id: 21,
+    order: 21,
+    question: "“ዶክተር” የሚለው ቃል በአህጽሮተ ቃል ሲጻፍ የቱ ነው?",
+    options: [
+      "ሀ. ዶ",
+      "ለ. ዶክ.",
+      "ሐ. ዶ/ክር",
+      "መ. ዶ/ር"
+    ],
+    correctAnswer: "መ",
+    explanation: "“ዶክተር” በአህጽሮተ ቃል “ዶ/ር” ተብሎ ይጻፋል።"
+  },
+  {
+    id: 22,
+    order: 22,
+    question: "“... ስለሆነ” የሚለው አገናኝ ምንን ያሳያል?",
+    options: [
+      "ሀ. ስለሆነ",
+      "ለ. ስለዚህ",
+      "ሐ. ቢሆንም",
+      "መ. እንዲሁም"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "“ስለሆነ” ምክንያትን የሚያሳይ አገናኝ ነው።"
+  },
+  {
+    id: 23,
+    order: 23,
+    question: "የሚከተለውን ዓረፍተ ነገር በትክክለኛው አገናኝ ለማሟላት የቱ ይሆናል?",
+    options: [
+      "ሀ. ስለሆነ",
+      "ለ. ስለዚህ",
+      "ሐ. ቢሆንም",
+      "መ. እንዲሁም"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "በተሰጠው አውድ ትክክለኛው አገናኝ “ስለሆነ” ነው።"
+  },
+  {
+    id: 24,
+    order: 24,
+    question: "“ተቀበለ” የሚለው ግስ በተሰጠው አውድ በየትኛው መልክ ይገኛል?",
+    options: [
+      "ሀ. እንደሚቀበል",
+      "ለ. እየተቀበለ",
+      "ሐ. እንደተቀበለ",
+      "መ. ሊቀበል"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "በተሰጠው አውድ ትክክለኛው መልክ “እንደተቀበለ” ነው።"
+  },
+  {
+    id: 25,
+    order: 25,
+    question: "በታሪክ ውስጥ የሚንቀሳቀሱ ሰዎችን ምን እንላቸዋለን?",
+    options: [
+      "ሀ. ተረክ",
+      "ለ. ገጸባህሪ",
+      "ሐ. ጭብጥ",
+      "መ. ትረካ"
+    ],
+    correctAnswer: "ለ",
+    explanation: "በታሪክ ውስጥ የሚንቀሳቀሱ ሰዎች ገጸባህሪያት ይባላሉ።"
+  },
+  {
+    id: 26,
+    order: 26,
+    question: "የአንድ ታሪክ ዋና ሀሳብ ምን ይባላል?",
+    options: [
+      "ሀ. ጭብጥ",
+      "ለ. ገጸባህሪ",
+      "መ. ተረክ"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "የአንድ ታሪክ ዋና ሀሳብ ጭብጥ ይባላል።"
+  },
+  {
+    id: 27,
+    order: 27,
+    question: "የሥርዓተ ነጥብ ህግን በተመለከተ የትኛው አባባል ትክክል ነው?",
+    options: [
+      "ሀ. የሥርዓተ ነጥብ ህግን መከተል አስፈላጊ ነው።",
+      "ለ. የሥርዓተ ነጥብ ህግ ሁልጊዜ ተመሳሳይ ነው።",
+      "ሐ. የስርአተ ነጥብ ህግን መከተል አያስፈልግም፡፡",
+      "መ. ሥርዓተ ነጥብ በጽሑፍ አይጠቅምም።"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "በተሰጠው ጥያቄ መሠረት የተጠቀሰው መልስ ሐ ነው።"
+  },
+  {
+    id: 28,
+    order: 28,
+    question: "ከሚከተሉት የቦታ ስሞች ውስጥ የትኛው ትክክለኛ የቦታ ስም ነው?",
+    options: [
+      "ሀ. ሰው",
+      "ለ. ባህሪ",
+      "መ. ድሬዳዋ"
+    ],
+    correctAnswer: "መ",
+    explanation: "ድሬዳዋ የቦታ ስም ነው።"
+  },
+  {
+    id: 29,
+    order: 29,
+    question: "ከሚከተሉት ውስጥ የሰው ስም የቱ ነው?",
+    options: [
+      "ሀ. ቤት",
+      "ለ. ሰው",
+      "ሐ. ድሬዳዋ",
+      "መ. ማታ"
+    ],
+    correctAnswer: "ለ",
+    explanation: "ትክክለኛው መልስ “ሰው” ነው።"
+  },
+  {
+    id: 30,
+    order: 30,
+    question: "“ማታ” የሚለው ቃል የትኛውን ይወክላል?",
+    options: [
+      "ሀ. የጊዜ",
+      "ለ. የቦታ",
+      "ሐ. የሰው",
+      "መ. የባህሪ"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "“ማታ” የጊዜ ስም ነው።"
+  },
+  {
+    id: 31,
+    order: 31,
+    question: "“ማታ ማታ” በዓረፍተ ነገር ውስጥ የትኛውን ያመለክታል?",
+    options: [
+      "ሀ. የቦታ ተውሳከ ግስ",
+      "ለ. የጊዜ ተውሳከ ግስ",
+      "ሐ. የመጠን ተውሳከ ግስ",
+      "መ. ማታ ማታ"
+    ],
+    correctAnswer: "መ",
+    explanation: "በተሰጠው ጥያቄ መሠረት ትክክለኛው መልስ መ ነው።"
+  },
+  {
+    id: 32,
+    order: 32,
+    question: "“ኡ” በቃል ውስጥ ምንን ያመለክታል?",
+    options: [
+      "ሀ. የስም መነሻ",
+      "ለ. ኡ",
+      "ሐ. የግስ ምልክት",
+      "መ. የቦታ ምልክት"
+    ],
+    correctAnswer: "ለ",
+    explanation: "በተሰጠው ጥያቄ መሠረት “ኡ” ትክክለኛው መልስ ነው።"
+  },
+  {
+    id: 33,
+    order: 33,
+    question: "ከሚከተሉት ውስጥ የሴት ግለሰብ ተውላጠ ስም የቱ ነው?",
+    options: [
+      "ሀ. እሱ",
+      "ለ. እኛ",
+      "ሐ. እሷ",
+      "መ. እነሱ"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "“እሷ” የሴት ግለሰብ ተውላጠ ስም ነው።"
+  },
+  {
+    id: 34,
+    order: 34,
+    question: "“ባህሪ” የሚለው ቃል ምንን ያመለክታል?",
+    options: [
+      "ሀ. ባህሪ",
+      "ለ. ቦታ",
+      "ሐ. ጊዜ",
+      "መ. ሰው"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "“ባህሪ” የባህሪ ስምን ያመለክታል።"
+  },
+  {
+    id: 35,
+    order: 35,
+    question: "የሚከተለው ቃል ምንን ይወክላል?",
+    options: [
+      "ሀ. ባህሪ",
+      "ለ. ቦታ",
+      "ሐ. ጊዜ",
+      "መ. ሰው"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "በተሰጠው አውድ ቃሉ ባህሪን ይወክላል።"
+  },
+  {
+    id: 36,
+    order: 36,
+    question: "ከሚከተሉት ውስጥ ተሻጋሪ ግስን የሚያሳየው የቱ ነው?",
+    options: [
+      "ሀ. ልጁ ሮጠ።",
+      "ለ. ልጁ ተኛ።",
+      "ሐ. ልጅቷ ሸጠች።",
+      "መ. ልጁ ተቀመጠ።"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "“ልጅቷ ሸጠች” ተሻጋሪ ግስን ያሳያል።"
+  },
+  {
+    id: 37,
+    order: 37,
+    question: "ከሚከተሉት ውስጥ የማይሻገር ግስን የሚያሳየው የቱ ነው?",
+    options: [
+      "ሀ. ልጅቷ ሸጠች።",
+      "ለ. ልጁ ሮጠ።",
+      "ሐ. ልጁ መጽሐፉን አነበበ።",
+      "መ. ልጅቷ ደብዳቤ ጻፈች።"
+    ],
+    correctAnswer: "ለ",
+    explanation: "“ልጁ ሮጠ” ማይሻገር ግስን ያሳያል።"
+  },
+
+  {
+    id: 38,
+    order: 38,
+    question: "በሚከተለው የቃል ግጥም ውስጥ ዝንጀሮዋ የት ጊዜ ትገኛለች?",
+    options: [
+      "ሀ. በሰብል ጥበቃ ጊዜ",
+      "ለ. በእርሻ ጊዜ",
+      "ሐ. በመኸር ጊዜ",
+      "መ. በዝናብ ጊዜ"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "በግጥሙ ውስጥ ዝንጀሮዋ በሰብል ጥበቃ ጊዜ ትገኛለች።"
+  },
+  {
+    id: 39,
+    order: 39,
+    question: "ዝንጀሮዋ ምን ለመብላት ነው የምትፈልገው?",
+    options: [
+      "ሀ. ሰብሉን ለመብላት",
+      "ለ. ማሽላውን ለመብላት",
+      "ሐ. ማሽላውን ትታ ገብሱን ልትበላ",
+      "መ. ፍሬውን ለመብላት"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "በግጥሙ መሠረት ዝንጀሮዋ ማሽላውን ትታ ገብሱን ልትበላ ነው።"
+  },
+  {
+    id: 40,
+    order: 40,
+    question: "በግጥሙ መሠረት ዝንጀሮዋን ምን እንደሚጎዳት ተነግሯታል?",
+    options: [
+      "ሀ. ረሃብ ይጎዳሻል",
+      "ለ. ተንኮል ይጎዳሻል",
+      "ሐ. ድካም ይጎዳሻል",
+      "መ. ብርድ ይጎዳሻል"
+    ],
+    correctAnswer: "ለ",
+    explanation: "በግጥሙ ውስጥ “ተንኮል ይጎዳሻል” ተብሎ ተገልጿል።"
+  },
+  {
+    id: 41,
+    order: 41,
+    question: "“ጡር” የሚለው ቃል በተሰጠው አውድ ምን ማለት ነው?",
+    options: [
+      "ሀ. ደስታ",
+      "ለ. ሀዘን",
+      "ሐ. ድካም",
+      "መ. ጡር"
+    ],
+    correctAnswer: "መ",
+    explanation: "በተሰጠው አውድ ትክክለኛው መልስ ጡር ነው።"
+  }
+],
     "grade6-amharic": [
     {
       id: "g6amharic-4",

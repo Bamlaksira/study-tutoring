@@ -1,2100 +1,1925 @@
-import { useEffect, useState } from 'react'
-import { EXAM_GRADES, getProductsByGrade } from './examData'
+import { useEffect, useState } from "react";
+import { EXAM_GRADES, getProductsByGrade } from "./examData";
 
-const FREE_QUESTIONS = 3
+const FREE_QUESTIONS = 3;
+const API_URL = "https://studycare-backend.onrender.com";
 
-// Your backend URL
-const API_URL = 'https://studycare-backend.onrender.com'
+const CBE_ACCOUNT_NAME = "StudyCare";
+const CBE_ACCOUNT_NUMBER = "1000";
 
-// Replace this with your real CBE account number
-const CBE_ACCOUNT_NAME = 'Bamlaksira Abebe'
-const CBE_ACCOUNT_NUMBER = '1000385393257'
+const YEARS = ["2016", "2017", "2018"];
 
 export default function ExamPractice() {
-  const [selectedGrade, setSelectedGrade] = useState('')
-  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [selectedGrade, setSelectedGrade] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const [selectedOptions, setSelectedOptions] = useState({})
-  const [paidQuestions, setPaidQuestions] = useState([])
-  const [showAnswers, setShowAnswers] = useState({})
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [showExplanation, setShowExplanation] = useState(false);
 
-  const [showPurchaseForm, setShowPurchaseForm] = useState(false)
-  const [purchaseSubmitting, setPurchaseSubmitting] = useState(false)
-  const [checkingAccess, setCheckingAccess] = useState(false)
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [paidQuestions, setPaidQuestions] = useState([]);
 
-  const [purchaseMessage, setPurchaseMessage] = useState('')
-  const [purchaseError, setPurchaseError] = useState('')
+  const [showPurchase, setShowPurchase] = useState(false);
+  const [showAccessCheck, setShowAccessCheck] = useState(false);
 
-  const [accessStatus, setAccessStatus] = useState('Locked')
-  const [purchaseId, setPurchaseId] = useState('')
+  const [studentName, setStudentName] = useState("");
+const [parentName, setParentName] = useState("");
+const [phone, setPhone] = useState("");
+const [email, setEmail] = useState("");
+const [grade, setGrade] = useState("");
+const [city, setCity] = useState("");
+const [preferredLanguage, setPreferredLanguage] = useState("English");
+const [transactionReference, setTransactionReference] = useState("");
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
+  const [accessLoading, setAccessLoading] = useState(false);
 
-  const [purchaseForm, setPurchaseForm] = useState({
-    customerName: '',
-    phone: '',
-    email: '',
-    transactionReference: '',
-  })
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
 
+  const [view, setView] = useState("grades");
+const [pendingPurchase, setPendingPurchase] = useState(false);
   const products = selectedGrade
     ? getProductsByGrade(selectedGrade)
-    : []
+    : [];
 
   /*
-    Load a previously submitted purchase when the student
-    opens a product again.
+    Products without a year in their ID are the 2018 exams.
+
+    grade6-amharic       -> 2018
+    grade6-english       -> 2018
+    grade6-mathematics   -> 2018
+    grade6-science       -> 2018
+    grade6-civics        -> 2018
+
+    Year-specific products:
+
+    grade6-2016-amharic  -> 2016
+    grade6-2017-amharic  -> 2017
   */
-  useEffect(() => {
-    if (!selectedProduct) return
+  const getProductYear = (product) => {
+    const match = product.id.match(/-(20\d{2})-/);
 
-    const storageKey = `studycare_exam_purchase_${selectedProduct.id}`
-    const saved = localStorage.getItem(storageKey)
+    return match ? match[1] : "2018";
+  };
 
-    if (!saved) {
-      setPurchaseForm({
-        customerName: '',
-        phone: '',
-        email: '',
-        transactionReference: '',
-      })
-      setPurchaseId('')
-      setAccessStatus('Locked')
-      setPurchaseMessage('')
-      setPurchaseError('')
-      return
-    }
-
-    try {
-      const data = JSON.parse(saved)
-
-      if (data.form) {
-        setPurchaseForm(data.form)
-      }
-
-      if (data.purchaseId) {
-        setPurchaseId(data.purchaseId)
-      }
-
-      if (data.accessStatus) {
-        setAccessStatus(data.accessStatus)
-      }
-
-      if (data.form?.phone && data.form?.transactionReference) {
-        checkAccess(data.form)
-      }
-        } catch (error) {
-      console.error('Saved purchase error:', error)
-    }
-  }, [selectedProduct])
-
-  const openProduct = (product) => {
-  setSelectedProduct(product)
-  setPaidQuestions([])
-  setSelectedOptions({})
-    setShowAnswers({})
-    setShowPurchaseForm(false)
-    setPurchaseMessage('')
-    setPurchaseError('')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  const backToSubjects = () => {
-  setSelectedProduct(null)
-  setPaidQuestions([])
-  setSelectedOptions({})
-    setShowAnswers({})
-    setShowPurchaseForm(false)
-    setPurchaseMessage('')
-    setPurchaseError('')
-  }
-
-  const selectOption = (questionId, option) => {
-    if (selectedOptions[questionId]) return
-
-    setSelectedOptions((prev) => ({
-      ...prev,
-      [questionId]: option,
-    }))
-  }
-
-  const toggleAnswer = (id) => {
-    setShowAnswers((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }))
-  }
-
-  const getOptionStyle = (question, option) => {
-    const selected = selectedOptions[question.id]
-
-    if (!selected) {
-      return styles.option
-    }
-
-    if (option === question.correctAnswer) {
-      return {
-        ...styles.option,
-        ...styles.correctOption,
-      }
-    }
-
-    if (
-      option === selected &&
-      option !== question.correctAnswer
-    ) {
-      return {
-        ...styles.option,
-        ...styles.wrongOption,
-      }
-    }
-
-    return {
-      ...styles.option,
-      ...styles.disabledOption,
-    }
-  }
-
-  const updatePurchaseForm = (field, value) => {
-    setPurchaseForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
-  }
-
-  /*
-    Submit the CBE transaction information to the backend.
-  */
-  const submitPurchase = async (event) => {
-    event.preventDefault()
-
-    setPurchaseError('')
-    setPurchaseMessage('')
-
-    if (
-      !purchaseForm.customerName.trim() ||
-      !purchaseForm.phone.trim() ||
-      !purchaseForm.transactionReference.trim()
-    ) {
-      setPurchaseError(
-        'Please enter your name, phone number, and CBE transaction reference.'
+  const yearProducts = selectedYear
+    ? products.filter(
+        (product) => getProductYear(product) === selectedYear
       )
-      return
+    : [];
+
+  const questions = selectedProduct
+    ? [
+        ...(selectedProduct.questions || []),
+        ...paidQuestions,
+      ]
+    : [];
+
+  const currentQuestionData = questions[currentQuestion];
+
+  useEffect(() => {
+    if (!selectedProduct) {
+      setPaidQuestions([]);
+      setIsUnlocked(false);
+      return;
     }
 
-    setPurchaseSubmitting(true)
+    setPaidQuestions([]);
+    setIsUnlocked(false);
+    setCurrentQuestion(0);
+    setAnswers({});
+    setShowExplanation(false);
+    setMessage("");
+    setMessageType("");
+  }, [selectedProduct]);
 
+  useEffect(() => {
+  if (
+    !pendingPurchase ||
+    !selectedProduct ||
+    !phone.trim() ||
+    !transactionReference.trim()
+  ) {
+    return;
+  }
+
+  const checkApproval = async () => {
     try {
       const response = await fetch(
-        `${API_URL}/api/exam-purchases`,
+        `${API_URL}/api/exam-purchases/check-access`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            customerName: purchaseForm.customerName.trim(),
-            phone: purchaseForm.phone.trim(),
-            email: purchaseForm.email.trim(),
+            phone: phone.trim(),
+            transactionReference: transactionReference.trim(),
             productId: selectedProduct.id,
-            productName: selectedProduct.title,
-            amount: selectedProduct.price,
-            transactionReference:
-              purchaseForm.transactionReference.trim(),
           }),
         }
-      )
+      );
 
-      const data = await response.json()
+      const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(
-          data.message || 'Failed to submit payment information.'
-        )
+      if (
+        data.success &&
+        (data.accessStatus === "Unlocked" ||
+          data.accessStatus === "Approved")
+      ) {
+        setPendingPurchase(false);
+        setIsUnlocked(true);
+
+        await loadPaidQuestions(selectedProduct.id);
+
+        setShowPurchase(false);
+        setShowAccessCheck(false);
+
+        // Open Q4 immediately
+        setCurrentQuestion(FREE_QUESTIONS);
+
+        setShowExplanation(false);
+        setMessage("Payment approved! Your full exam is now unlocked.");
+        setMessageType("success");
       }
-
-      setPurchaseId(data.purchaseId)
-      setAccessStatus('Locked')
-
-      localStorage.setItem(
-        `studycare_exam_purchase_${selectedProduct.id}`,
-        JSON.stringify({
-          purchaseId: data.purchaseId,
-          form: purchaseForm,
-          accessStatus: 'Locked',
-        })
-      )
-
-      setPurchaseMessage(
-        'Your payment information has been submitted. StudyCare will verify your CBE transfer before unlocking the exam.'
-      )
-
-      setShowPurchaseForm(false)
     } catch (error) {
-      console.error('Purchase submission error:', error)
-
-      setPurchaseError(
-        error.message ||
-          'Something went wrong while submitting your payment.'
-      )
-    } finally {
-      setPurchaseSubmitting(false)
+      console.error("Automatic approval check failed:", error);
     }
+  };
+
+  checkApproval();
+
+  const interval = setInterval(checkApproval, 5000);
+
+  return () => clearInterval(interval);
+}, [
+  pendingPurchase,
+  selectedProduct,
+  phone,
+  transactionReference,
+]);
+  const resetExamState = () => {
+    setSelectedProduct(null);
+    setPaidQuestions([]);
+    setIsUnlocked(false);
+    setCurrentQuestion(0);
+    setAnswers({});
+    setShowExplanation(false);
+    setShowPurchase(false);
+    setShowAccessCheck(false);
+    setPhone("");
+    setTransactionReference("");
+    setMessage("");
+    setMessageType("");
+    setStudentName("");
+setParentName("");
+setPhone("");
+setEmail("");
+setGrade("");
+setCity("");
+setPreferredLanguage("English");
+setTransactionReference("");
+  };
+
+  const handleGradeSelect = (grade) => {
+    setSelectedGrade(grade);
+    setSelectedYear("");
+    resetExamState();
+    setView("years");
+  };
+
+  const handleYearSelect = (year) => {
+    setSelectedYear(year);
+    resetExamState();
+    setView("subjects");
+  };
+
+  const handleProductSelect = (product) => {
+    resetExamState();
+    setSelectedProduct(product);
+    setView("exam");
+  };
+
+  const goBackToGrades = () => {
+    resetExamState();
+    setSelectedGrade("");
+    setSelectedYear("");
+    setView("grades");
+  };
+
+  const goBackToYears = () => {
+    resetExamState();
+    setSelectedYear("");
+    setView("years");
+  };
+
+  const goBackToSubjects = () => {
+    resetExamState();
+    setView("subjects");
+  };
+
+  const handleAnswer = (answer) => {
+    if (!currentQuestionData) return;
+
+    setAnswers((prev) => ({
+      ...prev,
+      [currentQuestionData.id]: answer,
+    }));
+
+    setShowExplanation(true);
+  };
+
+  const goNextQuestion = () => {
+  if (currentQuestion >= FREE_QUESTIONS - 1 && !isUnlocked) {
+    setShowPurchase(true);
+    setShowExplanation(false);
+    setMessage("");
+    return;
   }
 
-  /*
-    Ask the backend whether this purchase has been approved.
-  */
-  const checkAccess = async (form = purchaseForm) => {
-    if (
-      !selectedProduct ||
-      !form.phone.trim() ||
-      !form.transactionReference.trim()
-    ) {
-      return
+  if (currentQuestion < questions.length - 1) {
+    setCurrentQuestion((prev) => prev + 1);
+    setShowExplanation(false);
+  }
+};
+
+  const goPreviousQuestion = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion((prev) => prev - 1);
+      setShowExplanation(false);
+    }
+  };
+
+  const loadPaidQuestions = async (productId) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/exams/paid-content`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            productId,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success && Array.isArray(data.questions)) {
+        setPaidQuestions(data.questions);
+      }
+    } catch (error) {
+      console.error("Failed to load paid questions:", error);
+    }
+  };
+const handlePurchase = async () => {
+  if (!selectedProduct) return;
+
+  if (!studentName.trim()) {
+    setMessage("Please enter the student's full name.");
+    setMessageType("error");
+    return;
+  }
+
+  if (!parentName.trim()) {
+    setMessage("Please enter the parent/guardian's full name.");
+    setMessageType("error");
+    return;
+  }
+
+  if (!phone.trim()) {
+    setMessage("Please enter your phone number.");
+    setMessageType("error");
+    return;
+  }
+
+  if (!city.trim()) {
+    setMessage("Please enter your city/town.");
+    setMessageType("error");
+    return;
+  }
+
+  if (!preferredLanguage.trim()) {
+    setMessage("Please select your preferred language.");
+    setMessageType("error");
+    return;
+  }
+
+  if (!transactionReference.trim()) {
+    setMessage("Please enter your CBE transaction reference.");
+    setMessageType("error");
+    return;
+  }
+
+  setPurchaseLoading(true);
+  setMessage("");
+
+  try {
+    const response = await fetch(`${API_URL}/api/exam-purchases`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        customerName: parentName.trim(),
+        studentName: studentName.trim(),
+        parentName: parentName.trim(),
+        phone: phone.trim(),
+        email: email.trim(),
+        grade: selectedGrade,
+        city: city.trim(),
+        preferredLanguage: preferredLanguage.trim(),
+        productId: selectedProduct.id,
+        productName: selectedProduct.title,
+        amount: selectedProduct.price,
+        transactionReference: transactionReference.trim(),
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || "Unable to submit your payment information."
+      );
     }
 
-    setCheckingAccess(true)
-    setPurchaseError('')
-    setPurchaseMessage('')
+    setMessage(
+      "Payment information submitted successfully. We are waiting for payment approval."
+    );
+    setMessageType("success");
+
+    setPendingPurchase(true);
+  } catch (error) {
+    console.error(error);
+    setMessage(
+      error.message || "Something went wrong while submitting your payment."
+    );
+    setMessageType("error");
+  } finally {
+    setPurchaseLoading(false);
+  }
+};
+
+  const handleAccessCheck = async () => {
+    if (!selectedProduct) return;
+
+    if (!phone.trim()) {
+      setMessage("Please enter your phone number.");
+      setMessageType("error");
+      return;
+    }
+
+    if (!transactionReference.trim()) {
+      setMessage("Please enter your transaction reference.");
+      setMessageType("error");
+      return;
+    }
+
+    setAccessLoading(true);
+    setMessage("");
 
     try {
       const response = await fetch(
         `${API_URL}/api/exam-purchases/check-access`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            phone: form.phone.trim(),
-            transactionReference:
-              form.transactionReference.trim(),
+            phone: phone.trim(),
+            transactionReference: transactionReference.trim(),
             productId: selectedProduct.id,
           }),
         }
-      )
+      );
 
-      const data = await response.json()
+      const data = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || !data.success) {
         throw new Error(
-          data.message || 'Purchase could not be found.'
-        )
+          data.message || "Unable to check your purchase."
+        );
       }
 
-      setAccessStatus(data.accessStatus)
+      if (
+  data.accessStatus === "Unlocked" ||
+  data.accessStatus === "Approved"
+) {
+  setIsUnlocked(true);
+  setPendingPurchase(false);
+  setShowAccessCheck(false);
 
-      localStorage.setItem(
-        `studycare_exam_purchase_${selectedProduct.id}`,
-        JSON.stringify({
-          purchaseId: data.purchaseId || purchaseId,
-          form,
-          accessStatus: data.accessStatus,
-        })
-      )
+  await loadPaidQuestions(selectedProduct.id);
 
-      if (data.accessStatus === 'Unlocked') {
-        setPurchaseMessage(
-          'Payment approved! Full exam practice is now unlocked.'
-        )
-       await loadPaidQuestions(form)
+  setCurrentQuestion(FREE_QUESTIONS);
+  setShowExplanation(false);
+
+  setMessage("Your exam has been unlocked successfully.");
+  setMessageType("success");
+      }else if (data.accessStatus === "Pending") {
+        setMessage(
+          "Your payment is still being reviewed. Please try again after it has been approved."
+        );
+        setMessageType("warning");
       } else {
-        setPurchaseMessage(
-          'Your payment is still being verified. Please check again after StudyCare approves the payment.'
-        )
+        setMessage(
+          "We could not unlock this exam with the information provided."
+        );
+        setMessageType("error");
       }
     } catch (error) {
-      console.error('Access check error:', error)
+      console.error(error);
 
-      setPurchaseError(
+      setMessage(
         error.message ||
-          'Unable to check your payment status.'
-      )
+          "Something went wrong while checking your access."
+      );
+      setMessageType("error");
     } finally {
-      setCheckingAccess(false)
+      setAccessLoading(false);
     }
-  }
+  };
 
-  const isUnlocked = accessStatus === 'Unlocked'
-    const loadPaidQuestions = async (form = purchaseForm) => {
+  const questionLocked =
+    currentQuestionData &&
+    currentQuestionData.order > FREE_QUESTIONS &&
+    !isUnlocked;
+
+  const selectedAnswer = currentQuestionData
+    ? answers[currentQuestionData.id]
+    : null;
+
+  const getMessageStyle = () => {
+    if (messageType === "success") {
+      return {
+        ...styles.message,
+        ...styles.success,
+      };
+    }
+
+    if (messageType === "error") {
+      return {
+        ...styles.message,
+        ...styles.error,
+      };
+    }
+
+    if (messageType === "warning") {
+      return {
+        ...styles.message,
+        ...styles.warning,
+      };
+    }
+
+    return styles.message;
+  };
+
+  const getOptionStyle = (option) => {
+    const base = {
+      ...styles.option,
+    };
+
+    if (!showExplanation) {
+      return base;
+    }
+
     if (
-      !selectedProduct ||
-      !form.phone.trim() ||
-      !form.transactionReference.trim()
+      option === currentQuestionData.correctAnswer
     ) {
-      return
+      return {
+        ...base,
+        border: "2px solid #22c55e",
+        background: "#f0fdf4",
+      };
     }
 
-    try {
-      const response = await fetch(
-        `${API_URL}/api/exams/paid-content`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            phone: form.phone.trim(),
-            transactionReference:
-              form.transactionReference.trim(),
-            productId: selectedProduct.id,
-          }),
-        }
-      )
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-            'Paid exam content could not be loaded.'
-        )
-      }
-
-      setPaidQuestions(data.questions || [])
-    } catch (error) {
-      console.error(
-        'Paid exam content error:',
-        error
-      )
-      setPaidQuestions([])
+    if (option === selectedAnswer) {
+      return {
+        ...base,
+        border: "2px solid #ef4444",
+        background: "#fef2f2",
+      };
     }
-  }
-  /*
-    Reusable question content.
-  */
-  const renderQuestionContent = (item) => {
-    const selected = selectedOptions[item.id]
-    const answered = Boolean(selected)
-    const isCorrect = selected === item.correctAnswer
 
+    return base;
+  };
+
+  const renderGrades = () => {
     return (
-      <>
-        <h3 style={styles.questionText}>
-          {item.question}
-        </h3>
+      <div style={styles.page}>
+        <div style={styles.header}>
+          <p style={styles.eyebrow}>
+            STUDYCARE
+          </p>
 
-        {item.options?.length > 0 && (
-          <div style={styles.options}>
-            {item.options.map((option, index) => (
+          <h1 style={styles.title}>
+            Exam Practice
+          </h1>
+
+          <p style={styles.subtitle}>
+            Choose a grade to practice Ministry Exams.
+          </p>
+        </div>
+
+        <div style={styles.section}>
+          <h2 style={styles.sectionTitle}>
+            Choose your grade
+          </h2>
+
+          <div style={styles.gradeGrid}>
+            {EXAM_GRADES.map((grade) => (
               <button
-                key={option}
-                onClick={() =>
-                  selectOption(item.id, option)
-                }
-                disabled={answered}
-                style={getOptionStyle(item, option)}
+                key={grade}
+                style={styles.gradeCard}
+                onClick={() => handleGradeSelect(grade)}
               >
-                <span style={styles.optionLetter}>
-                  {String.fromCharCode(65 + index)}
+                <div style={styles.gradeIcon}>
+                  📚
+                </div>
+
+                <div style={styles.gradeContent}>
+                  <h3 style={styles.gradeName}>
+                    {grade}
+                  </h3>
+
+                  <p style={styles.cardText}>
+                    Practice Ministry Exams
+                  </p>
+                </div>
+
+                <span style={styles.arrow}>
+                  →
                 </span>
-
-                <span style={styles.optionText}>
-                  {option}
-                </span>
-
-                {answered &&
-                  option === item.correctAnswer && (
-                    <span style={styles.optionResult}>
-                      ✓
-                    </span>
-                  )}
-
-                {answered &&
-                  option === selected &&
-                  option !== item.correctAnswer && (
-                    <span style={styles.optionResult}>
-                      ✕
-                    </span>
-                  )}
               </button>
             ))}
           </div>
-        )}
+        </div>
+      </div>
+    );
+  };
 
-        {answered && (
-          <div
-            style={{
-              ...styles.resultBox,
-              ...(isCorrect
-                ? styles.correctResult
-                : styles.wrongResult),
-            }}
+  const renderYears = () => {
+    return (
+      <div style={styles.page}>
+        <div style={styles.topBar}>
+          <button
+            style={styles.backButton}
+            onClick={goBackToGrades}
           >
-            <strong>
-              {isCorrect
-                ? '✓ Correct!'
-                : '✕ Incorrect'}
-            </strong>
+            ← Back
+          </button>
+        </div>
 
-            {!isCorrect && (
-              <p>
-                The correct answer is:{' '}
-                <strong>
-                  {item.correctAnswer}
-                </strong>
-              </p>
-            )}
-          </div>
-        )}
+        <div style={styles.header}>
+          <p style={styles.eyebrow}>
+            STUDYCARE • {selectedGrade}
+          </p>
 
-        <button
-          onClick={() => toggleAnswer(item.id)}
-          style={styles.answerButton}
-        >
-          {showAnswers[item.id]
-            ? 'Hide Answer & Explanation'
-            : 'Show Answer & Explanation'}
-        </button>
+          <h1 style={styles.title}>
+            Choose a Year
+          </h1>
 
-        {showAnswers[item.id] && (
-          <div style={styles.answerBox}>
-            <div>
-              <strong>Answer</strong>
-              <p>{item.correctAnswer}</p>
-            </div>
+          <p style={styles.subtitle}>
+            Select the Ministry Exam year you want to practice.
+          </p>
+        </div>
 
-            <div>
-              <strong>Explanation</strong>
-              <p>{item.explanation}</p>
-            </div>
-          </div>
-        )}
-      </>
-    )
-  }
-
-  return (
-    <div style={styles.page}>
-      <header style={styles.header}>
-        <a href="/" style={styles.logo}>
-          Study<span>Care</span>
-        </a>
-
-        <a href="/" style={styles.homeLink}>
-          ← Back to StudyCare
-        </a>
-      </header>
-
-      {!selectedProduct ? (
-        <main style={styles.container}>
-          <section style={styles.hero}>
-            <span style={styles.badge}>
-              EXAM PRACTICE
-            </span>
-
-            <h1 style={styles.heroTitle}>
-              Practice Smarter for Your Exams
-            </h1>
-
-            <p style={styles.heroText}>
-              Prepare with exam-style questions, instant
-              answer checking, and clear explanations.
-            </p>
-
-            <div style={styles.heroFeatures}>
-              <span>✓ Exam-style questions</span>
-              <span>✓ Answers & explanations</span>
-              <span>✓ Practice at your own pace</span>
-            </div>
-          </section>
-
-          <section style={styles.section}>
-            <div style={styles.sectionHeading}>
-              <span style={styles.eyebrow}>
-                STEP 1
-              </span>
-
-              <h2>Choose Your Grade</h2>
-
-              <p>
-                Select your grade to see available
-                subjects.
-              </p>
-            </div>
-
-            <div style={styles.gradeGrid}>
-              {EXAM_GRADES.map((grade) => (
-                <button
-                  key={grade}
-                  onClick={() =>
-                    setSelectedGrade(grade)
-                  }
-                  style={{
-                    ...styles.gradeCard,
-                    ...(selectedGrade === grade
-                      ? styles.gradeCardSelected
-                      : {}),
-                  }}
-                >
-                  <div style={styles.gradeIcon}>
-                    🎓
-                  </div>
-
-                  <strong>{grade}</strong>
-
-                  <span>
-                    View subjects →
-                  </span>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {selectedGrade && (
-            <section style={styles.section}>
-              <div style={styles.sectionHeading}>
-                <span style={styles.eyebrow}>
-                  STEP 2 • {selectedGrade}
-                </span>
-
-                <h2>Choose a Subject</h2>
-
-                <p>
-                  Choose the subject you want to
-                  practice.
-                </p>
+        <div style={styles.yearGrid}>
+          {YEARS.map((year) => (
+            <button
+              key={year}
+              style={styles.yearCard}
+              onClick={() => handleYearSelect(year)}
+            >
+              <div style={styles.yearNumber}>
+                {year}
               </div>
 
-              {products.length === 0 ? (
-                <div style={styles.empty}>
-                  <div style={styles.emptyIcon}>
-                    📚
+              <div style={styles.yearLabel}>
+                {selectedGrade} Ministry Exam
+              </div>
+
+              <div style={styles.yearAction}>
+                View {year} exam subjects →
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderSubjects = () => {
+    return (
+      <div style={styles.page}>
+        <div style={styles.topBar}>
+          <button
+            style={styles.backButton}
+            onClick={goBackToYears}
+          >
+            ← Back to years
+          </button>
+        </div>
+
+        <div style={styles.header}>
+          <p style={styles.eyebrow}>
+            STUDYCARE • {selectedGrade} • {selectedYear}
+          </p>
+
+          <h1 style={styles.title}>
+            Choose a Subject
+          </h1>
+
+          <p style={styles.subtitle}>
+            Select the subject you want to practice.
+          </p>
+        </div>
+
+        {yearProducts.length === 0 ? (
+          <div style={styles.emptyBox}>
+            <div style={styles.emptyIcon}>
+              📚
+            </div>
+
+            <h2 style={styles.emptyTitle}>
+              Exams coming soon
+            </h2>
+
+            <p style={styles.emptyText}>
+              We are preparing the {selectedGrade}{" "}
+              {selectedYear} Ministry Exam subjects for
+              StudyCare.
+            </p>
+
+            <button
+              style={styles.secondaryButton}
+              onClick={goBackToYears}
+            >
+              Choose another year
+            </button>
+          </div>
+        ) : (
+          <div style={styles.productGrid}>
+            {yearProducts.map((product) => {
+              const questionCount =
+                product.questions?.length || 0;
+
+              return (
+                <button
+                  key={product.id}
+                  style={styles.productCard}
+                  onClick={() =>
+                    handleProductSelect(product)
+                  }
+                >
+                  <div style={styles.subjectIcon}>
+                    {getSubjectIcon(product.subject)}
                   </div>
 
-                  <h3>
-                    Subjects Coming Soon
+                  <h3 style={styles.subjectName}>
+                    {product.subject}
                   </h3>
 
-                  <p>
-                    Exam practice for this grade
-                    is currently being prepared.
+                  <p style={styles.productTitle}>
+                    {product.title}
                   </p>
-                </div>
-              ) : (
-                <div style={styles.productGrid}>
-                  {products.map((product) => (
-                    <article
-                      key={product.id}
-                      style={styles.productCard}
-                    >
-                      <div style={styles.subjectIcon}>
-                        📖
-                      </div>
 
-                      <span style={styles.subjectLabel}>
-                        {product.subject}
-                      </span>
+                  <div style={styles.productInfo}>
+                    <span>
+                      {questionCount > 0
+                        ? `${questionCount}+ questions`
+                        : "Questions coming soon"}
+                    </span>
 
-                      <h3 style={styles.productTitle}>
-                        {product.title}
-                      </h3>
+                    <span>
+                      {product.price} ETB
+                    </span>
+                  </div>
 
-                      <p
-                        style={
-                          styles.productDescription
-                        }
-                      >
-                        {product.description}
-                      </p>
+                  <div style={styles.cardAction}>
+                    Practice / View Exam →
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
 
-                      <div
-                        style={styles.productInfo}
-                      >
-                        <span>
-                          🎯{' '}
-                          {product.questions.length >
-                          0
-                            ? `${product.questions.length}+ questions`
-                            : 'Questions coming soon'}
-                        </span>
+  const renderExam = () => {
+    if (!selectedProduct) {
+      return null;
+    }
 
-                        <span>
-                          ✓ Answers included
-                        </span>
+    if (!currentQuestionData) {
+      return (
+        <div style={styles.page}>
+          <div style={styles.topBar}>
+            <button
+              style={styles.backButton}
+              onClick={goBackToSubjects}
+            >
+              ← Back to subjects
+            </button>
+          </div>
 
-                        <span>
-                          ✓ Explanations included
-                        </span>
-                      </div>
+          <div style={styles.emptyBox}>
+            <h2 style={styles.emptyTitle}>
+              Questions are coming soon
+            </h2>
 
-                      <div
-                        style={styles.productBottom}
-                      >
-                        <div>
-                          <small
-                            style={
-                              styles.priceLabel
-                            }
-                          >
-                            PRICE
-                          </small>
+            <p style={styles.emptyText}>
+              This exam does not have questions available yet.
+            </p>
+          </div>
+        </div>
+      );
+    }
 
-                          <strong
-                            style={styles.price}
-                          >
-                            {product.price > 0
-                              ? `${product.price} ETB`
-                              : 'Coming soon'}
-                          </strong>
-                        </div>
-
-                        <button
-                          onClick={() =>
-                            openProduct(product)
-                          }
-                          style={styles.primaryButton}
-                        >
-                          Practice Now →
-                        </button>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
-
-          <section style={styles.infoSection}>
-            <div style={styles.infoCard}>
-              <span style={styles.infoIcon}>
-                💡
-              </span>
-
-              <div>
-                <h3>
-                  Learn from Every Question
-                </h3>
-
-                <p>
-                  Don't just check whether your
-                  answer is correct. Use the
-                  explanations to understand why
-                  the answer is correct.
-                </p>
-              </div>
-            </div>
-
-            <div style={styles.infoCard}>
-              <span style={styles.infoIcon}>
-                🔓
-              </span>
-
-              <div>
-                <h3>Start for Free</h3>
-
-                <p>
-                  Try the first 3 questions free
-                  before deciding whether to unlock
-                  the complete practice set.
-                </p>
-              </div>
-            </div>
-          </section>
-        </main>
-      ) : (
-        <main style={styles.container}>
+    return (
+      <div style={styles.page}>
+        <div style={styles.topBar}>
           <button
-            onClick={backToSubjects}
             style={styles.backButton}
+            onClick={goBackToSubjects}
           >
-            ← Back to Subjects
+            ← Back to subjects
           </button>
+        </div>
 
-          <section style={styles.productHero}>
-            <div style={styles.productHeroTop}>
-              <span style={styles.eyebrow}>
-                {selectedProduct.grade}
-              </span>
-
-              <span style={styles.subjectPill}>
-                {selectedProduct.subject}
-              </span>
-            </div>
-
-            <h1 style={styles.productHeroTitle}>
-              {selectedProduct.title}
-            </h1>
-
-            <p style={styles.productHeroText}>
-              {selectedProduct.description}
+        <div style={styles.examHeader}>
+          <div>
+            <p style={styles.eyebrow}>
+              {selectedGrade} • {selectedYear}
             </p>
 
-            <div style={styles.productStats}>
-              <div>
-                <strong>
-                {selectedProduct.questions.length + paidQuestions.length}
-                </strong>
+            <h1 style={styles.examTitle}>
+              {selectedProduct.subject}
+            </h1>
 
-                <span>Questions</span>
+            <p style={styles.examSubtitle}>
+              {selectedProduct.title}
+            </p>
+          </div>
+
+          <div style={styles.priceBadge}>
+            {selectedProduct.price} ETB
+          </div>
+        </div>
+
+        {message && (
+          <div style={getMessageStyle()}>
+            {message}
+          </div>
+        )}
+
+        <div style={styles.progressBox}>
+          <div style={styles.progressTop}>
+            <span>
+              Question {currentQuestion + 1} of{" "}
+              {questions.length}
+            </span>
+
+            <span>
+              {currentQuestionData.order <=
+              FREE_QUESTIONS
+                ? "Free"
+                : isUnlocked
+                ? "Unlocked"
+                : "Paid"}
+            </span>
+          </div>
+
+          <div style={styles.progressTrack}>
+            <div
+              style={{
+                ...styles.progressFill,
+                width: `${
+                  ((currentQuestion + 1) /
+                    questions.length) *
+                  100
+                }%`,
+              }}
+            />
+          </div>
+        </div>
+
+        {questionLocked ? (
+          <div style={styles.lockedBox}>
+            <div style={styles.lockIcon}>
+              🔒
+            </div>
+
+            <h2 style={styles.lockedTitle}>
+              Unlock the Full Exam
+            </h2>
+
+            <p style={styles.lockedText}>
+              Questions 1–3 are free. Unlock the full{" "}
+              {selectedYear}{" "}
+              {selectedProduct.subject} Ministry Exam
+              to continue.
+            </p>
+
+            <div style={styles.purchaseDetails}>
+              <div>
+                <span style={styles.detailLabel}>
+                  Exam
+                </span>
+
+                <strong style={styles.detailValue}>
+                  {selectedProduct.title}
+                </strong>
               </div>
 
               <div>
-                <strong>
-                  {FREE_QUESTIONS}
-                </strong>
+                <span style={styles.detailLabel}>
+                  Price
+                </span>
 
-                <span>Free Questions</span>
-              </div>
-
-              <div>
-                <strong>
+                <strong style={styles.detailValue}>
                   {selectedProduct.price} ETB
                 </strong>
-
-                <span>Full Access</span>
               </div>
             </div>
 
-            <div style={styles.freeNotice}>
-              <div style={styles.freeNoticeIcon}>
-                🎁
-              </div>
+            <button
+              style={styles.primaryButton}
+              onClick={() => {
+                setShowPurchase(true);
+                setMessage("");
+              }}
+            >
+              Purchase Full Exam
+            </button>
 
-              <div>
-                <strong>
-                  Try the first {FREE_QUESTIONS}{' '}
-                  questions FREE
+            <button
+              style={styles.secondaryButton}
+              onClick={() => {
+                setShowAccessCheck(true);
+                setMessage("");
+              }}
+            >
+              I Already Purchased
+            </button>
+          </div>
+        ) : (
+          <div style={styles.questionBox}>
+            <div style={styles.questionNumber}>
+              Question {currentQuestionData.order}
+            </div>
+
+            <h2 style={styles.question}>
+              {currentQuestionData.question}
+            </h2>
+
+            <div style={styles.options}>
+              {currentQuestionData.options.map(
+                (option, index) => {
+                  const letter =
+                    option.charAt(0);
+
+                  return (
+                    <button
+                      key={index}
+                      style={getOptionStyle(letter)}
+                      onClick={() =>
+                        handleAnswer(letter)
+                      }
+                      disabled={showExplanation}
+                    >
+                      <span
+                        style={styles.optionLetter}
+                      >
+                        {letter}
+                      </span>
+
+                      <span
+                        style={styles.optionText}
+                      >
+                        {option.substring(3)}
+                      </span>
+                    </button>
+                  );
+                }
+              )}
+            </div>
+
+            {showExplanation && (
+              <div
+                style={{
+                  ...styles.explanationBox,
+                  background:
+                    selectedAnswer ===
+                    currentQuestionData.correctAnswer
+                      ? "#ecfdf3"
+                      : "#fff1f2",
+                  borderColor:
+                    selectedAnswer ===
+                    currentQuestionData.correctAnswer
+                      ? "#86efac"
+                      : "#fda4af",
+                }}
+              >
+                <strong
+                  style={
+                    selectedAnswer ===
+                    currentQuestionData.correctAnswer
+                      ? styles.correctText
+                      : styles.incorrectText
+                  }
+                >
+                  {selectedAnswer ===
+                  currentQuestionData.correctAnswer
+                    ? "✓ Correct"
+                    : "✕ Not quite"}
                 </strong>
 
-                <p>
-                  Answer the free questions and see
-                  the explanations before unlocking
-                  the complete practice set.
+                <p style={styles.explanationText}>
+                  {currentQuestionData.explanation}
                 </p>
               </div>
-            </div>
-          </section>
+            )}
 
-          <section style={styles.questionsSection}>
-{selectedProduct.passage && (
-  <div style={styles.passageBox}>
-    <h3 style={styles.passageTitle}>Reading Passage</h3>
-    <div style={styles.passageText}>
-      {selectedProduct.passage.split("\n").map((paragraph, index) => (
-        <p key={index}>
-          {paragraph}
+            <div style={styles.navigation}>
+              <button
+                style={
+                  currentQuestion === 0
+                    ? styles.disabledButton
+                    : styles.secondaryButton
+                }
+                onClick={goPreviousQuestion}
+                disabled={currentQuestion === 0}
+              >
+                ← Previous
+              </button>
+
+              {currentQuestion <
+              questions.length - 1 ? (
+                <button
+                  style={
+                    showExplanation
+                      ? styles.primaryButton
+                      : styles.disabledButton
+                  }
+                  onClick={goNextQuestion}
+                  disabled={!showExplanation}
+                >
+                  Next Question →
+                </button>
+              ) : (
+                <button
+                  style={styles.primaryButton}
+                  onClick={goBackToSubjects}
+                >
+                  Finish Exam
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {showPurchase && (
+  <div style={styles.modalOverlay}>
+    <div
+      style={{
+        ...styles.modal,
+        maxWidth: "650px",
+        width: "95%",
+        maxHeight: "90vh",
+        overflowY: "auto",
+      }}
+    >
+      <button
+        onClick={() => setShowPurchase(false)}
+        style={{
+          ...styles.closeButton,
+          float: "right",
+        }}
+      >
+        ×
+      </button>
+
+      <h2 style={{ marginTop: 0 }}>Unlock Full Access</h2>
+
+      <p>
+        Complete your payment information below to unlock all questions in
+        this {selectedProduct?.title}.
+      </p>
+
+      <div style={styles.paymentBox}>
+        <h3>Payment Instructions</h3>
+
+        <p>
+          <strong>Amount:</strong> {selectedProduct?.price} ETB
         </p>
-      ))}
+
+        <p>
+          <strong>Bank:</strong> Commercial Bank of Ethiopia (CBE)
+        </p>
+
+        <p>
+          <strong>Account Name:</strong> {CBE_ACCOUNT_NAME}
+        </p>
+
+        <p>
+          <strong>Account Number:</strong> {CBE_ACCOUNT_NUMBER}
+        </p>
+
+        <p style={{ marginBottom: 0 }}>
+          After making the transfer, enter the transaction reference below.
+        </p>
+      </div>
+
+      <h3>Student Information</h3>
+
+      <label style={styles.label}>Student Full Name *</label>
+      <input
+        style={styles.input}
+        value={studentName}
+        onChange={(e) => setStudentName(e.target.value)}
+        placeholder="Student full name"
+      />
+
+      <label style={styles.label}>Parent/Guardian Full Name *</label>
+      <input
+        style={styles.input}
+        value={parentName}
+        onChange={(e) => setParentName(e.target.value)}
+        placeholder="Parent or guardian full name"
+      />
+
+      <label style={styles.label}>Phone / WhatsApp *</label>
+      <input
+        style={styles.input}
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        placeholder="Phone or WhatsApp number"
+      />
+
+      <label style={styles.label}>City / Town *</label>
+      <input
+        style={styles.input}
+        value={city}
+        onChange={(e) => setCity(e.target.value)}
+        placeholder="City or town"
+      />
+
+      <label style={styles.label}>Preferred Language *</label>
+      <select
+        style={styles.input}
+        value={preferredLanguage}
+        onChange={(e) => setPreferredLanguage(e.target.value)}
+      >
+        <option value="English">English</option>
+        <option value="Amharic">Amharic</option>
+        <option value="Afaan Oromo">Afaan Oromo</option>
+        <option value="Tigrinya">Tigrinya</option>
+      </select>
+
+      <label style={styles.label}>Email (Optional)</label>
+      <input
+        type="email"
+        style={styles.input}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email address"
+      />
+
+      <label style={styles.label}>CBE Transaction Reference *</label>
+      <input
+        style={styles.input}
+        value={transactionReference}
+        onChange={(e) => setTransactionReference(e.target.value)}
+        placeholder="Enter CBE transaction reference"
+      />
+
+      {message && (
+        <div
+          style={{
+            marginTop: "12px",
+            padding: "12px",
+            borderRadius: "8px",
+            background:
+              messageType === "error" ? "#fee2e2" : "#dcfce7",
+            color:
+              messageType === "error" ? "#991b1b" : "#166534",
+          }}
+        >
+          {message}
+        </div>
+      )}
+
+      <button
+        onClick={handlePurchase}
+        disabled={purchaseLoading}
+        style={{
+          ...styles.primaryButton,
+          width: "100%",
+          marginTop: "18px",
+        }}
+      >
+        {purchaseLoading
+          ? "Submitting..."
+          : "Submit Payment Information"}
+      </button>
+
+      <button
+        onClick={() => {
+          setShowPurchase(false);
+          setShowAccessCheck(true);
+          setMessage("");
+        }}
+        style={{
+          ...styles.secondaryButton,
+          width: "100%",
+          marginTop: "10px",
+        }}
+      >
+        I Already Purchased
+      </button>
+
+      <p
+        style={{
+          fontSize: "13px",
+          color: "#666",
+          marginTop: "15px",
+          textAlign: "center",
+        }}
+      >
+        Your exam will unlock after your payment is approved.
+      </p>
     </div>
   </div>
 )}
-            <div style={styles.questionsHeading}>
-              <div>
-                <span style={styles.eyebrow}>
-                  PRACTICE
-                </span>
-
-                <h2>Questions</h2>
-              </div>
-
-              <span style={styles.freeCounter}>
-                {FREE_QUESTIONS} FREE
-              </span>
-            </div>
-
-           {selectedProduct.questions.length === 0 && !isUnlocked ? (
-              <div style={styles.empty}>
-                <div style={styles.emptyIcon}>
-                  📝
-                </div>
-
-                <h3>
-                  Questions Coming Soon
-                </h3>
-
-                <p>
-                  We are preparing questions for
-                  this subject.
-                </p>
-              </div>
-            ) : (
-              [...selectedProduct.questions, ...paidQuestions].map(
-                (item) => {
-                  const isFree =
-                    item.order <= FREE_QUESTIONS
-
-                  const canAccess =
-                    isFree || isUnlocked
-
-                  return (
-                    <article
-                      key={item.id}
-                      style={{
-                        ...styles.questionCard,
-                        ...(!canAccess
-                          ? styles.lockedCard
-                          : {}),
-                      }}
-                    >
-                      <div style={styles.questionTop}>
-                        <span
-                          style={
-                            styles.questionNumber
-                          }
-                        >
-                          Question {item.order}
-                        </span>
-
-                        {isFree ? (
-                          <span
-                            style={styles.freeBadge}
-                          >
-                            FREE
-                          </span>
-                        ) : isUnlocked ? (
-                          <span
-                            style={
-                              styles.unlockedBadge
-                            }
-                          >
-                            ✓ UNLOCKED
-                          </span>
-                        ) : (
-                          <span
-                            style={
-                              styles.lockBadge
-                            }
-                          >
-                            🔒 LOCKED
-                          </span>
-                        )}
-                      </div>
-
-                      {canAccess ? (
-                        renderQuestionContent(item)
-                      ) : (
-                        <div
-                          style={
-                            styles.lockedContent
-                          }
-                        >
-                          <div
-                            style={
-                              styles.lockIcon
-                            }
-                          >
-                            🔒
-                          </div>
-
-                          <h3>
-                            This question is
-                            locked
-                          </h3>
-
-                          <p>
-                            Unlock the full
-                            practice set to see
-                            this question, answer,
-                            and explanation.
-                          </p>
-
-                          <button
-                            onClick={() => {
-                              setShowPurchaseForm(
-                                true
-                              )
-
-                              setPurchaseError('')
-                              setPurchaseMessage('')
-
-                              window.scrollTo({
-                                top: document.body
-                                  .scrollHeight,
-                                behavior: 'smooth',
-                              })
-                            }}
-                            style={
-                              styles.unlockButton
-                            }
-                          >
-                            Unlock Full Exam
-                            Practice
-                          </button>
-                        </div>
-                      )}
-                    </article>
-                  )
+        {showAccessCheck && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.modal}>
+              <button
+                style={styles.closeButton}
+                onClick={() =>
+                  setShowAccessCheck(false)
                 }
-              )
-            )}
+              >
+                ×
+              </button>
 
-             {selectedProduct.questions.length >= FREE_QUESTIONS && (
-              <section style={styles.purchaseBox}>
-                {isUnlocked ? (
-                  <>
-                    <div
-                      style={styles.successIcon}
-                    >
-                      🎉
-                    </div>
-
-                    <span
-                      style={
-                        styles.purchaseEyebrow
-                      }
-                    >
-                      FULL ACCESS UNLOCKED
-                    </span>
-
-                    <h2>
-                      You can now access the
-                      complete practice set
-                    </h2>
-
-                    <p>
-                      Your payment has been
-                      approved by StudyCare.
-                      All questions, answers, and
-                      explanations are unlocked.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <div
-                      style={styles.purchaseIcon}
-                    >
-                      🎯
-                    </div>
-
-                    <span
-                      style={
-                        styles.purchaseEyebrow
-                      }
-                    >
-                      FULL ACCESS
-                    </span>
-
-                    <h2>
-                      Ready to practice the full
-                      set?
-                    </h2>
-
-                    <p>
-                      Unlock all questions, answers,
-                      and detailed explanations for
-                      this subject.
-                    </p>
-
-                    <div
-                      style={styles.purchasePrice}
-                    >
-                      {selectedProduct.price} ETB
-                    </div>
-
-                    {!showPurchaseForm ? (
-                      <>
-                        <button
-                          onClick={() => {
-                            setShowPurchaseForm(
-                              true
-                            )
-                            setPurchaseError('')
-                            setPurchaseMessage('')
-                          }}
-                          style={
-                            styles.primaryLarge
-                          }
-                        >
-                          Unlock Full Exam
-                          Practice
-                        </button>
-
-                        {purchaseMessage && (
-                          <div
-                            style={
-                              styles.messageBox
-                            }
-                          >
-                            {purchaseMessage}
-                          </div>
-                        )}
-
-                        {purchaseError && (
-                          <div
-                            style={
-                              styles.errorBox
-                            }
-                          >
-                            {purchaseError}
-                          </div>
-                        )}
-
-                        {purchaseId && (
-                          <button
-                            onClick={() =>
-                              checkAccess()
-                            }
-                            disabled={
-                              checkingAccess
-                            }
-                            style={
-                              styles.checkButton
-                            }
-                          >
-                            {checkingAccess
-                              ? 'Checking...'
-                              : 'Check Payment Status'}
-                          </button>
-                        )}
-
-                        <small
-                          style={
-                            styles.purchaseSmall
-                          }
-                        >
-                          Payment is made by CBE
-                          bank transfer and
-                          verified manually by
-                          StudyCare.
-                        </small>
-                      </>
-                    ) : (
-                      <form
-                        onSubmit={submitPurchase}
-                        style={styles.purchaseForm}
-                      >
-                        <div
-                          style={
-                            styles.paymentInstruction
-                          }
-                        >
-                          <strong>
-                            CBE Transfer
-                            Instructions
-                          </strong>
-
-                          <p>
-                            Send{' '}
-                            <strong>
-                              {
-                                selectedProduct.price
-                              }{' '}
-                              ETB
-                            </strong>{' '}
-                            to the StudyCare CBE
-                            account, then enter
-                            your transaction
-                            reference below.
-                          </p>
-
-                          <div
-                            style={
-                              styles.bankDetails
-                            }
-                          >
-                            <div>
-                              <span>
-                                Account Name
-                              </span>
-
-                              <strong>
-                                {
-                                  CBE_ACCOUNT_NAME
-                                }
-                              </strong>
-                            </div>
-
-                            <div>
-                              <span>
-                                CBE Account
-                              </span>
-
-                              <strong>
-                                {
-                                  CBE_ACCOUNT_NUMBER
-                                }
-                              </strong>
-                            </div>
-                          </div>
-                        </div>
-
-                        <label
-                          style={styles.formLabel}
-                        >
-                          Full Name *
-                          <input
-                            type="text"
-                            value={
-                              purchaseForm.customerName
-                            }
-                            onChange={(e) =>
-                              updatePurchaseForm(
-                                'customerName',
-                                e.target.value
-                              )
-                            }
-                            placeholder="Enter your full name"
-                            style={
-                              styles.formInput
-                            }
-                            required
-                          />
-                        </label>
-
-                        <label
-                          style={styles.formLabel}
-                        >
-                          Phone Number *
-                          <input
-                            type="tel"
-                            value={
-                              purchaseForm.phone
-                            }
-                            onChange={(e) =>
-                              updatePurchaseForm(
-                                'phone',
-                                e.target.value
-                              )
-                            }
-                            placeholder="09XXXXXXXX"
-                            style={
-                              styles.formInput
-                            }
-                            required
-                          />
-                        </label>
-
-                        <label
-                          style={styles.formLabel}
-                        >
-                          Email
-                          <input
-                            type="email"
-                            value={
-                              purchaseForm.email
-                            }
-                            onChange={(e) =>
-                              updatePurchaseForm(
-                                'email',
-                                e.target.value
-                              )
-                            }
-                            placeholder="Optional"
-                            style={
-                              styles.formInput
-                            }
-                          />
-                        </label>
-
-                        <label
-                          style={styles.formLabel}
-                        >
-                          CBE Transaction Reference *
-                          <input
-                            type="text"
-                            value={
-                              purchaseForm.transactionReference
-                            }
-                            onChange={(e) =>
-                              updatePurchaseForm(
-                                'transactionReference',
-                                e.target.value
-                              )
-                            }
-                            placeholder="Enter transaction/reference number"
-                            style={
-                              styles.formInput
-                            }
-                            required
-                          />
-                        </label>
-
-                        {purchaseError && (
-                          <div
-                            style={
-                              styles.errorBox
-                            }
-                          >
-                            {purchaseError}
-                          </div>
-                        )}
-
-                        <div
-                          style={
-                            styles.formButtons
-                          }
-                        >
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setShowPurchaseForm(
-                                false
-                              )
-                            }
-                            style={
-                              styles.cancelButton
-                            }
-                          >
-                            Cancel
-                          </button>
-
-                          <button
-                            type="submit"
-                            disabled={
-                              purchaseSubmitting
-                            }
-                            style={
-                              styles.primaryLarge
-                            }
-                          >
-                            {purchaseSubmitting
-                              ? 'Submitting...'
-                              : 'Submit Payment Information'}
-                          </button>
-                        </div>
-
-                        <p
-                          style={
-                            styles.formNote
-                          }
-                        >
-                          After submission, your
-                          payment will remain locked
-                          until StudyCare verifies
-                          the CBE transfer.
-                        </p>
-                      </form>
-                    )}
-                  </>
-                )}
-              </section>
-            )}
-          </section>
-
-          <section style={styles.tutoringCTA}>
-            <div>
-              <span style={styles.eyebrow}>
-                NEED MORE SUPPORT?
-              </span>
-
-              <h2>
-                Want personalized exam
-                preparation?
+              <h2 style={styles.modalTitle}>
+                Unlock Your Exam
               </h2>
 
-              <p>
-                StudyCare also provides
-                personalized tutoring and exam
-                preparation support for students.
+              <p style={styles.modalText}>
+                Enter the same phone number and CBE
+                transaction reference you used for your
+                purchase.
               </p>
+
+              <label style={styles.label}>
+                Phone number
+              </label>
+
+              <input
+                style={styles.input}
+                type="tel"
+                placeholder="09XXXXXXXX"
+                value={phone}
+                onChange={(e) =>
+                  setPhone(e.target.value)
+                }
+              />
+
+              <label style={styles.label}>
+                Transaction reference
+              </label>
+
+              <input
+                style={styles.input}
+                type="text"
+                placeholder="Enter transaction reference"
+                value={transactionReference}
+                onChange={(e) =>
+                  setTransactionReference(
+                    e.target.value
+                  )
+                }
+              />
+
+              <button
+                style={styles.primaryButtonFull}
+                onClick={handleAccessCheck}
+                disabled={accessLoading}
+              >
+                {accessLoading
+                  ? "Checking..."
+                  : "Check My Access"}
+              </button>
             </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
-            <a
-              href="/"
-              style={styles.tutoringButton}
-            >
-              Explore Tutoring →
-            </a>
-          </section>
-        </main>
-      )}
+  if (view === "grades") {
+    return renderGrades();
+  }
 
-      <footer style={styles.footer}>
-        <strong>
-          Study<span>Care</span>
-        </strong>
+  if (view === "years") {
+    return renderYears();
+  }
 
-        <p>
-          Helping students prepare, practice,
-          and learn with confidence.
-        </p>
-      </footer>
-    </div>
-  )
+  if (view === "subjects") {
+    return renderSubjects();
+  }
+
+  return renderExam();
+}
+
+function getSubjectIcon(subject) {
+  const value = String(subject || "").toLowerCase();
+
+  if (
+    value.includes("amharic") ||
+    value.includes("አማርኛ")
+  ) {
+    return "📝";
+  }
+
+  if (
+    value.includes("math") ||
+    value.includes("ሂሳብ")
+  ) {
+    return "🔢";
+  }
+
+  if (
+    value.includes("english") ||
+    value.includes("እንግሊዝኛ")
+  ) {
+    return "📖";
+  }
+
+  if (
+    value.includes("science") ||
+    value.includes("ሳይንስ")
+  ) {
+    return "🔬";
+  }
+
+  if (
+    value.includes("civics") ||
+    value.includes("ግብረ")
+  ) {
+    return "🏛️";
+  }
+
+  return "📚";
 }
 
 const styles = {
   page: {
-    minHeight: '100vh',
-    background: '#f7f8fa',
-    color: '#172033',
-    fontFamily: 'Arial, sans-serif',
+    minHeight: "100vh",
+    background:
+      "linear-gradient(180deg, #f8fafc 0%, #ffffff 100%)",
+    padding: "32px 20px 70px",
+    color: "#0f172a",
+    boxSizing: "border-box",
   },
 
-  header: {
-    minHeight: '70px',
-    padding: '0 6%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    background: '#ffffff',
-    borderBottom: '1px solid #e5e7eb',
-    gap: '20px',
-  },
-
-  logo: {
-    textDecoration: 'none',
-    fontSize: '25px',
-    fontWeight: '800',
-    color: '#172033',
-  },
-
-  "logo span": {
-    color: '#1769aa',
-  },
-
-  homeLink: {
-    textDecoration: 'none',
-    color: '#555',
-    fontWeight: '600',
-    fontSize: '14px',
-  },
-
-  container: {
-    width: '92%',
-    maxWidth: '1100px',
-    margin: '0 auto',
-    padding: '45px 0 80px',
-  },
-
-  hero: {
-    textAlign: 'center',
-    maxWidth: '760px',
-    margin: '0 auto 60px',
-  },
-
-  badge: {
-    display: 'inline-block',
-    padding: '7px 13px',
-    borderRadius: '30px',
-    background: '#e9f2ff',
-    color: '#1769aa',
-    fontSize: '12px',
-    fontWeight: '800',
-    letterSpacing: '1px',
-  },
-
-      
-heroTitle: {
-  fontSize: '42px',
-  lineHeight: '1.1',
-  margin: '18px 0 15px',
-  color: '#172033',
-},
-
-  heroText: {
-    fontSize: '18px',
-    color: '#626b7a',
-    lineHeight: '1.7',
-    margin: 0,
-  },
-
-  heroFeatures: {
-    display: 'flex',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-    gap: '15px',
-    marginTop: '25px',
-    color: '#315f46',
-    fontSize: '14px',
-    fontWeight: '700',
-  },
-
-  section: {
-    marginBottom: '55px',
-  },
-
-  sectionHeading: {
-    marginBottom: '25px',
-  },
-
-  "sectionHeading h2": {
-    margin: '7px 0 5px',
-    fontSize: '28px',
-  },
-
-  "sectionHeading p": {
-    margin: 0,
-    color: '#697180',
-  },
-
-  eyebrow: {
-    color: '#1769aa',
-    fontWeight: '800',
-    fontSize: '12px',
-    textTransform: 'uppercase',
-    letterSpacing: '1px',
-  },
-
-  gradeGrid: {
-    display: 'grid',
-    gridTemplateColumns:
-      'repeat(auto-fit, minmax(210px, 1fr))',
-    gap: '18px',
-  },
-
-  gradeCard: {
-  border: '1px solid #e1e5eb',
-  background: '#ffffff',
-  borderRadius: '18px',
-  padding: '25px',
-  textAlign: 'left',
-  cursor: 'pointer',
-  minHeight: '155px',
-  transition: '0.2s',
-  color: '#172033',
-},
-
-  gradeCardSelected: {
-    border: '2px solid #1769aa',
-    boxShadow:
-      '0 8px 25px rgba(23,105,170,0.10)',
-  },
-
-  gradeIcon: {
-    fontSize: '30px',
-    marginBottom: '15px',
-  },
-
-  productGrid: {
-    display: 'grid',
-    gridTemplateColumns:
-      'repeat(auto-fit, minmax(290px, 1fr))',
-    gap: '20px',
-  },
-
-  productCard: {
-    background: '#ffffff',
-    border: '1px solid #e1e5eb',
-    borderRadius: '20px',
-    padding: '25px',
-    boxShadow:
-      '0 5px 20px rgba(23,32,51,0.03)',
-  },
-
-  subjectIcon: {
-    fontSize: '30px',
-    marginBottom: '10px',
-  },
-
-  subjectLabel: {
-    fontSize: '12px',
-    color: '#1769aa',
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: '0.8px',
-  },
-
-  productTitle: {
-  fontSize: '20px',
-  margin: '8px 0',
-  color: '#172033',
-},
-
-  productDescription: {
-    color: '#687180',
-    lineHeight: '1.6',
-    minHeight: '52px',
-  },
-
-  productInfo: {
-    display: 'grid',
-    gap: '8px',
-    margin: '20px 0',
-    color: '#4d5969',
-    fontSize: '13px',
-  },
-
-  productBottom: {
-    borderTop: '1px solid #edf0f3',
-    paddingTop: '18px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '15px',
-  },
-
-  priceLabel: {
-    display: 'block',
-    color: '#89919d',
-    fontSize: '10px',
-    fontWeight: '800',
-    letterSpacing: '1px',
-  },
-
-  price: {
-    display: 'block',
-    fontSize: '21px',
-    marginTop: '3px',
-  },
-
-  primaryButton: {
-    border: 'none',
-    borderRadius: '11px',
-    padding: '12px 16px',
-    background: '#172033',
-    color: '#ffffff',
-    fontWeight: '800',
-    cursor: 'pointer',
-  },
-
-  empty: {
-    background: '#ffffff',
-    borderRadius: '20px',
-    padding: '45px 25px',
-    textAlign: 'center',
-    border: '1px solid #e1e5eb',
-  },
-
-  emptyIcon: {
-    fontSize: '40px',
-    marginBottom: '10px',
-  },
-
-  infoSection: {
-    display: 'grid',
-    gridTemplateColumns:
-      'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '18px',
-    marginTop: '30px',
-  },
-
-  infoCard: {
-    display: 'flex',
-    gap: '15px',
-    background: '#ffffff',
-    border: '1px solid #e1e5eb',
-    borderRadius: '18px',
-    padding: '22px',
-  },
-
-  infoIcon: {
-    fontSize: '25px',
-  },
-
-  "infoCard h3": {
-    margin: '0 0 8px',
-  },
-
-  "infoCard p": {
-    margin: 0,
-    color: '#687180',
-    lineHeight: '1.6',
+  topBar: {
+    maxWidth: "1050px",
+    margin: "0 auto 20px",
   },
 
   backButton: {
-    border: 'none',
-    background: 'transparent',
-    color: '#1769aa',
-    fontWeight: '800',
-    cursor: 'pointer',
-    marginBottom: '25px',
-    padding: 0,
+    border: "none",
+    background: "transparent",
+    color: "#2563eb",
+    fontWeight: 800,
+    cursor: "pointer",
+    padding: "8px 0",
+    fontSize: "14px",
   },
 
-  productHero: {
-    background: '#ffffff',
-    borderRadius: '24px',
-    padding: '35px',
-    marginBottom: '35px',
-    border: '1px solid #e1e5eb',
+  header: {
+    maxWidth: "1050px",
+    margin: "0 auto 35px",
+    color: "#0f172a",
   },
 
-  productHeroTop: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    flexWrap: 'wrap',
+  eyebrow: {
+    color: "#2563eb",
+    fontWeight: 900,
+    fontSize: "12px",
+    letterSpacing: "1.5px",
+    margin: "0 0 8px",
   },
 
-  subjectPill: {
-    background: '#eef2f6',
-    padding: '6px 11px',
-    borderRadius: '20px',
-    fontSize: '12px',
-    fontWeight: '800',
+  title: {
+    margin: "0",
+    color: "#0f172a",
+    fontSize: "clamp(30px, 5vw, 46px)",
+    lineHeight: 1.1,
+    fontWeight: 900,
   },
 
-  productHeroTitle: {
-    fontSize: '36px',
-    lineHeight: '1.2',
-    margin: '15px 0 10px',
+  subtitle: {
+    margin: "12px 0 0",
+    color: "#64748b",
+    fontSize: "16px",
+    lineHeight: 1.6,
   },
 
-  productHeroText: {
-    color: '#687180',
-    lineHeight: '1.7',
-    fontSize: '16px',
-    maxWidth: '720px',
+  section: {
+    maxWidth: "1050px",
+    margin: "0 auto",
   },
 
-  productStats: {
-    display: 'grid',
+  sectionTitle: {
+    color: "#0f172a",
+    fontSize: "22px",
+    margin: "0 0 18px",
+    fontWeight: 850,
+  },
+
+  gradeGrid: {
+    display: "grid",
     gridTemplateColumns:
-      'repeat(3, minmax(0, 1fr))',
-    gap: '12px',
-    marginTop: '28px',
+      "repeat(auto-fit, minmax(230px, 1fr))",
+    gap: "18px",
+    maxWidth: "1050px",
+    margin: "0 auto",
   },
 
-  "productStats div": {
-    background: '#f7f8fa',
-    borderRadius: '14px',
-    padding: '15px',
-    textAlign: 'center',
+  gradeCard: {
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+    gap: "16px",
+    textAlign: "left",
+    padding: "24px",
+    borderRadius: "18px",
+    border: "1px solid #e2e8f0",
+    background: "#ffffff",
+    color: "#0f172a",
+    boxShadow:
+      "0 8px 30px rgba(15, 23, 42, 0.06)",
+    cursor: "pointer",
   },
 
-  "productStats strong": {
-    display: 'block',
-    fontSize: '20px',
+  gradeIcon: {
+    width: "52px",
+    height: "52px",
+    borderRadius: "14px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#eff6ff",
+    fontSize: "26px",
+    flexShrink: 0,
   },
 
-  "productStats span": {
-    display: 'block',
-    marginTop: '5px',
-    color: '#697180',
-    fontSize: '12px',
-  },
-
-  freeNotice: {
-    display: 'flex',
-    gap: '15px',
-    marginTop: '25px',
-    padding: '18px',
-    borderRadius: '15px',
-    background: '#eef8f1',
-    color: '#205c36',
-    lineHeight: '1.6',
-  },
-
-  freeNoticeIcon: {
-    fontSize: '25px',
-  },
-
-  "freeNotice p": {
-    margin: '4px 0 0',
-    fontSize: '14px',
-  },
-
-  questionsSection: {
-    display: 'grid',
-    gap: '20px',
-  },
-passageBox: {
-  background: '#f5f7fb',
-  border: '1px solid #d9e0ea',
-  borderRadius: '14px',
-  padding: '20px',
-  marginBottom: '24px',
-},
-
-passageTitle: {
-  margin: '0 0 14px',
-  color: '#172033',
-  fontSize: '20px',
-},
-
-passageText: {
-  color: '#172033',
-  lineHeight: '1.7',
-  fontSize: '15px',
-},
-  questionsHeading: {
-    color: '#172033',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'end',
-    marginBottom: '5px',
-  },
-
-  freeCounter: {
-    background: '#dff3e5',
-    color: '#24733e',
-    padding: '7px 11px',
-    borderRadius: '20px',
-    fontSize: '12px',
-    fontWeight: '800',
-  },
-
-  questionCard: {
-    color: '#172033',
-    background: '#ffffff',
-    border: '1px solid #e1e5eb',
-    borderRadius: '20px',
-    padding: '25px',
-  },
-
-  lockedCard: {
-    background: '#f1f2f4',
-  },
-
-  questionTop: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '18px',
-    gap: '10px',
-  },
-
-  questionNumber: {
-    fontWeight: '800',
-    fontSize: '14px',
-  },
-
-  freeBadge: {
-    padding: '5px 10px',
-    borderRadius: '20px',
-    background: '#dff3e5',
-    color: '#24733e',
-    fontSize: '11px',
-    fontWeight: '800',
-  },
-
-  lockBadge: {
-    padding: '5px 10px',
-    borderRadius: '20px',
-    background: '#e4e5e8',
-    color: '#555',
-    fontSize: '11px',
-    fontWeight: '800',
-  },
-
-  unlockedBadge: {
-    padding: '5px 10px',
-    borderRadius: '20px',
-    background: '#dff3e5',
-    color: '#176b32',
-    fontSize: '11px',
-    fontWeight: '800',
-  },
-
-  questionText: {
-    fontSize: '19px',
-    lineHeight: '1.5',
-    margin: '0 0 20px',
-  },
-
-  options: {
-    display: 'grid',
-    gap: '10px',
-    margin: '15px 0 20px',
-  },
-
-  option: {
-    color: '#172033',
-    width: '100%',
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '14px',
-    borderRadius: '10px',
-    background: '#f6f7f9',
-    border: '2px solid transparent',
-    textAlign: 'left',
-    fontSize: '15px',
-    cursor: 'pointer',
-  },
-
-  optionLetter: {
-    color: '#172033',
-    fontWeight: '800',
-    minWidth: '25px',
-  },
-
-  optionText: {
-    color: '#172033',
+  gradeContent: {
+    minWidth: 0,
     flex: 1,
   },
 
-  optionResult: {
-    fontSize: '20px',
-    fontWeight: '900',
+  gradeName: {
+    margin: "0 0 6px",
+    color: "#0f172a",
+    fontSize: "19px",
+    fontWeight: 900,
+    lineHeight: 1.2,
   },
 
-  correctOption: {
-    background: '#e7f7ec',
-    border: '2px solid #32a852',
-    color: '#176b32',
+  cardText: {
+    margin: 0,
+    color: "#64748b",
+    fontSize: "14px",
+    lineHeight: 1.5,
   },
 
-  wrongOption: {
-    background: '#fdeaea',
-    border: '2px solid #d93025',
-    color: '#a51d16',
+  arrow: {
+    marginLeft: "auto",
+    color: "#2563eb",
+    fontSize: "24px",
+    fontWeight: 900,
+    flexShrink: 0,
   },
 
-  disabledOption: {
-    opacity: 0.65,
-    cursor: 'default',
+  yearGrid: {
+    maxWidth: "1050px",
+    margin: "0 auto",
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "20px",
   },
 
-  resultBox: {
-    padding: '14px 16px',
-    borderRadius: '12px',
-    marginBottom: '15px',
-    lineHeight: '1.5',
+  yearCard: {
+    textAlign: "left",
+    border: "1px solid #dbe3ef",
+    background: "#ffffff",
+    color: "#0f172a",
+    borderRadius: "20px",
+    padding: "28px",
+    cursor: "pointer",
+    boxShadow:
+      "0 10px 30px rgba(15, 23, 42, 0.07)",
   },
 
-  correctResult: {
-    background: '#e7f7ec',
-    color: '#176b32',
-    border: '1px solid #b8e5c4',
+  yearNumber: {
+    color: "#2563eb",
+    fontSize: "40px",
+    fontWeight: 900,
+    marginBottom: "10px",
+    lineHeight: 1,
   },
 
-  wrongResult: {
-    background: '#fdeaea',
-    color: '#a51d16',
-    border: '1px solid #f2b8b5',
+  yearLabel: {
+    color: "#0f172a",
+    fontSize: "17px",
+    fontWeight: 850,
+    marginBottom: "18px",
   },
 
-  answerButton: {
-    border: 'none',
-    background: '#172033',
-    color: '#ffffff',
-    borderRadius: '10px',
-    padding: '12px 18px',
-    fontWeight: '700',
-    cursor: 'pointer',
+  yearAction: {
+    color: "#64748b",
+    fontSize: "14px",
+    fontWeight: 750,
   },
 
-  answerBox: {
-    marginTop: '18px',
-    padding: '18px',
-    borderRadius: '12px',
-    background: '#dceaff',
-    lineHeight: '1.6',
-    display: 'grid',
-    gap: '10px',
+  productGrid: {
+    maxWidth: "1050px",
+    margin: "0 auto",
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(240px, 1fr))",
+    gap: "18px",
   },
 
-  "answerBox p": {
-    margin: '4px 0 0',
+  productCard: {
+    textAlign: "left",
+    border: "1px solid #dbe3ef",
+    background: "#ffffff",
+    color: "#0f172a",
+    borderRadius: "18px",
+    padding: "24px",
+    cursor: "pointer",
+    boxShadow:
+      "0 8px 30px rgba(15, 23, 42, 0.06)",
   },
 
-  lockedContent: {
-    textAlign: 'center',
-    padding: '25px 10px',
+  subjectIcon: {
+    width: "48px",
+    height: "48px",
+    borderRadius: "14px",
+    background: "#eff6ff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "24px",
+    marginBottom: "16px",
+  },
+
+  subjectName: {
+    color: "#0f172a",
+    margin: "0 0 8px",
+    fontSize: "19px",
+    fontWeight: 900,
+  },
+
+  productTitle: {
+    margin: "0 0 18px",
+    color: "#64748b",
+    fontSize: "14px",
+    lineHeight: 1.5,
+  },
+
+  productInfo: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "10px",
+    fontSize: "13px",
+    fontWeight: 750,
+    color: "#475569",
+    marginBottom: "18px",
+  },
+
+  cardAction: {
+    color: "#2563eb",
+    fontWeight: 850,
+    fontSize: "14px",
+  },
+
+  emptyBox: {
+    maxWidth: "600px",
+    margin: "50px auto",
+    textAlign: "center",
+    background: "#ffffff",
+    color: "#0f172a",
+    border: "1px solid #e2e8f0",
+    borderRadius: "20px",
+    padding: "40px 25px",
+    boxShadow:
+      "0 10px 30px rgba(15, 23, 42, 0.06)",
+  },
+
+  emptyIcon: {
+    fontSize: "45px",
+    marginBottom: "15px",
+  },
+
+  emptyTitle: {
+    color: "#0f172a",
+    margin: "0 0 10px",
+    fontSize: "24px",
+    fontWeight: 850,
+  },
+
+  emptyText: {
+    color: "#64748b",
+    lineHeight: 1.6,
+    marginBottom: "25px",
+  },
+
+  examHeader: {
+    maxWidth: "1050px",
+    margin: "0 auto 25px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: "20px",
+    flexWrap: "wrap",
+  },
+
+  examTitle: {
+    margin: 0,
+    color: "#0f172a",
+    fontSize: "clamp(28px, 5vw, 40px)",
+    fontWeight: 900,
+  },
+
+  examSubtitle: {
+    margin: "8px 0 0",
+    color: "#64748b",
+  },
+
+  priceBadge: {
+    background: "#eff6ff",
+    color: "#1d4ed8",
+    padding: "10px 15px",
+    borderRadius: "999px",
+    fontWeight: 800,
+  },
+
+  progressBox: {
+    maxWidth: "1050px",
+    margin: "0 auto 20px",
+    background: "#ffffff",
+    color: "#0f172a",
+    border: "1px solid #e2e8f0",
+    borderRadius: "14px",
+    padding: "15px",
+  },
+
+  progressTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "15px",
+    marginBottom: "10px",
+    fontSize: "13px",
+    color: "#64748b",
+    fontWeight: 700,
+  },
+
+  progressTrack: {
+    width: "100%",
+    height: "7px",
+    borderRadius: "999px",
+    background: "#e2e8f0",
+    overflow: "hidden",
+  },
+
+  progressFill: {
+    height: "100%",
+    background: "#2563eb",
+    borderRadius: "999px",
+    transition: "width 0.3s ease",
+  },
+
+  questionBox: {
+    maxWidth: "850px",
+    margin: "0 auto",
+    background: "#ffffff",
+    color: "#0f172a",
+    border: "1px solid #e2e8f0",
+    borderRadius: "20px",
+    padding: "28px",
+    boxShadow:
+      "0 10px 35px rgba(15, 23, 42, 0.06)",
+  },
+
+  questionNumber: {
+    color: "#2563eb",
+    fontWeight: 850,
+    fontSize: "14px",
+    marginBottom: "12px",
+  },
+
+  question: {
+    margin: "0 0 25px",
+    color: "#0f172a",
+    fontSize: "22px",
+    lineHeight: 1.5,
+    fontWeight: 800,
+  },
+
+  options: {
+    display: "grid",
+    gap: "12px",
+  },
+
+  option: {
+    width: "100%",
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "14px",
+    padding: "16px",
+    borderRadius: "12px",
+    border: "1px solid #dbe3ef",
+    background: "#ffffff",
+    color: "#0f172a",
+    textAlign: "left",
+    cursor: "pointer",
+    fontSize: "15px",
+    lineHeight: 1.5,
+  },
+
+  optionLetter: {
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    background: "#eff6ff",
+    color: "#2563eb",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 850,
+    flexShrink: 0,
+  },
+
+  optionText: {
+    flex: 1,
+    color: "#0f172a",
+    paddingTop: "5px",
+  },
+
+  explanationBox: {
+    marginTop: "20px",
+    padding: "16px",
+    borderRadius: "12px",
+    border: "1px solid",
+    lineHeight: 1.6,
+  },
+
+  explanationText: {
+    color: "#334155",
+    marginBottom: 0,
+  },
+
+  correctText: {
+    color: "#166534",
+  },
+
+  incorrectText: {
+    color: "#991b1b",
+  },
+
+  navigation: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "12px",
+    marginTop: "25px",
+    flexWrap: "wrap",
+  },
+
+  primaryButton: {
+    border: "none",
+    borderRadius: "10px",
+    padding: "13px 20px",
+    background: "#2563eb",
+    color: "#ffffff",
+    fontWeight: 850,
+    cursor: "pointer",
+  },
+
+  primaryButtonFull: {
+    width: "100%",
+    border: "none",
+    borderRadius: "10px",
+    padding: "14px 20px",
+    background: "#2563eb",
+    color: "#ffffff",
+    fontWeight: 850,
+    cursor: "pointer",
+    marginTop: "10px",
+  },
+
+  secondaryButton: {
+    border: "1px solid #cbd5e1",
+    borderRadius: "10px",
+    padding: "12px 18px",
+    background: "#ffffff",
+    color: "#334155",
+    fontWeight: 750,
+    cursor: "pointer",
+    marginTop: "10px",
+  },
+
+  disabledButton: {
+    border: "1px solid #e2e8f0",
+    borderRadius: "10px",
+    padding: "12px 18px",
+    background: "#f1f5f9",
+    color: "#94a3b8",
+    fontWeight: 750,
+    cursor: "not-allowed",
+  },
+
+  lockedBox: {
+    maxWidth: "700px",
+    margin: "40px auto",
+    textAlign: "center",
+    background: "#ffffff",
+    color: "#0f172a",
+    border: "1px solid #e2e8f0",
+    borderRadius: "20px",
+    padding: "40px 25px",
+    boxShadow:
+      "0 10px 35px rgba(15, 23, 42, 0.07)",
   },
 
   lockIcon: {
-    fontSize: '38px',
-    marginBottom: '10px',
+    fontSize: "42px",
+    marginBottom: "15px",
   },
 
-  unlockButton: {
-    border: 'none',
-    background: '#172033',
-    color: '#ffffff',
-    padding: '12px 18px',
-    borderRadius: '10px',
-    fontWeight: '800',
-    cursor: 'pointer',
+  lockedTitle: {
+    margin: "0 0 12px",
+    color: "#0f172a",
+    fontSize: "25px",
+    fontWeight: 850,
   },
 
-  purchaseBox: {
-    textAlign: 'center',
-    background: '#ffffff',
-    border: '1px solid #dce1e7',
-    borderRadius: '24px',
-    padding: '40px 25px',
-    marginTop: '10px',
+  lockedText: {
+    color: "#64748b",
+    lineHeight: 1.7,
+    marginBottom: "25px",
   },
 
-  purchaseIcon: {
-    fontSize: '38px',
+  purchaseDetails: {
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: "12px",
+    textAlign: "left",
+    marginBottom: "25px",
   },
 
-  successIcon: {
-    fontSize: '45px',
+  detailLabel: {
+    display: "block",
+    color: "#94a3b8",
+    fontSize: "12px",
+    marginBottom: "4px",
   },
 
-  purchaseEyebrow: {
-    display: 'block',
-    color: '#1769aa',
-    fontWeight: '800',
-    fontSize: '12px',
-    letterSpacing: '1px',
-    marginTop: '10px',
+  detailValue: {
+    color: "#0f172a",
   },
 
-  purchasePrice: {
-    fontSize: '30px',
-    fontWeight: '900',
-    margin: '15px 0',
+  message: {
+    maxWidth: "850px",
+    margin: "0 auto 20px",
+    padding: "14px 16px",
+    borderRadius: "10px",
+    background: "#f8fafc",
+    color: "#334155",
+    border: "1px solid #e2e8f0",
+    lineHeight: 1.5,
   },
 
-  primaryLarge: {
-    border: 'none',
-    borderRadius: '12px',
-    padding: '15px 25px',
-    background: '#172033',
-    color: '#ffffff',
-    fontWeight: '800',
-    cursor: 'pointer',
-    fontSize: '15px',
+  success: {
+    color: "#166534",
+    background: "#f0fdf4",
+    borderColor: "#86efac",
   },
 
-  purchaseSmall: {
-    display: 'block',
-    marginTop: '15px',
-    color: '#777',
+  error: {
+    color: "#991b1b",
+    background: "#fef2f2",
+    borderColor: "#fca5a5",
   },
 
-  purchaseForm: {
-    maxWidth: '600px',
-    margin: '25px auto 0',
-    textAlign: 'left',
+  warning: {
+    color: "#92400e",
+    background: "#fffbeb",
+    borderColor: "#fcd34d",
   },
 
-  paymentInstruction: {
-    background: '#eef5ff',
-    border: '1px solid #d5e5f8',
-    borderRadius: '15px',
-    padding: '20px',
-    marginBottom: '20px',
-    lineHeight: '1.6',
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(15, 23, 42, 0.6)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "20px",
+    zIndex: 1000,
   },
 
-  bankDetails: {
-    display: 'grid',
-    gap: '10px',
-    marginTop: '15px',
+  modal: {
+    position: "relative",
+    width: "100%",
+    maxWidth: "500px",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    background: "#ffffff",
+    color: "#0f172a",
+    borderRadius: "20px",
+    padding: "30px",
+    boxSizing: "border-box",
   },
 
-  "bankDetails div": {
-    background: '#ffffff',
-    borderRadius: '10px',
-    padding: '12px 15px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    gap: '15px',
-    flexWrap: 'wrap',
+  closeButton: {
+    position: "absolute",
+    right: "15px",
+    top: "12px",
+    border: "none",
+    background: "transparent",
+    color: "#64748b",
+    fontSize: "28px",
+    cursor: "pointer",
   },
 
-  "bankDetails span": {
-    color: '#697180',
+  modalTitle: {
+    margin: "0 0 10px",
+    color: "#0f172a",
+    fontSize: "25px",
+    fontWeight: 850,
+    paddingRight: "30px",
   },
 
-  formLabel: {
-    display: 'block',
-    fontWeight: '700',
-    fontSize: '14px',
-    marginBottom: '15px',
+  modalText: {
+    color: "#64748b",
+    lineHeight: 1.6,
+    marginBottom: "20px",
   },
 
-  formInput: {
-    display: 'block',
-    width: '100%',
-    boxSizing: 'border-box',
-    marginTop: '7px',
-    padding: '13px 14px',
-    borderRadius: '10px',
-    border: '1px solid #d6dbe2',
-    fontSize: '15px',
-    outline: 'none',
+  paymentBox: {
+    background: "#f8fafc",
+    border: "1px solid #e2e8f0",
+    borderRadius: "12px",
+    padding: "18px",
+    marginBottom: "20px",
+    lineHeight: 1.6,
   },
 
-  formButtons: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '10px',
-    flexWrap: 'wrap',
-    marginTop: '20px',
+  paymentTitle: {
+    color: "#0f172a",
+    marginTop: 0,
   },
 
-  cancelButton: {
-    border: '1px solid #ccd2da',
-    background: '#ffffff',
-    color: '#172033',
-    padding: '13px 18px',
-    borderRadius: '10px',
-    fontWeight: '700',
-    cursor: 'pointer',
+  paymentText: {
+    color: "#334155",
   },
 
-  formNote: {
-    textAlign: 'center',
-    color: '#697180',
-    fontSize: '13px',
-    lineHeight: '1.6',
-    marginTop: '18px',
+  label: {
+    display: "block",
+    color: "#334155",
+    fontWeight: 750,
+    fontSize: "14px",
+    marginBottom: "7px",
+    marginTop: "15px",
   },
 
-  messageBox: {
-    background: '#e7f7ec',
-    color: '#176b32',
-    border: '1px solid #b8e5c4',
-    borderRadius: '10px',
-    padding: '13px 15px',
-    marginTop: '18px',
-    lineHeight: '1.5',
+  input: {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "13px 14px",
+    borderRadius: "10px",
+    border: "1px solid #cbd5e1",
+    outline: "none",
+    fontSize: "15px",
+    color: "#0f172a",
+    background: "#ffffff",
   },
-
-  errorBox: {
-    background: '#fdeaea',
-    color: '#a51d16',
-    border: '1px solid #f2b8b5',
-    borderRadius: '10px',
-    padding: '13px 15px',
-    marginTop: '15px',
-    lineHeight: '1.5',
-  },
-
-  checkButton: {
-    display: 'block',
-    margin: '15px auto 0',
-    border: '1px solid #172033',
-    background: '#ffffff',
-    color: '#172033',
-    padding: '11px 17px',
-    borderRadius: '10px',
-    fontWeight: '700',
-    cursor: 'pointer',
-  },
-
-  tutoringCTA: {
-    marginTop: '50px',
-    background: '#172033',
-    color: '#ffffff',
-    borderRadius: '22px',
-    padding: '30px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: '25px',
-    flexWrap: 'wrap',
-  },
-
-  "tutoringCTA h2": {
-    margin: '7px 0',
-  },
-
-  "tutoringCTA p": {
-    color: '#cbd2dc',
-    lineHeight: '1.6',
-    margin: 0,
-    maxWidth: '650px',
-  },
-
-  tutoringButton: {
-    display: 'inline-block',
-    textDecoration: 'none',
-    background: '#ffffff',
-    color: '#172033',
-    padding: '13px 18px',
-    borderRadius: '11px',
-    fontWeight: '800',
-  },
-
-  footer: {
-    borderTop: '1px solid #e5e7eb',
-    background: '#ffffff',
-    textAlign: 'center',
-    padding: '30px 20px',
-    color: '#697180',
-  },
-
-  "footer strong": {
-    color: '#172033',
-    fontSize: '20px',
-  },
-
-  "footer strong span": {
-    color: '#1769aa',
-  },
-
-  "footer p": {
-    margin: '8px 0 0',
-    fontSize: '13px',
-  },
-}
+};
