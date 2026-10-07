@@ -168,16 +168,17 @@ export const examProducts = [
     description:
       "Practice Grade 6 English questions with answers and explanations.",
     active: true,
-    passage: `Effective Study Skills
+    
+    questions: [
+      {
+        id: "g6eng-1",
+        order: 1,
+        passage: `Effective Study Skills
 1 Effective study skills are essential for students to succeed in their academic pursuits. Developing good study habits starts with setting clear goals and creating a structured schedule. When students know what they need to learn and when they need to complete their tasks, they can manage their time more efficiently.
 2 It is also important to find a quiet, comfortable place to study where distractions are minimized. This helps students stay focused and retain information better. Additionally, active learning techniques such as taking notes, summarizing key points, and teaching the material to someone else can greatly enhance understanding and memory.
 3 Another key aspect of study skills is the use of different learning methods to suit individual needs. Some students may benefit from visual aids like diagrams or charts, while others may prefer listening to lectures or reading textbooks. It is important to experiment with various techniques to find what works best for each person. Regular review and practice are also crucial. Revisiting material periodically helps reinforce learning and prevents information from being forgotten.
 Using flashcards, practice tests, and self-quizzing can make review more effective and engaging.
 4 Finally, maintaining a healthy lifestyle is an important part of developing strong study skills. Adequate sleep, proper nutrition, and regular exercise contribute to better concentration and overall well-being. Students who take care of their physical and mental health are more likely to stay motivated and perform well in their studies. By combining effective study strategies with a balanced lifestyle, students can achieve their academic goals and build a foundation for lifelong learning.`,
-    questions: [
-      {
-        id: "g6eng-1",
-        order: 1,
         question:
           "According to the passage, which one of the following is Not Correct?",
         options: [
