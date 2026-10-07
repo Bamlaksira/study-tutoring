@@ -1,4 +1,61 @@
 export const examProducts = [
+  {
+  id: "grade6-2016-science",
+  grade: "Grade 6",
+  subject: "አካባቢ ሳይንስ",
+  title: "Grade 6 2016 አካባቢ ሳይንስ Ministry Exam",
+  price: 65,
+  description:
+    "Practice the 2016 Grade 6 አካባቢ ሳይንስ Ministry Exam with answers and explanations.",
+  active: true,
+  questions: [
+    {
+      id: "g6science2016-1",
+      order: 1,
+      question:
+        "የአቡሽ አባት ለስራ ጉዳይ ከአዲስ አበባ ወደ ስዋዚላንድ (ደቡብ አፍሪካ ቀጠና) ቢሄዱ ወደ ኢትዮጵያ ሲመለሱ ወዴት አቅጣጫ ይጓዛሉ?",
+      options: [
+        "ወደ ምዕራብ",
+        "ወደ ሰሜን",
+        "ወደ ምስራቅ",
+        "ወደ ደቡብ",
+      ],
+      correctAnswer: "ወደ ሰሜን",
+      explanation:
+        "ስዋዚላንድ (ኤስዋቲኒ) ከኢትዮጵያ አንጻር በደቡብ አቅጣጫ ትገኛለች። ስለዚህ ከደቡብ ካለ ሀገር ወደ ሰሜን ወደሚገኝ ሀገር (ኢትዮጵያ) ለመመለስ ወደ ሰሜን አቅጣጫ መጓዝ ያስፈልጋል።",
+    },
+    {
+      id: "g6science2016-2",
+      order: 2,
+      question:
+        "የምስራቅ አፍሪካ ካርታን ንደፍ ለማሳየት ኬንያ ከኤርትራ አንጻር በየት በኩል ሊቀመጥ ይችላል?",
+      options: [
+        "በደቡብ አቅጣጫ",
+        "በምዕራብ አቅጣጫ",
+        "በሰሜን አቅጣጫ",
+        "በምስራቅ አቅጣጫ",
+      ],
+      correctAnswer: "በደቡብ አቅጣጫ",
+      explanation:
+        "ኤርትራ በምስራቅ አፍሪካ ሰሜናዊ ጫፍ ላይ የምትገኝ ሲሆን፣ ኬንያ ደግሞ ከኤርትራ በስተደቡብ ትገኛለች።",
+    },
+    {
+      id: "g6science2016-3",
+      order: 3,
+      question:
+        "ዜሮ ዲግሪ (0º) አግድም መስመር (ኢኩዌተር) በአፍሪካ ካርታ ላይ ቢሰመር የትኛውን የምስራቅ አፍሪካ ሃገር ያቋርጣል?",
+      options: [
+        "ኤርትራ",
+        "ዛምቢያ",
+        "ደቡብ ሱዳን",
+        "ኬንያ",
+      ],
+      correctAnswer: "ኬንያ",
+      explanation:
+        "የምድር ወገብ (Equator) ወይም የ0 ዲግሪ አግድም መስመር የምስራቅ አፍሪካ ሀገራት የሆኑትን ኬንያን፣ ዩጋንዳንና ሶማሊያን ያቋርጣል።",
+    },
+  ],
+},
     {
   id: "grade6-2016-english",
   grade: "Grade 6",

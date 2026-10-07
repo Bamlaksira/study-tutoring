@@ -574,6 +574,1154 @@ app.post("/api/exam-purchases/check-access", async (req, res) => {
 // ===============================
 
 const paidExamQuestions = {
+  "grade6-2016-science": [
+  {
+    id: "g6-2016-science-4",
+    order: 4,
+    question:
+      "ከሚከተሉት የምስራቅ አፍሪካ ሃገራት ውስጥ በእንጻራዊነት ወደ ምስራቅ አፍሪካ ጫፍ የሆነው የትኛው ነው?",
+    options: [
+      "ደቡብ ሱዳን",
+      "ሶማሊያ",
+      "ሞዛምቢክ",
+      "ዚምባብዌ"
+    ],
+    correctAnswer: "ሶማሊያ",
+    explanation:
+      "ሶማሊያ “የአፍሪካ ቀንድ” ተብሎ በሚጠራው ጫፍ ላይ የምትገኝ ሲሆን፣ ከቀረቡት አማራጮች ውስጥ በጣም ወደ ምስራቅ ወጥታ የምትገኝ ሀገር ናት።"
+  },
+  {
+    id: "g6-2016-science-5",
+    order: 5,
+    question:
+      "በአፍሪካ ካርታ ላይ ምስራቅ አፍሪካን በሰሜን በኩል የሚጎራበተው ሐገር የትኛው ነው?",
+    options: [
+      "ናይጄሪያ",
+      "አንጎላ",
+      "ሱዳን",
+      "ደቡብ አፍሪካ"
+    ],
+    correctAnswer: "ሱዳን",
+    explanation:
+      "ሱዳን ከምስራቅ አፍሪካ፣ በተለይም ከኤርትራና ኢትዮጵያ፣ በስተሰሜንና ሰሜን ምዕራብ አቅጣጫ ትገኛለች።"
+  },
+  {
+    id: "g6-2016-science-6",
+    order: 6,
+    question:
+      "ጋሽ አበበ ልባቸውን ተመርምረው በኦክስጂን ያልበለፀገ ደም የሚይዙ የልብ ዋና ዋና ክፍሎች ተጎድቷል ቢባሉና አንተ ሃኪም ብትሆን ምን ታደርጋልህ?",
+    options: [
+      "ቀኝ ተቀባይ እና ቀኝ አቀባይ ልበ ገንዳዎችን አክማለሁ",
+      "በቀኝና በግራ በኩል የሚገኙ ተቀባይ ልበ ገንዳዎችን አክማለሁ",
+      "ግራ ተቀባይ እና ግራ አቀባይ ልበ ገንዳዎችን አክማለሁ",
+      "ቀኝ አቀባይ እና ግራ አቀባይ ልበ ገንዳዎችን እክማለሁ"
+    ],
+    correctAnswer:
+      "ቀኝ ተቀባይ እና ቀኝ አቀባይ ልበ ገንዳዎችን አክማለሁ",
+    explanation:
+      "የልብ ቀኝ ክፍል (Right Atrium and Ventricle) ሁልጊዜም ከሰውነት የመጣን ኦክስጂን አልባ (ያልበለጸገ) ደም የመቀበልና ወደ ሳምባ የመላክ ስራ ይሰራል።"
+  },
+  {
+    id: "g6-2016-science-7",
+    order: 7,
+    question: "ቀይ የደም ህዋስ ለምን ኦክስጂን ይሸከማል?",
+    options: [
+      "ቀይ ስለሆነ",
+      "ዶናት ቅርጽ ስላለው",
+      "በውስጡ ሄሞግሎቢን ስለያዘ",
+      "በመቅኔ ውስጥ ስለሚመረት"
+    ],
+    correctAnswer: "በውስጡ ሄሞግሎቢን ስለያዘ",
+    explanation:
+      "ሄሞግሎቢን (Hemoglobin) ኦክስጂንን የመሳብና የመሸከም ባህሪ ያለው ፕሮቲን በመሆኑ ቀይ የደም ህዋሶች ኦክስጂንን እንዲያጓጉዙ ያስችላቸዋል።"
+  },
+  {
+    id: "g6-2016-science-8",
+    order: 8,
+    question:
+      "በኮረዳነትና በጉርምስና ወቅት በሁለቱም ጾታዎች በተቃራኒ መልኩ የሚከሰት ሥነ-ሕይወታዊ ለውጥ የትኛው ነው?",
+    options: [
+      "የድምፅ መለወጥ",
+      "የክብደት መጨመር",
+      "የቁመት መጨመር",
+      "ፀጉር ማብቀል"
+    ],
+    correctAnswer: "የድምፅ መለወጥ",
+    explanation:
+      "በጉርምስና ወቅት የወንዶች ድምፅ ይጎረንናል (ይወፍራል)፤ የሴቶች ደግሞ ይበልጥ ይቀጥናል ወይም ይለሰልሳል። ሌሎች ለውጦች (ቁመት፤ ክብደት) ለሁለቱም ተመሳሳይ ሊሆኑ ይችላሉ።"
+  },
+  {
+    id: "g6-2016-science-9",
+    order: 9,
+    question:
+      "ድብልቁና የድብልቁ ምንዝሮች ተመሳሳይ ባህሪ የሚያሳዩት ለምንድነው?",
+    options: [
+      "ጥምረታቸው ኬሚካዊ ስለሆነ ነው",
+      "ጥምረታቸው አካላዊ ስለሆነ ነው",
+      "ልይ ቁሱ በመጠን ትልቅ ስለሆነ ነው",
+      "ድብልቁና ልይ ቁሱ ተመሳሳይ ስለሆነ ነው"
+    ],
+    correctAnswer: "ጥምረታቸው አካላዊ ስለሆነ ነው",
+    explanation:
+      "በድብልቅ (Mixture) ውስጥ ያሉ ነገሮች የሚጣመሩት በአካላዊ (Physical) መንገድ እንጂ በኬሚካዊ ለውጥ ስላልሆነ እያንዳንዱ ነገር የራሱን ባህሪ ይዞ ይቆያል።"
+  },
+  {
+    id: "g6-2016-science-10",
+    order: 10,
+    question: "ከሚከተሉት ውስጥ ልይ-ዘር (Heterogeneous) ድብልቅ የሆነው የቱ ነው?",
+    options: [
+      "አረቄ እና ውሃ",
+      "የስኳር ሙሙት",
+      "ፔፕሲ",
+      "እሸዋና በቆሎ"
+    ],
+    correctAnswer: "እሸዋና በቆሎ",
+    explanation:
+      "ልይ-ዘር ድብልቅ ማለት በውስጡ ያሉትን ነገሮች በአይን ለይቶ ማየት የሚቻልበት የድብልቅ አይነት ነው። እሸዋና በቆሎን በቀላሉ መለየት ይቻላል።"
+  },
+  {
+    id: "g6-2016-science-11",
+    order: 11,
+    question:
+      "ከስኳር፣ አሸዋ እና ውሃ ድብልቅ ውስጥ ስኳሩን ብቻ ለመለየት የሚንጠቀመው ዘዴ በቅደም ተከተል የቱ ነው?",
+    options: [
+      "ማሟሟት -> ጥሊያ -> ማትነን",
+      "ማትነን -> ማሟሟት -> ጥሊያ",
+      "ማቀዝቀዝ -> ማትነን -> ጥሊያ",
+      "ማሟሟት -> ጥሊያ -> ማቀዝቀዝ"
+    ],
+    correctAnswer: "ማሟሟት -> ጥሊያ -> ማትነን",
+    explanation:
+      "መጀመሪያ ድብልቁን በማሟሟት ስኳሩ እንዲሟሟ ይደረጋል፤ ከዚያም ባልሟሟው አሸዋ ላይ ጥሊያ (Filtering) በማካሄድ አሸዋውን እንለያለን፣ በመጨረሻም ውሃውን በማትነን (Evaporation) ስኳሩን እናገኛለን።"
+  },
+  {
+    id: "g6-2016-science-12",
+    order: 12,
+    question: "ታዳሽ የጉልበት ምንጭ የሆነው የቱ ነው?",
+    options: [
+      "የድንጋይ ከሰል",
+      "ቤንዚን",
+      "የማገዶ እንጨት",
+      "ነፋስ"
+    ],
+    correctAnswer: "ነፋስ",
+    explanation:
+      "ታዳሽ የሃይል ምንጮች ተጠቅመንባቸው የማያልቁ ናቸው። ነፋስ ዘላቂና የማይጠፋ የተፈጥሮ ሃይል ነው።"
+  },
+  {
+    id: "g6-2016-science-13",
+    order: 13,
+    question:
+      "በምስራቅ አፍሪካ ዝቅተኛ ወቅታዊ አማካይ የሙቀት መጠን እስከ 6 ዲግሪ ሴንቲ ግሬድ የሚመዘገበው በየትኞቹ ቦታዎች ነው?",
+    options: [
+      "በዝቅተኛ ቦታዎች",
+      "በከፍተኛ ቦታዎች",
+      "በሁሎም የቀጠናው አከባቢዎች",
+      "በቆላማ ቦታዎች"
+    ],
+    correctAnswer: "በከፍተኛ ቦታዎች",
+    explanation:
+      "በከፍተኛ ቦታዎች (ደጋማ ቦታዎች) ከፍታ በጨመረ ቁጥር የሙቀት መጠን ስለሚቀንስ ዝቅተኛ ሙቀት ይመዘገባል።"
+  },
+  {
+    id: "g6-2016-science-14",
+    order: 14,
+    question:
+      "በምስራቅ አፍሪካ ሰሜናዊ ክፍል ኢትዮጵያን ጨምሮ ዝናብ የሚያገኙት ከሰኔ እስከ መስከረም ነው። ይህ ምን ያመለክታል?",
+    options: [
+      "በዝናብ ማምረት ዉጤታማ አይደለም",
+      "ኢትዮጵያ ከጥር እስከ መጋቢት በዝናብ ማምረት ትችላለች",
+      "ኢትዮጵያ ከሰኔ እስከ መስከረም በዝናብ ማምረት ትችላለች",
+      "ከሰኔ እስከ መስከረም በነዚህ አከባቢዎች በመስኖ ማምረት ተምራጭ ነው"
+    ],
+    correctAnswer:
+      "ኢትዮጵያ ከሰኔ እስከ መስከረም በዝናብ ማምረት ትችላለች",
+    explanation:
+      "የክረምት ወቅት (ከሰኔ እስከ መስከረም) በኢትዮጵያ የዝናብ ወቅት ስለሆነ በዚህ ጊዜ በዝናብ እርሻ ማምረት ይቻላል።"
+  },
+  {
+    id: "g6-2016-science-15",
+    order: 15,
+    question:
+      "የምስራቅ አፍሪካ የሳር ምድር ሞቃታማ የአየር ንብረት ክልል ከበረሃ አየር ንብረት ክልል በምን ይለያል?",
+    options: [
+      "የሣር አየር ንብረት ክልል እርጥበታማ በመሆኑ",
+      "የሣር ምድር ሞቃታማ የአየር ንብረት ክልል በአብዛኛው በሳር በመሸፈኑ",
+      "የሣር ምድር ሞቃታማ የአየር ንብረት ክልል የበለጠ ደረቅ በመሆኑ",
+      "የሣር ምድር በጣም ዝቅተኛ አመታዊ የዝናብ መጠን በመኖሩ"
+    ],
+    correctAnswer:
+      "የሣር ምድር ሞቃታማ የአየር ንብረት ክልል በአብዛኛው በሳር በመሸፈኑ",
+    explanation:
+      "የሳር ምድር (Savanna) ከበረሃ የሚለየው የተወሰነ የዝናብ መጠን ስለሚያገኝና ረጅም ሳሮች ስለሚበቅሉበት ነው።"
+  },
+  {
+    id: "g6-2016-science-16",
+    order: 16,
+    question:
+      "በምስራቅ አፍሪካ ቀጠና የተፈጥሮ ሀብት እንደ ውሃ፤ አፈር፤ ማዕድናት፣ የዱር እንስሳት እና የመሳሰሉት በብዛት ለምን ይገኛሉ?",
+    options: [
+      "ለህንድ ዉቅያኖስ አጎራባች በመሆኑ",
+      "ሰፊ እና በብዛት በድርቅ የሚጠቃ በመሆኑ",
+      "በብዛት በደቡባዊ ንፍቀ ክበብ አክባቢ በመሆኑ",
+      "የተለያዩ ተራሮች፤ አምባ ምድሮች እና ዝቅተኛ ሥፍራዎች ባለቤት በመሆኑ"
+    ],
+    correctAnswer:
+      "የተለያዩ ተራሮች፤ አምባ ምድሮች እና ዝቅተኛ ሥፍራዎች ባለቤት በመሆኑ",
+    explanation:
+      "የምስራቅ አፍሪካ የመሬት አቀማመጥ (Physical features) የተለያየ መሆኑ ለተፈጥሮ ሀብት መብዛት ትልቅ አስተዋጽኦ አለው።"
+  },
+  {
+    id: "g6-2016-science-17",
+    order: 17,
+    question:
+      "ከምስራቅ አፍሪካ ሃገራት የወርቅ ማዕድን የሌላት ሃገር ማን ናት?",
+    options: [
+      "ኢትዮጵያ",
+      "ኬንያ",
+      "ዩጋንዳ",
+      "ሩዋንዳ"
+    ],
+    correctAnswer: "ሩዋንዳ",
+    explanation:
+      "እንደ ኢትዮጵያና ኬንያ ያሉ ሀገራት የወርቅ ክምችት ሲኖራቸው፣ ሩዋንዳ ግን በዋናነት በቲንና በሌሎች ማዕድናት ትታወቃለች።"
+  },
+  {
+    id: "g6-2016-science-18",
+    order: 18,
+    question:
+      "ከምስራቅ አፍሪካ ሃገራት ከማዕድናት የሚገኙ ምጣኔ ሀብታዊ ጥቅም ያልሆነው የቱ ነው?",
+    options: [
+      "የጤና አገልግሎት",
+      "ገቢ ማግኘት",
+      "የውጭ ምንዛሪ ማስገኘት",
+      "የሥራ ዕድል መፍጠር"
+    ],
+    correctAnswer: "የጤና አገልግሎት",
+    explanation:
+      "ማዕድናት ገቢ ያስገኛሉ፣ የስራ እድል ይፈጥራሉ፤ የውጭ ምንዛሬ ይገኛል። የጤና አገልግሎት ግን ቀጥተኛ የምጣኔ ሀብት ጥቅም አይደለም።"
+  },
+  {
+    id: "g6-2016-science-19",
+    order: 19,
+    question: "የተፈጥሮ ሀብት እንክብካቤ ዘዴ ያልሆነው የቱ ነው?",
+    options: [
+      "ሀገር በቀል ዕጽዋቶችን መትከልና መንከባከብ",
+      "ታዳሽ የሃይል ምንጮችን መጠቀም",
+      "የተፈጥሮ ሀብቶችን በዘፈቀደ መጠቀም",
+      "ተፈጥሮ ሀብትን ሳያባክኑ መጠቀም"
+    ],
+    correctAnswer: "የተፈጥሮ ሀብቶችን በዘፈቀደ መጠቀም",
+    explanation:
+      "የተፈጥሮ ሀብቶችን ያለ እቅድና በዘፈቀደ መጠቀም ሀብቱ እንዲጠፋና እንዲባክን ስለሚያደርግ የእንክብካቤ ዘዴ አይደለም።"
+  },
+  {
+    id: "g6-2016-science-20",
+    order: 20,
+    question:
+      "በምስራቅ አፍሪካ ዝቅተኛ የዝናብ መጠን በሚያገኙ አከባቢዎች የሚበቅሉ የዕፅዋት ምድብ ምን ይባላል?",
+    options: [
+      "ቅጠለ ሰፋፊ ዛፎች ደን",
+      "የዉርጭ አከባቢ ደን ዛፎች",
+      "የሣር ምድር",
+      "የሞቃት በረሃ ዕፅዋት"
+    ],
+    correctAnswer: "የሞቃት በረሃ ዕፅዋት",
+    explanation:
+      "በጣም ዝቅተኛ ዝናብ በሚኖርባቸው በረሃማ ቦታዎች ላይ የሚበቅሉ እፅዋት (እንደ ቁልቋል ያሉ) የሞቃት በረሃ እፅዋት ይባላሉ።"
+  },
+  {
+    id: "g6-2016-science-21",
+    order: 21,
+    question:
+      "ከሚከተሉት ውስጥ ማዕድን እና ሃገሩ በትክክል ያልተጣመረው የትኛው ነው?",
+    options: [
+      "ወርቅ - ኢትዮጵያ",
+      "መዳብ - ኬንያ",
+      "ወርቅ - ታንዛኒያ",
+      "መዳብ - ዛምቢያ"
+    ],
+    correctAnswer: "መዳብ - ኬንያ",
+    explanation:
+      "ዛምቢያ በመዳብ (Copper) የምትታወቅ ሀገር ናት። ኬንያ ግን በመዳብ ብዙ አትታወቅም።"
+  },
+  {
+    id: "g6-2016-science-22",
+    order: 22,
+    question:
+      "ዜሮሶል፣ ሊቶሶል፤ የርሞሶል እና ሶላንቻክ የአፈር አይነት በሶማሊያ እና በኤርትራ በብዛት ይገኛል። ለምን ይመስልሃል?",
+    options: [
+      "ከፍተኛ የዝናብ መጠን ስላላቸው",
+      "ሃገራቱ ከውቅያኖስ ጋር ስለሚዋሰኑ",
+      "ተራራማ አከባቢዎች ስለሚበዛባቸው",
+      "አከባቢዎቹ በብዛት ዝቅተኛ እና በረሃማ ስለሆኑ"
+    ],
+    correctAnswer: "አከባቢዎቹ በብዛት ዝቅተኛ እና በረሃማ ስለሆኑ",
+    explanation:
+      "እነዚህ የአፈር አይነቶች በብዛት የሚገኙት ዝናብ ባነሰባቸውና በረሃማ በሆኑ ዝቅተኛ ቦታዎች ላይ ነው።"
+  },
+  {
+    id: "g6-2016-science-23",
+    order: 23,
+    question:
+      "በምስራቅ አፍሪካ በማገዶ እንጨት ሰበብ የሚከናወን የደን ጭፍጨፋን እንዴት ለመከላከል ይቻላል?",
+    options: [
+      "የድንጋይ ከሰል በመጠቀም",
+      "ምግብ ለማብሰል ታዳሽ ኃይል በመጠቀም",
+      "ነዳጅ በመጠቀም",
+      "ሁሉም መልስ ነው"
+    ],
+    correctAnswer: "ምግብ ለማብሰል ታዳሽ ኃይል በመጠቀም",
+    explanation:
+      "እንደ ፀሐይ ሃይል፣ ባዮጋዝ ወይም ኤሌክትሪክ ያሉ ታዳሽ ሃይሎችን በመጠቀም የማገዶ እንጨት ፍላጎትን በመቀነስ ደንን መታደግ ይቻላል።"
+  },
+  {
+    id: "g6-2016-science-24",
+    order: 24,
+    question: "በደቡባዊ ንፍቀ ክበብ ውስጥ የሚገኝ የምስራቅ አፍሪካ ሃገር የትኛው?",
+    options: [
+      "ደቡብ ሱዳን",
+      "ደቡብ አፍሪካ",
+      "ዩጋንዳ",
+      "ኢትዮጵያ"
+    ],
+    correctAnswer: "ደቡብ አፍሪካ",
+    explanation:
+      "ደቡብ አፍሪካ ከምድር ወገብ በታች በደቡባዊ ንፍቀ ክበብ (Southern Hemisphere) የምትገኝ ሀገር ናት።"
+  },
+  {
+    id: "g6-2016-science-25",
+    order: 25,
+    question:
+      "ከምስራቅ አፍሪካ ሀገራት በሕዝብ ቁጥር እነስተኛ መጠን ያላቸው የትኞቹ ናቸው?",
+    options: [
+      "ሲሸልስ፤ ኮሞሮስ እና ሪዩኒየን",
+      "ዩጋንዳ፤ ኢትዮጵያ እና ሩዋንዳ",
+      "ኢትዮጵያ፣ ኬንያና ታንዛኒያ",
+      "ታንዛኒያ፣ ማላዊና ዚምባብዊ"
+    ],
+    correctAnswer: "ሲሸልስ፤ ኮሞሮስ እና ሪዩኒየን",
+    explanation:
+      "እነዚህ የደሴት ሀገራት በመሬት ስፋታቸውም ሆነ በህዝብ ብዛታቸው በጣም ትናንሽ ናቸው።"
+  },
+  {
+    id: "g6-2016-science-26",
+    order: 26,
+    question:
+      "ስለ ኑቢያና አክሱም በምስራቅ አፍሪካ ቀደምት ታዋቂ ስልጣኔዎች እውነት የሆነው የትኛው ነው?",
+    options: [
+      "ሁለቱም ስልጣኔዎች በአንድ ሃገር የነበሩ ናቸው",
+      "የአክሱም ስልጣኔ የሜሮይ ስልጣኔ ይባል ነበር",
+      "የአክሱም መንግስት መነሳት ለኑቢያ ስልጣኔ መውደቅ መንስኤ ነበር",
+      "የኑቢያ ስልጣኔ መነሻው ግብዕ ነበር"
+    ],
+    correctAnswer:
+      "የአክሱም መንግስት መነሳት ለኑቢያ ስልጣኔ መውደቅ መንስኤ ነበር",
+    explanation:
+      "የአክሱም መንግስት እየጠነከረ ሲመጣና የንግድ መስመሩን ሲቆጣጠር የኑቢያ (ሜሮይ) ስልጣኔ እንዲዳከምና እንዲወድቅ ምክንያት ሆኗል።"
+  },
+  {
+    id: "g6-2016-science-27",
+    order: 27,
+    question: "በምስራቅ አፍሪካ ትልቁ ፏፏቴ የትኛው ነው?",
+    options: [
+      "ጢስ አባይ ፏፏቴ",
+      "ቪክቶሪያ ፏፏቴ",
+      "የህዳሴ ግድብ ፏፏቴ",
+      "እሞ ፏፏቴ"
+    ],
+    correctAnswer: "ቪክቶሪያ ፏፏቴ",
+    explanation:
+      "በዛምቢያና በዚምባብዌ ድንበር ላይ የሚገኘው ቪክቶሪያ ፏፏቴ በአፍሪካና በዓለም ትልቅ ከሚባሉ ፏፏቴዎች አንዱ ነው።"
+  },
+  {
+    id: "g6-2016-science-28",
+    order: 28,
+    question: "የቱሪዝም ምጣኔ ሀብታዊ ጠቀሜታ የሆነው የትኛው ነው?",
+    options: [
+      "ጎጂ ባህሎችን ማስፋፋት",
+      "ለወጣቶች የስራ ፈጠራ እንቅፋት መሆን",
+      "የሃገር ሀብት መበዝበዝ",
+      "ለሃገር የገቢ ምንጭ መሆን"
+    ],
+    correctAnswer: "ለሃገር የገቢ ምንጭ መሆን",
+    explanation:
+      "ቱሪዝም የውጭ ቱሪስቶችን በመሳብ ለሀገር ትልቅ የገቢ ምንጭ (የውጭ ምንዛሬ) ይሆናል።"
+  },
+  {
+    id: "g6-2016-science-29",
+    order: 29,
+    question:
+      "በምስራቅ አፍሪካ ከሚከናወኑ ዋና ዋና የኢንዱስትሪ ተግባራት ያልሆነው የትኛው ነው?",
+    options: [
+      "ጨርቃ ጨርቅ ኢንዱስትሪ",
+      "የግብርና ምርቶች ማቀነባበሪያ",
+      "የመኪና ማምረቻ",
+      "ሆርቲካልቸር"
+    ],
+    correctAnswer: "የመኪና ማምረቻ",
+    explanation:
+      "ምስራቅ አፍሪካ በብዛት በግብርና ማቀነባበሪያና በጨርቃጨርቅ የታወቀ ሲሆን፤ የመኪና ማምረቻ ግን በቀጠናው በስፋት የለም።"
+  },
+  {
+    id: "g6-2016-science-30",
+    order: 30,
+    question:
+      "በምስራቅ አፍሪካ እርስ በእርስ ካለው ንግድ ይልቅ ከምዕራባዊያን ጋር ያለው ንግድ የዳበረው ለምንድነው?",
+    options: [
+      "አብዛኛው ምርት የግብርና በመሆኑ",
+      "የምስራቅ አፍሪካ ሃገራት በብዛት ሽቀጣ ሸቀጥ ስለሚልኩ",
+      "የቀጠናው ያልተረጋጋ የሰላም ሁኔታ",
+      "ሀ እና ሐ መልስ ናቸው"
+    ],
+    correctAnswer: "ሀ እና ሐ መልስ ናቸው",
+    explanation:
+      "ሀገራቱ ተመሳሳይ የሆኑ የግብርና ምርቶችን ስለሚያመርቱ እርስ በእርስ መገበያየት ይቸገራሉ፤ በተጨማሪም ሰላም እጦት ንግድን ያደናቅፋል።"
+  },
+  {
+    id: "g6-2016-science-31",
+    order: 31,
+    question:
+      "በምስራቅ አፍሪካ ከሚከናወነ ዐበይት ምጣኔ ሀብታዊ እንቅስቃሴ ያልሆነውን ለዩ።",
+    options: [
+      "ግብርና",
+      "የኢንተርኔት ቴክኖሎጂ",
+      "ቱሪዝም",
+      "ንግድ"
+    ],
+    correctAnswer: "የኢንተርኔት ቴክኖሎጂ",
+    explanation:
+      "የኢንተርኔት ቴክኖሎጂ ገና በማደግ ላይ ያለ እንጂ እንደ ግብርናና ቱሪዝም የቀጠናው ዋና የኢኮኖሚ መሰረት አይደለም።"
+  },
+  {
+    id: "g6-2016-science-32",
+    order: 32,
+    question: "ኤች አይ ቪ/ኤድስ በሽታን የሚያመጣው ተህዋስ ምንድነው?",
+    options: [
+      "ባክቴሪያ",
+      "ትላትል",
+      "ቫይረስ",
+      "አሜባ"
+    ],
+    correctAnswer: "ቫይረስ",
+    explanation:
+      "ኤድስ (AIDS) የሚመጣው ኤች አይ ቪ (HIV) በተባለ ቫይረስ አማካኝነት ነው።"
+  },
+  {
+    id: "g6-2016-science-33",
+    order: 33,
+    question:
+      "ከኤች አይ ቪ/ኤድስ ራሳችንን ለመጠበቅ ምን ማድረግ አለብን?",
+    options: [
+      "ከልቅ ግብረ - ሥጋ ግንኙነት መታቀብ",
+      "ልቅ ግብረ - ሥጋ ግንኙነት ማድረግ",
+      "ስለታም ነገሮችን በጋራ መጠቀም",
+      "ማንኛውንም ደም በልግስና መቀበል"
+    ],
+    correctAnswer: "ከልቅ ግብረ - ሥጋ ግንኙነት መታቀብ",
+    explanation:
+      "ለኤች አይ ቪ የሚያጋልጡ ድርጊቶችን (ልቅ ግንኙነትና ስለታም ነገሮችን በጋራ መጠቀም) ማስወገድ ዋነኛው የመከላከያ ዘዴ ነው።"
+  },
+  {
+    id: "g6-2016-science-34",
+    order: 34,
+    question:
+      "ከግብርና የሚገኝ ምርት ሆኖ ቅጠሉ እና ቀንበጡ የሚታኘክ ዕፅ የትኛው ነው?",
+    options: [
+      "አረቄ",
+      "አልኮል",
+      "ሲጋራ",
+      "ጫት"
+    ],
+    correctAnswer: "ጫት",
+    explanation:
+      "ጫት ቅጠሉና ቀንበጡ የሚታኘክ አደንዛዥነት ያለው የግብርና ምርት ነው።"
+  },
+  {
+    id: "g6-2016-science-35",
+    order: 35,
+    question: "ጎጂ ልማዳዊ ድርጊቶችን እንዴት እናስወግዳለን?",
+    options: [
+      "ግን በማስነቀል፣ ሴት ልጅን በማስገረዝ እና በመጥለፍ",
+      "ኅብረተሰብን ስለ ጎጂ ልማዳዊ ድርጊቶች በማስተማር",
+      "ሴት ልጆችን በቤተሰብ ፈቃድ ያለእድሜ እንዲጋቡ በማበረታታት",
+      "ድርጊቶቹ ጎጂ ቢሆኑም ለባህል ሲባል እንዲቀጥሉ በማድረግ"
+    ],
+    correctAnswer:
+      "ኅብረተሰብን ስለ ጎጂ ልማዳዊ ድርጊቶች በማስተማር",
+    explanation:
+      "ትምህርትና ግንዛቤ መፍጠር ህብረተሰቡ ጎጂ የሆኑ ባህሎችን እንዲተው ለማድረግ ውጤታማ መንገድ ነው።"
+  },
+  {
+    id: "g6-2016-science-36",
+    order: 36,
+    question:
+      "በምስራቅ አፍሪካ ቀጠና በሚሊዮን የሚቆጠሩ ሰዎች ለረሃብ ይጋለጣሉ። ይህ የሚሆነው ለምንድን ነው?",
+    options: [
+      "በቀጠናው ያልተለመደ የዝናብ እጥረት በመኖሩ",
+      "የቀጠናው ህዝብ በመስኖ ጥገኛ በመሆኑ",
+      "የቀጠናው አብዛኛው ቦታዎች ከፍታማ በመሆናቸው",
+      "ድርቅ እና ረሃብ በቀጠናው ያልተለመዱ ክስተቶች ናቸው"
+    ],
+    correctAnswer: "በቀጠናው ያልተለመደ የዝናብ እጥረት በመኖሩ",
+    explanation:
+      "የቀጠናው ግብርና በዝናብ ላይ ጥገኛ ስለሆነ፣ የዝናብ እጥረት ወይም መዛባት በቀጥታ ለድርቅና ለረሃብ ይዳርጋል።"
+  },
+  {
+    id: "g6-2016-science-37",
+    order: 37,
+    question:
+      "አንድ ሰው ከሚከተሉት የምስራቅ አፍሪካ ሃገራት የበለጠ ለድርቅ ተጋላጭ የሚሆነው በየትኛው ሃገር ነው?",
+    options: [
+      "ኢትዮጵያ",
+      "ሞዛምቢክ",
+      "ዛምቢያ",
+      "ታንዛኒያ"
+    ],
+    correctAnswer: "ኢትዮጵያ",
+    explanation:
+      "ኢትዮጵያ በምስራቅ አፍሪካ ቀጠና ውስጥ በተደጋጋሚ ለድርቅ ከሚጋለጡ ሀገራት አንዷ ናት።"
+  },
+  {
+    id: "g6-2016-science-38",
+    order: 38,
+    question:
+      "በምስራቅ አፍሪካ ድርቅ ለመቋቋም ሃገር በቀል ዘዴ ያልሆነው የትኛው ነው?",
+    options: [
+      "ቡርቄ ጤፍ ማምረት",
+      "እህልን በቤት ጣሪያ ጭስ ላይ መስቀል",
+      "ድርቅ የሚቋቋሙ እህሎችን ማምረት",
+      "ብዙ ልጆችን መዉለድ"
+    ],
+    correctAnswer: "ብዙ ልጆችን መዉለድ",
+    explanation:
+      "ብዙ ልጆችን መውለድ በረሃብ ጊዜ ያለውን የምግብ ፍላጎት ስለሚጨምር ድርቅን ለመቋቋም ዘዴ ሊሆን አይችልም።"
+  },
+  {
+    id: "g6-2016-science-39",
+    order: 39,
+    question: "ስለድርቅ እና ረሃብ ዕንሰ-ሐሳብ ትክክል የሆነው የትኛው ነው?",
+    options: [
+      "ድርቅ እና ረሃብ ግንኙነት የላቸውም",
+      "ረሃብ ድርቅን ያመጣል",
+      "ድርቅ ለረሃብ መንስኤ ነው",
+      "ረሃብ እና ድርቅ የህፃናትን ዕድገት ያዳብራሉ"
+    ],
+    correctAnswer: "ድርቅ ለረሃብ መንስኤ ነው",
+    explanation:
+      "ድርቅ (የውሃ እጥረት) ሲከሰት ምርት ስለሚጠፋ ለረሃብ መከሰት ዋና መንስኤ ይሆናል።"
+  },
+  {
+    id: "g6-2016-science-40",
+    order: 40,
+    question:
+      "ከሚከተሉት ልማዳዊ ድርጊቶች ውስጥ ለኤች አይ ቪ/ኤድስ የማያጋልጠው የትኛው ነው?",
+    options: [
+      "አቻ ጋብቻ በመፍቀድ",
+      "ግግ ማስነቀል",
+      "የሴት ልጅ ጠለፋ",
+      "የሴት ልጅ ግርዛት"
+    ],
+    correctAnswer: "አቻ ጋብቻ በመፍቀድ",
+    explanation:
+      "ግግ ማስነቀል፣ ጠለፋና ግርዛት ስለታም ነገሮችን በመጠቀም ለደም ንክኪ ስለሚያጋልጡ የኤች አይ ቪ ስርጭትን ይጨምራሉ። እቻ ጋብቻ ግን ከዚህ ጋር ግንኙነት የለውም።"
+  }
+],
+  "grade6-2016-english": [
+  {
+    id: "g6english-4",
+    order: 4,
+    question: "Which drink contains minerals that build our body?",
+    options: [
+      "A. Milk",
+      "B. Water",
+      "C. Soft drinks",
+      "D. Fruit juice"
+    ],
+    correctAnswer: "A. Milk",
+    explanation:
+      "The text states that milk is rich in calcium, a mineral that helps build and maintain strong bones and teeth."
+  },
+  {
+    id: "g6english-5",
+    order: 5,
+    question:
+      "Absalat: Do you like going for vacation in winter?\n\nRediet: No, ______ because winter is cold and rainy.",
+    options: [
+      "A. I dislike",
+      "B. I like",
+      "C. I love",
+      "D. I want to"
+    ],
+    correctAnswer: "A. I dislike",
+    explanation:
+      "Rediet begins with “No” and gives negative reasons, so “I dislike” fits the context."
+  },
+  {
+    id: "g6english-6",
+    order: 6,
+    question:
+      "Balmak: ___________\n\nLamrot: She is tall and slim.",
+    options: [
+      "A. How is your mom?",
+      "B. What is your mom’s job?",
+      "C. Where does your mom live?",
+      "D. How can you describe your mom?"
+    ],
+    correctAnswer: "D. How can you describe your mom?",
+    explanation:
+      "Lamrot’s response describes physical characteristics, “tall and slim,” so the question asks for a description."
+  },
+  {
+    id: "g6english-7",
+    order: 7,
+    question:
+      "Simret: How does a chicken come into being?\n\nSimon: _____________________",
+    options: [
+      "A. It comes from an egg",
+      "B. A hen lays an egg. The eggs give a chick.",
+      "C. It grows up from a hen’s egg within some weeks on the farm.",
+      "D. First, a hen lays an egg. Next, the egg is hatched. Then, the chick grows up."
+    ],
+    correctAnswer:
+      "D. First, a hen lays an egg. Next, the egg is hatched. Then, the chick grows up.",
+    explanation:
+      "This option gives a complete chronological explanation using sequence markers such as “First,” “Next,” and “Then.”"
+  },
+  {
+    id: "g6english-8",
+    order: 8,
+    question:
+      "Dayamo: _______________\n\nMaria: In my view, it is good. It makes our capital more beautiful.",
+    options: [
+      "A. What is your opinion about the reform in the city?",
+      "B. Do you agree with the reform in the city?",
+      "C. Who is reforming the city?",
+      "D. How is the city today?"
+    ],
+    correctAnswer:
+      "A. What is your opinion about the reform in the city?",
+    explanation:
+      "Maria begins with “In my view,” which indicates that she is expressing an opinion. Option A asks specifically for an opinion."
+  },
+  {
+    id: "g6english-9",
+    order: 9,
+    question:
+      "Siyane: Chance is better than hard work.\n\nFarid: ___________________",
+    options: [
+      "A. Don’t you agree?",
+      "B. I’m afraid, I disagree",
+      "C. Yes, we must work hard.",
+      "D. I want to be chanceful."
+    ],
+    correctAnswer: "B. I’m afraid, I disagree",
+    explanation:
+      "Farid disagrees with the statement that chance is better than hard work, so “I’m afraid, I disagree” is appropriate."
+  },
+  {
+    id: "g6english-10",
+    order: 10,
+    question:
+      "Friend: I am feeling tired now. What should I do?\n\nYou: ________________________",
+    options: [
+      "A. What is your advice?",
+      "B. Can I help you?",
+      "C. You had better drink tea.",
+      "D. I think you are right."
+    ],
+    correctAnswer: "C. You had better drink tea.",
+    explanation:
+      "The friend is asking for advice, and “You had better drink tea” provides a suggestion."
+  },
+  {
+    id: "g6english-11",
+    order: 11,
+    question:
+      "You: What’s your feeling about “Unity”?\n\nFriend: ___________",
+    options: [
+      "A. I should help you.",
+      "B. I totally support this.",
+      "C. I believe it is strength.",
+      "D. You shouldn’t think that."
+    ],
+    correctAnswer: "C. I believe it is strength.",
+    explanation:
+      "The question asks about a feeling or belief concerning unity. “I believe it is strength” gives a direct response."
+  },
+  {
+    id: "g6english-12",
+    order: 12,
+    question:
+      "You: Where do you think students should use mobile phones?\n\nFriend: _________________",
+    options: [
+      "A. This is wrong idea.",
+      "B. I feel they should use it at home.",
+      "C. We should use it in class for internet.",
+      "D. I’m happy if we are allowed to use it in school."
+    ],
+    correctAnswer: "B. I feel they should use it at home.",
+    explanation:
+      "The question asks “Where?”, and option B gives a specific location: “at home.”"
+  },
+  {
+    id: "g6english-13",
+    order: 13,
+    question: "I and my friends _______ the Science Museum yesterday.",
+    options: [
+      "A. Visiting",
+      "B. Visited",
+      "C. Visits",
+      "D. Visit"
+    ],
+    correctAnswer: "B. Visited",
+    explanation:
+      "The word “yesterday” indicates the simple past tense. “Visited” is the past tense form."
+  },
+  {
+    id: "g6english-14",
+    order: 14,
+    question:
+      "Simret is busy now. She _______ her English Assignment.",
+    options: [
+      "A. Does",
+      "B. Did",
+      "C. Will do",
+      "D. Is doing"
+    ],
+    correctAnswer: "D. Is doing",
+    explanation:
+      "The word “now” indicates an action happening at the moment, so the present continuous “is doing” is required."
+  },
+  {
+    id: "g6english-15",
+    order: 15,
+    question:
+      "I am not sure, but Kenenisa _______ come tomorrow.",
+    options: [
+      "A. Will",
+      "B. Can",
+      "C. May",
+      "D. Must"
+    ],
+    correctAnswer: "C. May",
+    explanation:
+      "“I am not sure” expresses uncertainty or possibility. “May” is used for something possible but not certain."
+  },
+  {
+    id: "g6english-16",
+    order: 16,
+    question:
+      "I completed my primary education. Now, I _______ summer language tutorial class.",
+    options: [
+      "A. Am going to attend",
+      "B. Will attend",
+      "C. Am attended",
+      "D. Attended"
+    ],
+    correctAnswer: "A. Am going to attend",
+    explanation:
+      "“Am going to” expresses a plan or intention for the near future that has already been decided."
+  },
+  {
+    id: "g6english-17",
+    order: 17,
+    question:
+      "Rahel scored 10, and Loli scored 6 on their test. So, Rahel is _____ Loli.",
+    options: [
+      "A. As clever as",
+      "B. The cleverest",
+      "C. Cleverer than",
+      "D. Most clever than"
+    ],
+    correctAnswer: "C. Cleverer than",
+    explanation:
+      "The sentence compares two people. The comparative form of the short adjective “clever” is “cleverer than.”"
+  },
+  {
+    id: "g6english-18",
+    order: 18,
+    question: "We _____ our homework. Let’s go and play.",
+    options: [
+      "A. Has done",
+      "B. Have done",
+      "C. Doing",
+      "D. Does"
+    ],
+    correctAnswer: "B. Have done",
+    explanation:
+      "The plural subject “We” requires “have.” “Have done” is the present perfect form."
+  },
+  {
+    id: "g6english-19",
+    order: 19,
+    question: "Last week, my father ______ in Gondar.",
+    options: [
+      "A. Is",
+      "B. Will be",
+      "C. Was",
+      "D. Has been"
+    ],
+    correctAnswer: "C. Was",
+    explanation:
+      "“Last week” requires the simple past tense. The past form of “is” for “my father” is “was.”"
+  },
+  {
+    id: "g6english-20",
+    order: 20,
+    question: "Students _______ respect traffic rules while crossing roads.",
+    options: [
+      "A. Can",
+      "B. Have to",
+      "C. May",
+      "D. Will"
+    ],
+    correctAnswer: "B. Have to",
+    explanation:
+      "“Have to” expresses strong obligation or a requirement, such as following traffic rules."
+  },
+  {
+    id: "g6english-21",
+    order: 21,
+    question: "Kedija ______ Arabic before she went to Dubai.",
+    options: [
+      "A. Is learning",
+      "B. Will learn",
+      "C. Learned",
+      "D. Had learned"
+    ],
+    correctAnswer: "D. Had learned",
+    explanation:
+      "When two actions happened in the past, the action that happened first can be expressed using the past perfect “had learned.”"
+  },
+  {
+    id: "g6english-22",
+    order: 22,
+    question: "The room ______ now by the students.",
+    options: [
+      "A. Is cleaning",
+      "B. Was cleaned",
+      "C. Is being cleaned",
+      "D. Had been cleaned"
+    ],
+    correctAnswer: "C. Is being cleaned",
+    explanation:
+      "This is present continuous passive voice. The structure is is/am/are + being + past participle."
+  },
+  {
+    id: "g6english-23",
+    order: 23,
+    question: "If you come early, you _______ the bus.",
+    options: [
+      "A. Will not miss",
+      "B. Would not miss",
+      "C. Had missed",
+      "D. Missed"
+    ],
+    correctAnswer: "A. Will not miss",
+    explanation:
+      "This is a Type 1 conditional sentence. The structure is: if + present simple, will + verb."
+  },
+  {
+    id: "g6english-24",
+    order: 24,
+    question: "She puts off the light. The word “light” is ______.",
+    options: [
+      "A. Adverb",
+      "B. Verb",
+      "C. Adjective",
+      "D. Noun"
+    ],
+    correctAnswer: "D. Noun",
+    explanation:
+      "Here, “light” refers to a physical thing, so it functions as a noun."
+  },
+  {
+    id: "g6english-25",
+    order: 25,
+    question: "Feriyat _____ if she finished her work.",
+    options: [
+      "A. Sleeps",
+      "B. Will sleep",
+      "C. Would sleep",
+      "D. Slept"
+    ],
+    correctAnswer: "C. Would sleep",
+    explanation:
+      "This is a Type 2 conditional sentence expressing a hypothetical situation: would + verb with if + past simple."
+  },
+  {
+    id: "g6english-26",
+    order: 26,
+    question: "He drives fast. “Fast” is _____.",
+    options: [
+      "A. Adverb",
+      "B. Verb",
+      "C. Adjective",
+      "D. Noun"
+    ],
+    correctAnswer: "A. Adverb",
+    explanation:
+      "“Fast” describes how he drives, so it functions as an adverb."
+  },
+  {
+    id: "g6english-27",
+    order: 27,
+    question: "Mom has bought the _____ version i-phone.",
+    options: [
+      "A. Lately",
+      "B. Later",
+      "C. Late",
+      "D. Latest"
+    ],
+    correctAnswer: "D. Latest",
+    explanation:
+      "“Latest” is used to mean the most recent version available."
+  },
+  {
+    id: "g6english-28",
+    order: 28,
+    question:
+      "If Sibamo _____ his breakfast, he would have attended all the periods.",
+    options: [
+      "A. Had eaten",
+      "B. Ate",
+      "C. Eats",
+      "D. Eaten"
+    ],
+    correctAnswer: "A. Had eaten",
+    explanation:
+      "This is a Type 3 conditional sentence. The if-clause uses the past perfect: had + past participle."
+  },
+  {
+    id: "g6english-29",
+    order: 29,
+    question:
+      "Abel was kind boy. But now he started going alone and became selfish. This is his _______ behavior.",
+    options: [
+      "A. Good",
+      "B. Strange",
+      "C. Old",
+      "D. Happy"
+    ],
+    correctAnswer: "B. Strange",
+    explanation:
+      "Changing from kind to selfish and staying alone suggests an unusual or strange change in behavior."
+  },
+  {
+    id: "g6english-30",
+    order: 30,
+    question:
+      "Warming up your body before you do exercises protects you from _______.",
+    options: [
+      "A. Sport",
+      "B. Injury",
+      "C. Running",
+      "D. Damage"
+    ],
+    correctAnswer: "B. Injury",
+    explanation:
+      "In an exercise context, warming up helps prevent injury."
+  },
+  {
+    id: "g6english-31",
+    order: 31,
+    question: "Work hard! You will see the ______ soon.",
+    options: [
+      "A. Goals",
+      "B. Roles",
+      "C. Fruits",
+      "D. Products"
+    ],
+    correctAnswer: "C. Fruits",
+    explanation:
+      "“See the fruits” is an expression meaning to see the positive results or rewards of hard work."
+  },
+  {
+    id: "g6english-32",
+    order: 32,
+    question:
+      "We planted different vegetables in plastic pots and harvested good yield.",
+    options: [
+      "A. Put",
+      "B. Bought",
+      "C. Did",
+      "D. Got"
+    ],
+    correctAnswer: "D. Got",
+    explanation:
+      "In this farming context, “harvested” means gathering or getting the crop that was grown."
+  },
+  {
+    id: "g6english-33",
+    order: 33,
+    question: "Dady parks his automobile in the parking site.",
+    options: [
+      "A. Puts",
+      "B. Drives",
+      "C. Stops",
+      "D. Opens"
+    ],
+    correctAnswer: "C. Stops",
+    explanation:
+      "To park a car means to stop it and leave it in a certain place."
+  },
+  {
+    id: "g6english-34",
+    order: 34,
+    question:
+      "The poultry farm has a factory that processes a balanced feed for the chickens.",
+    options: [
+      "A. Food",
+      "B. Medicine",
+      "C. Machine",
+      "D. Meat"
+    ],
+    correctAnswer: "A. Food",
+    explanation:
+      "In the context of poultry, “feed” means food given to animals."
+  },
+  {
+    id: "g6english-35",
+    order: 35,
+    question:
+      "Computer, Internet, mobile phones, smart TVs, are examples of modern inventions by engineers.",
+    options: [
+      "A. Information",
+      "B. Innovations",
+      "C. Schools",
+      "D. Education"
+    ],
+    correctAnswer: "B. Innovations",
+    explanation:
+      "“Innovations” refers to new ideas, methods, or products created through study and experimentation."
+  },
+  {
+    id: "g6english-36",
+    order: 36,
+    passage: `The Seasons
+
+The seasons have different weather conditions in different parts of the world. In most parts like America and Europe it looks as follows.
+
+Spring is the season in which everything is going green. The first flowers are blooming. The sun is shining. The weather is mild. The spring months are March, April and May.
+
+Summer: it is very hot and sunny. People wear T-shirts, shorts, sunglasses and hat. This time people go on vacation. The children are on vacation. The first fruits are ripe. The months in summer are June, July and August.
+
+Autumn: the weather is cold, windy and foggy. It rains a lot. Birds fly to warmer places. People wear raincoats, trousers and sweaters, and go for a walk. The leaves of trees become red, brown, yellow and orange then fall. Farmers pick apples.
+
+Winter: It is very cold. The temperature is below zero. It is snowing and freezing. Children can build a snowman. They go skiing. In December is Christmas. The winter months are December, January and February.`,
+    question: "How many seasons are there in the year?",
+    options: [
+      "A. One",
+      "B. Three",
+      "C. Four",
+      "D. Twelve"
+    ],
+    correctAnswer: "C. Four",
+    explanation:
+      "The passage describes four seasons: Spring, Summer, Autumn, and Winter."
+  },
+  {
+    id: "g6english-37",
+    order: 37,
+    passage: `The Seasons
+
+The seasons have different weather conditions in different parts of the world. In most parts like America and Europe it looks as follows.
+
+Spring is the season in which everything is going green. The first flowers are blooming. The sun is shining. The weather is mild. The spring months are March, April and May.
+
+Summer: it is very hot and sunny. People wear T-shirts, shorts, sunglasses and hat. This time people go on vacation. The children are on vacation. The first fruits are ripe. The months in summer are June, July and August.
+
+Autumn: the weather is cold, windy and foggy. It rains a lot. Birds fly to warmer places. People wear raincoats, trousers and sweaters, and go for a walk. The leaves of trees become red, brown, yellow and orange then fall. Farmers pick apples.
+
+Winter: It is very cold. The temperature is below zero. It is snowing and freezing. Children can build a snowman. They go skiing. In December is Christmas. The winter months are December, January and February.`,
+    question: "In which season is Christmas?",
+    options: [
+      "A. Spring",
+      "B. Summer",
+      "C. Autumn",
+      "D. Winter"
+    ],
+    correctAnswer: "D. Winter",
+    explanation:
+      "The passage states that Christmas is in December, and December is one of the winter months."
+  },
+  {
+    id: "g6english-38",
+    order: 38,
+    passage: `The Seasons
+
+The seasons have different weather conditions in different parts of the world. In most parts like America and Europe it looks as follows.
+
+Spring is the season in which everything is going green. The first flowers are blooming. The sun is shining. The weather is mild. The spring months are March, April and May.
+
+Summer: it is very hot and sunny. People wear T-shirts, shorts, sunglasses and hat. This time people go on vacation. The children are on vacation. The first fruits are ripe. The months in summer are June, July and August.
+
+Autumn: the weather is cold, windy and foggy. It rains a lot. Birds fly to warmer places. People wear raincoats, trousers and sweaters, and go for a walk. The leaves of trees become red, brown, yellow and orange then fall. Farmers pick apples.
+
+Winter: It is very cold. The temperature is below zero. It is snowing and freezing. Children can build a snowman. They go skiing. In December is Christmas. The winter months are December, January and February.`,
+    question: "Which one is true statement?",
+    options: [
+      "A. People wear trousers and sweaters in winter.",
+      "B. Winter is good for plants and trees.",
+      "C. Autumn is time for fruits.",
+      "D. Summer is sunny season."
+    ],
+    correctAnswer: "D. Summer is sunny season.",
+    explanation:
+      "The passage explicitly states that summer is very hot and sunny."
+  },
+  {
+    id: "g6english-39",
+    order: 39,
+    passage: `The Seasons
+
+The seasons have different weather conditions in different parts of the world. In most parts like America and Europe it looks as follows.
+
+Spring is the season in which everything is going green. The first flowers are blooming. The sun is shining. The weather is mild. The spring months are March, April and May.
+
+Summer: it is very hot and sunny. People wear T-shirts, shorts, sunglasses and hat. This time people go on vacation. The children are on vacation. The first fruits are ripe. The months in summer are June, July and August.
+
+Autumn: the weather is cold, windy and foggy. It rains a lot. Birds fly to warmer places. People wear raincoats, trousers and sweaters, and go for a walk. The leaves of trees become red, brown, yellow and orange then fall. Farmers pick apples.
+
+Winter: It is very cold. The temperature is below zero. It is snowing and freezing. Children can build a snowman. They go skiing. In December is Christmas. The winter months are December, January and February.`,
+    question: "In which season do people become happy?",
+    options: [
+      "A. Spring",
+      "B. Summer",
+      "C. Winter",
+      "D. Autumn"
+    ],
+    correctAnswer: "A. Spring",
+    explanation:
+      "The passage describes spring with blooming flowers, sunshine, and mild weather, which are associated with happiness and renewal."
+  },
+  {
+    id: "g6english-40",
+    order: 40,
+    passage: `The Seasons
+
+The seasons have different weather conditions in different parts of the world. In most parts like America and Europe it looks as follows.
+
+Spring is the season in which everything is going green. The first flowers are blooming. The sun is shining. The weather is mild. The spring months are March, April and May.
+
+Summer: it is very hot and sunny. People wear T-shirts, shorts, sunglasses and hat. This time people go on vacation. The children are on vacation. The first fruits are ripe. The months in summer are June, July and August.
+
+Autumn: the weather is cold, windy and foggy. It rains a lot. Birds fly to warmer places. People wear raincoats, trousers and sweaters, and go for a walk. The leaves of trees become red, brown, yellow and orange then fall. Farmers pick apples.
+
+Winter: It is very cold. The temperature is below zero. It is snowing and freezing. Children can build a snowman. They go skiing. In December is Christmas. The winter months are December, January and February.`,
+    question: "Winter is",
+    options: [
+      "A. The hottest season",
+      "B. Before spring",
+      "C. A season for vacation",
+      "D. Time to stay home"
+    ],
+    correctAnswer: "B. Before spring",
+    explanation:
+      "In the seasonal cycle described, winter comes before spring."
+  }
+],
   "grade6-2016-amharic": [
   {
     id: 4,
