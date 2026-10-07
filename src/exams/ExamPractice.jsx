@@ -978,7 +978,16 @@ const handlePurchase = async () => {
               ) : (
                 <button
                   style={styles.primaryButton}
-                  onClick={goBackToSubjects}
+                  onClick={() => {
+  if (currentQuestion === FREE_QUESTIONS - 1 && !isUnlocked) {
+    setShowPurchase(true);
+    setShowExplanation(false);
+    setMessage("");
+    return;
+  }
+
+  resetExamState();
+}}
                 >
                   Finish Exam
                 </button>
