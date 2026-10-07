@@ -574,6 +574,1128 @@ app.post("/api/exam-purchases/check-access", async (req, res) => {
 // ===============================
 
 const paidExamQuestions = {
+  "g6english":[
+  {
+  id: "g6english-4",
+  order: 4,
+  question: 'What does the pronoun "they" in paragraph 3, line 2 refer to?',
+  options: [
+    "A. Apps and websites",
+    "B. Teachers",
+    "C. Students",
+    "D. Skills"
+  ],
+  correctAnswer: "C. Students",
+  explanation:
+    'The sentence says, "they can search for answers on their own." The previous sentence identifies "students" as the ones becoming independent learners. Therefore, "they" refers to "students".'
+},
+{
+  id: "g6english-5",
+  order: 5,
+  question: 'What does "it" in paragraph 5, line 2 refer to?',
+  options: [
+    "A. Education",
+    "B. Learning",
+    "C. Technology",
+    "D. Knowledge"
+  ],
+  correctAnswer: "C. Technology",
+  explanation:
+    'The sentence discusses technology as a powerful tool and later says students should learn to use "it" responsibly. Therefore, "it" refers to technology.'
+},
+{
+  id: "g6english-6",
+  order: 6,
+  question: 'What does "balanced way" in paragraph 4, line 1 refer to?',
+  options: [
+    "A. Spend all day outside.",
+    "B. Focus only on studying.",
+    "C. Use technology all the time.",
+    "D. Manage time between online and offline activities"
+  ],
+  correctAnswer: "D. Manage time between online and offline activities",
+  explanation:
+    'The text explains balance as making time for outdoor activities, exercise, and family while avoiding spending too much time online.'
+},
+{
+  id: "g6english-7",
+  order: 7,
+  question:
+    '"Teachers can also use technology to create more engaging lessons." What does "engaging" mean in the sentence?',
+  options: [
+    "A. Interesting and exciting",
+    "B. Boring and hard",
+    "C. Expensive and unnecessary",
+    "D. Quick and easy"
+  ],
+  correctAnswer: "A. Interesting and exciting",
+  explanation:
+    'The sentence explains that technology can make learning more fun. "Engaging" describes something that holds attention and interest.'
+},
+{
+  id: "g6english-8",
+  order: 8,
+  question:
+    'What does "independent" mean in the sentence "Technology also helps students become more independent learners?"',
+  options: [
+    "A. Depend on others for help",
+    "B. Work and find answers on their own",
+    "C. Only learn in groups",
+    "D. Avoid studying"
+  ],
+  correctAnswer: "B. Work and find answers on their own",
+  explanation:
+    'The passage explains that students can search for answers on their own instead of always waiting for a teacher. This means becoming independent learners.'
+},
+{
+  id: "g6english-9",
+  order: 9,
+  question:
+    '"Finally, while technology is a powerful tool for education, students should learn to use it responsibly." What does "responsibly" mean in the sentence?',
+  options: [
+    "A. Carelessly and without thinking",
+    "B. In a safe and thoughtful way",
+    "C. To play games and chat online",
+    "D. To spend all day on devices"
+  ],
+  correctAnswer: "B. In a safe and thoughtful way",
+  explanation:
+    'The text relates responsibility to avoiding distractions and using technology wisely to get the most benefit.'
+},
+{
+  id: "g6english-10",
+  order: 10,
+  question:
+    "Teacher: What do you do every day?\n\nStudent: I                     a book every day.",
+  options: [
+    "A. am reading",
+    "B. will read",
+    "C. reads",
+    "D. read"
+  ],
+  correctAnswer: "D. read",
+  explanation:
+    'The phrase "every day" shows a daily habit, so the Simple Present tense is required. With the subject "I", the base form "read" is used.'
+},
+{
+  id: "g6english-12",
+  order: 12,
+  question:
+    "Teacher: Do I need to bring my lunch today?\n\nStudent: Yes, you                             bring your lunch today because there's no food at school.",
+  options: [
+    "A. has",
+    "B. have to",
+    "C. have",
+    "D. has to"
+  ],
+  correctAnswer: "B. have to",
+  explanation:
+    '"Have to" expresses necessity or obligation. With the subject "you", the correct form is "have to".'
+},
+{
+  id: "g6english-13",
+  order: 13,
+  question:
+    "Student A: I have never visited the zoo.\n\nStudent B: Oh, really? I                            (not/visit) the zoo either.",
+  options: [
+    "A. have not visited",
+    "B. did not visit",
+    "C. have visited",
+    "D. visit"
+  ],
+  correctAnswer: "A. have not visited",
+  explanation:
+    'Student A uses the Present Perfect tense. Student B also needs the negative Present Perfect form: "have not visited".'
+},
+{
+  id: "g6english-14",
+  order: 14,
+  question:
+    "Student A:                              you                          (finish) your homework yet?\n\nStudent B: I have already finished my homework.",
+  options: [
+    "A. Do / finish",
+    "B. Did / finish",
+    "C. Have / finished",
+    "D. Have / finish"
+  ],
+  correctAnswer: "C. Have / finished",
+  explanation:
+    'The word "yet" commonly appears in Present Perfect questions. The structure is "Have/Has + subject + past participle"; "finished" is the past participle.'
+},
+{
+  id: "g6english-15",
+  order: 15,
+  question:
+    "Student A: Who will send the letter?\n\nStudent B: The letter                           (send) by the post office tomorrow.",
+  options: [
+    "A. sent",
+    "B. will send",
+    "C. is sent",
+    "D. will be sent"
+  ],
+  correctAnswer: "D. will be sent",
+  explanation:
+    'The subject "the letter" receives the action, so the sentence is passive. The Future Passive structure is "will + be + past participle".'
+},
+{
+  id: "g6english-16",
+  order: 16,
+  question:
+    "Student A: I will study for the test tonight.\n\nStudent B: I                             (practice) the piano later.",
+  options: [
+    "A. will practice",
+    "B. practice",
+    "C. is practicing",
+    "D. practiced"
+  ],
+  correctAnswer: "A. will practice",
+  explanation:
+    'The word "later" indicates future time. "Will practice" is the correct Simple Future form for the subject "I".'
+},
+{
+  id: "g6english-17",
+  order: 17,
+  question:
+    "Student A: This book is good, but the other one is better.\n\nStudent B: Yes, but the first book is the                              of the three.",
+  options: [
+    "A. good",
+    "B. better",
+    "C. best",
+    "D. more better"
+  ],
+  correctAnswer: "C. best",
+  explanation:
+    'When comparing three or more things, the Superlative degree is used. The irregular forms of "good" are good, better, and best.'
+},
+{
+  id: "g6english-18",
+  order: 18,
+  question:
+    "Student A: This car is fast, but the red one is faster.\n\nStudent B: I agree, but the blue car is the                                of all.",
+  options: [
+    "A. fastest",
+    "B. faster",
+    "C. most fast",
+    "D. fast"
+  ],
+  correctAnswer: "A. fastest",
+  explanation:
+    'The phrase "of all" compares more than two cars, so the Superlative degree is required. The superlative of "fast" is "fastest".'
+},
+{
+  id: "g6english-19",
+  order: 19,
+  question:
+    "Student A: I am going to Addis Ababa next week.\n\nStudent B: Wow! I heard Addis Ababa is a beautiful city. Is it your first time there? Which of the following is a proper noun in this dialogue?",
+  options: [
+    "A. city",
+    "B. week",
+    "C. Addis Ababa",
+    "D. heard"
+  ],
+  correctAnswer: "C. Addis Ababa",
+  explanation:
+    'A proper noun is the specific name of a person, place, or organization. "Addis Ababa" is the specific name of a city.'
+},
+{
+  id: "g6english-20",
+  order: 20,
+  question:
+    "Student A: She writes a letter to her friend every week.\n\nStudent B: The letter                           (write) by her every week.",
+  options: [
+    "A. writes",
+    "B. was written",
+    "C. will be written",
+    "D. is written"
+  ],
+  correctAnswer: "D. is written",
+  explanation:
+    'The original sentence is in the Simple Present tense. The Present Passive structure is "is/am/are + past participle".'
+},
+{
+  id: "g6english-21",
+  order: 21,
+  question:
+    "Student A: If it rains tomorrow, I will stay at home.\n\nStudent B: But if it                                   we can go outside.",
+  options: [
+    "A. does not rain",
+    "B. did not rain",
+    "C. will not rain",
+    "D. has not rained"
+  ],
+  correctAnswer: "A. does not rain",
+  explanation:
+    'This is a First Conditional sentence. The if-clause uses the Simple Present, so "does not rain" is correct.'
+},
+{
+  id: "g6english-22",
+  order: 22,
+  question:
+    "Student A: I love playing football with my friends.\n\nStudent B: I also enjoy playing football. It's so much fun! Which sentence shows the correct way to express liking something?",
+  options: [
+    "A. I dislike playing football.",
+    "B. I enjoy playing football.",
+    "C. I hate playing football.",
+    "D. I never play football"
+  ],
+  correctAnswer: "B. I enjoy playing football.",
+  explanation:
+    '"Enjoy" expresses a positive feeling of liking or finding an activity pleasurable.'
+},
+{
+  id: "g6english-23",
+  order: 23,
+  question:
+    "Student A: Excuse me, can you tell me how to get to the library?\n\nStudent B: Sure! Go straight, and then turn left at the traffic light. The library is on your right. Which of the following correctly describes the directions?",
+  options: [
+    "A. Turn right at the traffic light, and then go straight.",
+    "B. Go straight, then turn left, and the library will be on the left.",
+    "C. Go straight, turn left at the traffic light, and the library will be on your right.",
+    "D. Go left, then turn right, and the library is on your left."
+  ],
+  correctAnswer: "C. Go straight, turn left at the traffic light, and the library will be on your right.",
+  explanation:
+    'Option C follows the exact directions: go straight, turn left at the traffic light, and the library is on the right.'
+},
+{
+  id: "g6english-24",
+  order: 24,
+  question:
+    "Student A: I think the movie was great! The acting was amazing.\n\nStudent B: I agree with you. I also think the special effects were fantastic. Which of the following expresses Student B's opinion about the movie?",
+  options: [
+    "A. I think the movie was boring.",
+    "B. I believe the movie was too long.",
+    "C. I didn't like the movie.",
+    "D. I agree with you. The special effects were fantastic."
+  ],
+  correctAnswer: "D. I agree with you. The special effects were fantastic.",
+  explanation:
+    'Student B agrees with Student A and describes the special effects as fantastic, showing a positive opinion.'
+},
+{
+  id: "g6english-25",
+  order: 25,
+  question:
+    "Student A: I believe that eating healthy food is very important for our health.\n\nStudent B: I totally agree with you. Eating healthy food gives us energy and keeps us strong.\n\nHow does Student B express his agreement with Student A?",
+  options: [
+    "A. Student B disagrees with Student A.",
+    "B. Student B agrees and gives reasons.",
+    "C. Student B changes the topic to something else.",
+    "D. Student B says he/she doesn't know much about the topic."
+  ],
+  correctAnswer: "B. Student B agrees and gives reasons.",
+  explanation:
+    'Student B says "I totally agree with you" and then gives reasons: healthy food gives energy and keeps us strong.'
+},
+{
+  id: "g6english-26",
+  order: 26,
+  question: "She                           when I called her last night.",
+  options: [
+    "A. was studying",
+    "B. studied",
+    "C. has studied",
+    "D. is studying"
+  ],
+  correctAnswer: "A. was studying",
+  explanation:
+    'The action "was studying" was in progress when the shorter past action "called" happened. This requires the Past Continuous tense.'
+},
+{
+  id: "g6english-27",
+  order: 27,
+  question: "I was walking in the park when it                               raining.",
+  options: [
+    "A. was starting",
+    "B. starts",
+    "C. starting",
+    "D. started"
+  ],
+  correctAnswer: "D. started",
+  explanation:
+    '"Was walking" is the ongoing Past Continuous action, while "started" is the Simple Past action that happened at that moment.'
+},
+{
+  id: "g6english-28",
+  order: 28,
+  question: "If I were rich, I                          travel around the world.",
+  options: [
+    "A. am",
+    "B. are",
+    "C. will",
+    "D. would"
+  ],
+  correctAnswer: "D. would",
+  explanation:
+    'This is the Second Conditional, used for hypothetical situations. The structure is "If + past form, would + base verb".'
+},
+{
+  id: "g6english-29",
+  order: 29,
+  question:
+    "She sang the song beautifully. Which word in the sentence is an adverb of manner?",
+  options: [
+    "A. the song",
+    "B. sang",
+    "C. beautifully",
+    "D. song"
+  ],
+  correctAnswer: "C. beautifully",
+  explanation:
+    '"Beautifully" describes how she sang, so it is an adverb of manner.'
+},
+{
+  id: "g6english-30",
+  order: 30,
+  question:
+    "I need a new toothbrush. My old one is broken. Which of the following is a compound noun in the sentence?",
+  options: [
+    "A. new",
+    "B. toothbrush",
+    "C. broken",
+    "D. old one"
+  ],
+  correctAnswer: "B. toothbrush",
+  explanation:
+    '"Toothbrush" is a compound noun formed from the words "tooth" and "brush".'
+},
+{
+  id: "g6english-31",
+  order: 31,
+  question:
+    "Which of the following sentences is correctly written in the passive voice?",
+  options: [
+    "A. A new school was built by them last year.",
+    "B. A new school built by them last year.",
+    "C. A new school is built last year by them.",
+    "D. A new school were built by them last year."
+  ],
+  correctAnswer: "A. A new school was built by them last year.",
+  explanation:
+    'The Past Passive uses "was/were + past participle". Because "school" is singular, "was built" is correct.'
+},
+{
+  id: "g6english-32",
+  order: 32,
+  question:
+    "Which one of the following sentences is constructed in the negative form of present perfect tense?",
+  options: [
+    "A. I have not finished my homework.",
+    "B. I did not finish my homework.",
+    "C. I am not finishing my homework.",
+    "D. I will not finish my homework."
+  ],
+  correctAnswer: "A. I have not finished my homework.",
+  explanation:
+    'The negative Present Perfect uses "have/has + not + past participle". "Have not finished" follows this structure.'
+},
+{
+  id: "g6english-33",
+  order: 33,
+  question:
+    "Which sentence is written in the present perfect interrogative form?",
+  options: [
+    "A. Did he gone to school?",
+    "B. Has he gone to school?",
+    "C. He doesn't go to school.",
+    "D. Is he going to school?"
+  ],
+  correctAnswer: "B. Has he gone to school?",
+  explanation:
+    'Present Perfect questions begin with "Have/Has", followed by the subject and past participle. "Has he gone" is correct.'
+},
+{
+  id: "g6english-34",
+  order: 34,
+  question:
+    "Identify the simple future passive sentence from the following:",
+  options: [
+    "A. The students complete the project next week.",
+    "B. The students will complete the project next week.",
+    "C. The project completed by the students next week.",
+    "D. The project will be completed by the students next week."
+  ],
+  correctAnswer: "D. The project will be completed by the students next week.",
+  explanation:
+    'The Simple Future Passive uses "will be + past participle". "Will be completed" follows this structure.'
+},
+{
+  id: "g6english-35",
+  order: 35,
+  question:
+    "Which of the following sentences is in the simple future passive tense?",
+  options: [
+    "A. The letter will be sent by the post office.",
+    "B. The post office will send the letter.",
+    "C. The letter is being sent by the post office.",
+    "D. The letter was sent by the post office."
+  ],
+  correctAnswer: "A. The letter will be sent by the post office.",
+  explanation:
+    'The Future Passive uses "will be + past participle". "Will be sent" is the correct form.'
+},
+{
+  id: "g6english-36",
+  order: 36,
+  question: "Which sentence is written in the first conditional form?",
+  options: [
+    "A. If it rained tomorrow, I will stay home.",
+    "B. If it rains tomorrow, I stayed home.",
+    "C. If it rains tomorrow, I will stay home.",
+    "D. If it will rain tomorrow, I would stay home."
+  ],
+  correctAnswer: "C. If it rains tomorrow, I will stay home.",
+  explanation:
+    'The First Conditional uses "If + Simple Present, will + base verb". Option C follows this structure.'
+},
+{
+  id: "g6english-37",
+  order: 37,
+  question: "Which sentence is written in the second conditional form?",
+  options: [
+    "A. If I had you, I would study harder.",
+    "B. If I would be you, I will study harder.",
+    "C. If I am you, I will study harder.",
+    "D. If I were you, I would study harder."
+  ],
+  correctAnswer: "D. If I were you, I would study harder.",
+  explanation:
+    'The Second Conditional uses "If + past form, would + base verb". "If I were you, I would study" follows the correct pattern.'
+},
+{
+  id: "g6english-38",
+  order: 38,
+  question:
+    "I went to the supermarket, and I bought apples bananas grapes and oranges. Which punctuation mark is used in this sentence to separate items in a list?",
+  options: [
+    "A. Period (.)",
+    "B. Comma (,)",
+    "C. Colon (:)",
+    "D. Semicolon (;)"
+  ],
+  correctAnswer: "B. Comma (,)",
+  explanation:
+    'Commas are used to separate three or more items in a list, such as apples, bananas, grapes, and oranges.'
+},
+{
+  id: "g6english-39",
+  order: 39,
+  question: "Which of the following is a simple sentence?",
+  options: [
+    "A. I love reading books, but I also enjoy watching movies.",
+    "B. She goes to the park every day.",
+    "C. He went to the store, and she stayed home.",
+    "D. I like pizza, so I eat it every weekend."
+  ],
+  correctAnswer: "B. She goes to the park every day.",
+  explanation:
+    'A simple sentence contains one independent clause. "She goes to the park every day" has one independent clause.'
+},
+{
+  id: "g6english-40",
+  order: 40,
+  question:
+    '"I went to bed early. I finished my homework." Which of the following properly joins these two simple sentences into a compound sentence?',
+  options: [
+    "A. I finished my homework because I went to bed early.",
+    "B. I went to bed early because I finished my homework.",
+    "C. I finished my homework, and I went to bed early.",
+    "D. I finished my homework, after I went to bed early."
+  ],
+  correctAnswer: "C. I finished my homework, and I went to bed early.",
+  explanation:
+    'A compound sentence joins two independent clauses with a comma and a coordinating conjunction. Option C uses "and" correctly.'
+},
+  ],
+  "grade6-science": [
+  {
+    id: "grade6-science-4",
+    order: 4,
+    question:
+      "ተማሪ መስፍን የኢትዮጵያን ንድፍ ካርታ ካስራ የትግራይ ክልል ከአዲስ አበባ ጋር ያለውን አንጻራዊ መገኛ ለማሳየት የሚያስፈልገው ምንድን ነው?",
+    options: [
+      "ሀ. ትግራይን ከአዲስ አበባ ደቡብ-ምሥራቅ ላይ ማስቀመጥ",
+      "ለ. ትግራይን ከአዲስ አበባ ሰሜን-ምዕራብ ላይ ማስቀመጥ",
+      "ሐ. ትግራይን ከአዲስ አበባ ደቡብ-ምሥራቅ ላይ ማስቀመጥ",
+      "መ. ትግራይን ከአዲስ አበባ ሰሜን-ምሥራቅ ላይ ማስቀመጥ",
+    ],
+    correctAnswer:
+      "መ. ትግራይን ከአዲስ አበባ ሰሜን-ምሥራቅ ላይ ማስቀመጥ",
+    explanation:
+      "አንጻራዊ መገኛን ለመግለፅ አቅጣጫዎችን (ሰሜን፣ ደቡብ፣ ምስራቅ፣ ምዕራብ) እንጠቀማለን:: ትግራይ ከአዲስ አበባ በስተ ሰሜን አቅጣጫ ስለሚገኝ በካርታው ላይ ከላይ በኩል መቀመጥ አለበት፡፡",
+  },
+
+  {
+    id: "grade6-science-5",
+    order: 5,
+    question: "ቁስ አካል ምን ማለት ነው?",
+    options: [
+      "ሀ. ማንኛውም ቦታ የሚይዝና መጠነ-ቁስ ያለው",
+      "ለ. ቀለም ወይም ግርዶሽ ያለው",
+      "ሐ. ኃይል የሚፈጥር",
+      "መ. ቅርጽ ወይም መጠን ያለው",
+    ],
+    correctAnswer:
+      "ሀ. ማንኛውም ቦታ የሚይዝና መጠነ-ቁስ ያለው",
+    explanation:
+      "በሳይንስ ትርጓሜ ቁስ (Matter) ማለት መጠነ-ቁስ (Mass) ያለው እና ቦታ (Volume) የሚይዝ ማንኛውም ነገር ነው። ድንጋይ፣ ውሃ እና አየር የቁስ አካል ምሳሌዎች ናቸው::",
+  },
+
+  {
+    id: "grade6-science-6",
+    order: 6,
+    question:
+      "ሁለትና ከሁለት በላይ ከሆነ ንጥረ ነገሮች በኬሚካዊ መስተጋብር የሚፈጠር ልዩ ቁስ የሆነው የቱ ነው?",
+    options: [
+      "ሀ. ቤዝ",
+      "ለ. ጨው",
+      "ሐ. ውህድ",
+      "መ. ኦክሳይዶች",
+    ],
+    correctAnswer: "ሐ. ውህድ",
+    explanation:
+      "ውህድ (Compound) የሚፈጠረው የተለያዩ ንጥረ ነገሮች በኬሚካዊ መንገድ ሲጣመሩ ነው:: ለምሳሌ ውሃ (H₂O) የሃይድሮጂን እና የኦክስጂን ውህድ ነው።",
+  },
+
+  {
+    id: "grade6-science-7",
+    order: 7,
+    question: "አሲድ ከቤዝ ጋር ሲፀገበር ምን ይፈጠራል?",
+    options: [
+      "ሀ. እክሳይድ",
+      "ለ. ጨው",
+      "ሐ. ቤዝ",
+      "መ. አሲድ",
+    ],
+    correctAnswer: "ለ. ጨው",
+    explanation:
+      "አሲድ እና ቤዝ እርስ በእርስ ሲዋሃዱ ገለልተኛ መስተጋብር (Neutralization) ይፈጥራሉ:: የዚህ መስተጋብር ውጤቶች ጨው እና ውሃ ናቸው።",
+  },
+
+  {
+    id: "grade6-science-8",
+    order: 8,
+    question: "የጉልበት ምንጭ የሆነው የቱ ነው?",
+    options: [
+      "ሀ. ውሃ",
+      "ለ. ፕላስቲክ",
+      "ሐ. ብርጭቆ",
+      "መ. ወረቀት",
+    ],
+    correctAnswer: "ሀ. ውሃ",
+    explanation:
+      "ውሃ የሚፈስበትን ጉልበት በመጠቀም የኤሌክትሪክ ኃይል ማመንጨት ይቻላል::",
+  },
+
+  {
+    id: "grade6-science-9",
+    order: 9,
+    question: "ድምጽ በየትኛው ቁስ በፍጥነት ይተላለፋል?",
+    options: [
+      "ሀ. በአየር",
+      "ለ. በውሃ",
+      "ሐ. በብረት",
+      "መ. በባዶ",
+    ],
+    correctAnswer: "ሐ. በብረት",
+    explanation:
+      "ድምፅ ሞገድ ስለሆነ ለማለፍ ቁስ ይፈልጋል። በጠጣር ነገሮች ውስጥ ደግሞ ህዋሳቱ ተቀራራቢ ስለሆኑ በፍጥነት ይተላለፋል:: ብረት ጠጣር በመሆኑ ከአየር እና ከውሃ በበለጠ ፍጥነት ድምፅን ያስተላልፋል፡፡",
+  },
+
+  {
+    id: "grade6-science-10",
+    order: 10,
+    question:
+      "ከሚከተሉት ውስጥ በኢትዮጵያ ከዋና ዋና የአየር ንብረት ዓይነቶች ውስጥ የሚመደበው የቱ ነው?",
+    options: [
+      "ሀ. ሞቃታማ እና ደረቃማ",
+      "ለ. ቀዝቃዛ እና እርጥበታማ",
+      "ሐ. ሞቃታማ እና እርጥበታማ",
+      "መ. ሞቃታማ እና ደረቅ",
+    ],
+    correctAnswer: "ሐ. ሞቃታማ እና እርጥበታማ",
+    explanation:
+      "ኢትዮጵያ በሐሩር ክልል (Tropical zone) ውስጥ ስለምትገኝ አብዛኛው አካባቢዋ ሞቃታማ እና ዝናባማ/እርጥበታማ ነው:: ይህም ለተለያዩ ዕፅዋት እና እንስሳት እድገት ምቹ ሁኔታን ይፈጥራል::",
+  },
+
+  {
+    id: "grade6-science-11",
+    order: 11,
+    question: "የኢትዮጵያን የአየር ንብረት በዋናነት የሚቆጣጠረው ምንድነው?",
+    options: [
+      "ሀ. የውቅያኖስ ፍሰቶች",
+      "ለ. ከኢኳተር ርቀት",
+      "ሐ. የአፈር አይነት",
+      "መ. ኤክሮስ እና ከፍታ",
+    ],
+    correctAnswer: "መ. ኤክሮስ እና ከፍታ",
+    explanation:
+      "በኢትዮጵያ የአየር ንብረት ላይ ከፍተኛ ተፅዕኖ ያለው የከፍታ (Altitude) ልዩነት ነው:: ከፍታ በጨመረ ቁጥር የአየር ሙቀት እየቀነሰ ይሄዳል፡፡",
+  },
+
+  {
+    id: "grade6-science-12",
+    order: 12,
+    question:
+      "በኢትዮጵያ ስምጥ ሸለቆ ውስጥ የሚገኙ ሐይቆች የተለመደ ባህሪአቸው የሆነው?",
+    options: [
+      "ሀ. ሁሉም ንፁህ ውሃ ያላቸው ሐይቆች ናቸው::",
+      "ለ. በከፍታ ቦታዎች ይገኛሉ፡፡",
+      "ሐ. በዝቅተኛ ስፍራዎች የሚገኙ እና ብዙውን ጊዜ ጠባብ ናቸው::",
+      "መ. በወቅታዊ ለውጦች አይጎዱም።",
+    ],
+    correctAnswer:
+      "ሐ. በዝቅተኛ ስፍራዎች የሚገኙ እና ብዙውን ጊዜ ጠባብ ናቸው::",
+    explanation:
+      "የስምጥ ሸለቆ ሐይቆች በመሬት መንቀጥቀጥ በተፈጠሩ ዝቅተኛ ስንጥቆች ውስጥ የተከማቹ ናቸው። አብዛኛዎቹ ሐይቆች ጨዋማ ባህሪ ያላቸው እና በሸለቆው ወለል ላይ የሚገኙ ናቸው።",
+  },
+
+  {
+    id: "grade6-science-13",
+    order: 13,
+    question: "ለአካባቢ ብክለት ዋና ምክንያቶች የትኞቹ ናቸው?",
+    options: [
+      "ሀ. ዛፎችን መትከል እና መንከባከብ",
+      "ለ. የፕላስቲክ ምርቶችን እና ቆሻሻ ቁሶችን በተገቢው ሳይጠቀሙ መጣል",
+      "ሐ. ንብረቶችን እንደገና መጠቀም እና ማደስ",
+      "መ. የተፈጥሮ ሀብቶችን በተገቢው መጠቀም",
+    ],
+    correctAnswer:
+      "ለ. የፕላስቲክ ምርቶችን እና ቆሻሻ ቁሶችን በተገቢው ሳይጠቀሙ መጣል",
+    explanation:
+      "ቆሻሻን ያለአግባብ መጣል አየርን፣ ውሃን እና አፈርን ይበክላል፡፡ በተለይ ፕላስቲክ በቀላሉ የማይበሰብስ በመሆኑ ለአካባቢ ብክለት ዋነኛ መንስኤ ነው፡፡",
+  },
+
+  {
+    id: "grade6-science-14",
+    order: 14,
+    question: "በሰሜን ኢትዮጲያ በጣም የተለመዱ ባህላዊ ክንዋኔዎች የሆኑት የትኛዎቹ ናቸው?",
+    options: [
+      "ሀ. ገና እና ቡሄ",
+      "ለ. አሸንዳ፣ ሻደይ እና ሶለል",
+      "ሐ. ጨምበላላ እና የለቅሶ ሥነ-ሥርዓቶች",
+      "መ. የሰርግ ሥነ ሥርዓቶች እና በዓላት",
+    ],
+    correctAnswer: "ለ. አሸንዳ፣ ሻደይ እና ሶለል",
+    explanation:
+      "አሸንዳ (ትግራይ)፤ ሻደይ (ዋማ ኸምራ) እና ሶለል (ራያ) በሰሜኑ የሀገሪቱ ክፍል የሚከበሩ የልጃገረዶች ባህላዊ በዓላት ናቸው፡፡ እነዚህ በዓላት የባህል መገለጫ እና የቱሪስት መስህቦች ናቸው።",
+  },
+
+  {
+    id: "grade6-science-15",
+    order: 15,
+    question: "የኢትዮጵያ የቋንቋ ቤተሰብ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. ኢንዶ-አውሮፓዊ እና ሲኖ-ቲቤታን",
+      "ለ. ኦስትሮኔዥያን እና ናይጀር-ኮንጎ",
+      "ሐ. አፍሮ-እስያዊ እና ናይሎ ሰሐራዊ",
+      "መ. ድራቪዲያን እና ዩራሊክ",
+    ],
+    correctAnswer: "ሐ. አፍሮ-እስያዊ እና ናይሎ ሰሐራዊ",
+    explanation:
+      "የኢትዮጵያ ቋንቋዎች በሁለት ትልልቅ ቤተሰቦች ይመደባሉ፤ እነሱም አፍሮ-እስያዊ (ሴማዊ፤ ኩሻዊ፣ ኦሞአዊ) እና ናይሎ ሰሐራዊ ናቸው:: ይህም የሀገሪቱን የቋንቋ ብዝሃነት ያሳያል::",
+  },
+
+  {
+    id: "grade6-science-16",
+    order: 16,
+    question: "የኢትዮጵያ የተፈጥሮ የቱሪስት መስህብ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. እንደ ላሊበላ ያሉ ታሪካዊ ቦታዎች",
+      "ለ. የባህል ቅርሶች እና የዕደ ጥበብ ውጤቶች",
+      "ሐ. ቤተመዘክሮች እና የማስታወሻ ቦታዎች",
+      "መ. ልዩ የመልከአ ምድር አቀማመጥ",
+    ],
+    correctAnswer: "መ. ልዩ የመልከአ ምድር አቀማመጥ",
+    explanation:
+      "ተፈጥሯዊ መስህብ ሲባል በሰው እጅ ያልተሰሩ እንደ ተራሮች፤ ፏፏቴዎች እና ፓርኮች ያሉ ናቸው። ላሊበላ እና ቤተመዘክሮች ሰው ሰራሽ (ባህላዊ/ታሪካዊ) መስህቦች ናቸው፡፡",
+  },
+
+  {
+    id: "grade6-science-17",
+    order: 17,
+    question: "የቱሪዝም ኢንዱስትሪን የሚጎዳ ተግዳሮት የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. የቱሪዝም መስህቦችን ደካማ የማስተዋወቅ እና የገበያ ሁኔታ",
+      "ለ. የቱሪስቶች ብዛት መጨመር",
+      "ሐ. የትራንስፖርት ወጪ ከፍተኛ መሆን",
+      "መ. በአገር ውስጥ የባህል በዓላት ብዛት",
+    ],
+    correctAnswer:
+      "ሀ. የቱሪዝም መስህቦችን ደካማ የማስተዋወቅ እና የገበያ ሁኔታ",
+    explanation:
+      "የሀገርን መስህቦች በሚገባ አለማስተዋወቅ የጎብኝዎችን ቁጥር ይቀንሳል፡፡ መሰረተ ልማት አለመሟላትም ለቱሪዝም እድገት እንቅፋት ነው።",
+  },
+
+  {
+    id: "grade6-science-18",
+    order: 18,
+    question: "በሀገራችን የሚገኙ ጎጂ ልማዳዊ ድርጊቶች የትኞቹ ናቸው?",
+    options: [
+      "ሀ. የአበባ በዓል አከባበር",
+      "ለ. ባህላዊ መዚቃ ማሰማት",
+      "ሐ. የዕለታዊ ገበያ ጉብኝት",
+      "መ. የሴት ልጅ ግርዛት",
+    ],
+    correctAnswer: "መ. የሴት ልጅ ግርዛት",
+    explanation:
+      "ጎጂ ልማዳዊ ድርጊቶች በሰው ጤና እና ደህንነት ላይ ጉዳት የሚያደርሱ ናቸው:: የሴት ልጅ ግርዛት፣ ያለዕድሜ ጋብቻ እና ጠንቋይ ቤት መሄድ የጎጂ ልማዶች ምሳሌዎች ናቸው።",
+  },
+
+  {
+    id: "grade6-science-19",
+    order: 19,
+    question: "በኢትዮጵያ የድርቅ ምክንያት የሆነው የቱ ነው?",
+    options: [
+      "ሀ. የዝናብ መጠን መጨመር",
+      "ለ. የጫካ አካባቢዎች መስፋፋት",
+      "ሐ. የአየር ጠባይ እና የአየር ንብረት መለወጥ",
+      "መ. የውሃ ሀብት አስተዳደር መሻሻል",
+    ],
+    correctAnswer:
+      "ሐ. የአየር ጠባይ እና የአየር ንብረት መለወጥ",
+    explanation:
+      "የደን መጨፍጨፍ የአየር ሁኔታን በማዛባት የዝናብ እጥረት (ድርቅ) ያስከትላል:: ዛፎች ለዝናብ መፈጠር ትልቅ ሚና ስላላቸው ደን ሲጠፋ ድርቅ ይከሰታል፡፡",
+  },
+
+  {
+    id: "grade6-science-20",
+    order: 20,
+    question:
+      "በበለጸጉ ሀገራት ድርቅ ከተከሰተ በኋላ ረሀብ የማይከሰትባቸው ምክንያት ምንድን ነው?",
+    options: [
+      "ሀ. ከተለያዩ የምጣኔ ሀብት እንቅስቃሴዎች መሰረታዊ ፍላጎታቸውን ስለሚያሟሉ፡፡",
+      "ለ. ሙሉ በሙሉ በግብርና ላይ የሚመረኮዙ ናቸው::",
+      "ሐ. ድርቅ በጭራሽ አይከሰትባቸውም::",
+      "መ. ሁሉንም ምግብ ከሌሎች ሀገሮች ስለሚያገቡ::",
+    ],
+    correctAnswer:
+      "ሀ. ከተለያዩ የምጣኔ ሀብት እንቅስቃሴዎች መሰረታዊ ፍላጎታቸውን ስለሚያሟሉ፡፡",
+    explanation:
+      "በለፀጉ ሀገራት በግብርና ላይ ብቻ ጥገኛ አይደሉም፤ በኢንዱስትሪ እና አገልግሎት ዘርፍ ጠንካራ ኢኮኖሚ አላቸው። ድርቅ ቢከሰት እንኳ ምግብ የመግዛት እና የማከማቸት አቅማቸው ከፍተኛ ነው::",
+  },
+
+  {
+    id: "grade6-science-21",
+    order: 21,
+    question: "ካርታን በማንበብ እና በመጠቀም ምን መረጃ መለዋወጥ ይቻላል?",
+    options: [
+      "ሀ. የገንዘብ ሂሳቦች",
+      "ለ. የመሬት አቀማመጦች",
+      "ሐ. የሰው ሰራሽ አስተውሎች",
+      "መ. የስነ-ምግብ መረጃ",
+    ],
+    correctAnswer: "ለ. የመሬት አቀማመጦች",
+    explanation:
+      "ካርታ የመሬትን ገፅታ በወረቀት ላይ ቀንሶ የሚያሳይ መሳሪያ ነው:: ተራሮች፤ ወንዞች፤ ከተሞች እና መንገዶች የት እንደሚገኙ መረጃ ይሰጠናል::",
+  },
+
+  {
+    id: "grade6-science-22",
+    order: 22,
+    question:
+      "ከበደ አንድን ሀገር በአፍሪካ ካርታ ላይ ለማሳየት ከ15° ደቡብ ኬክሮስ እና 45 ምሥራቅ ኬንትሮስ መጠኖችን ተጠቅሟል:: ይህ ሀገር በምን ዓይነት ክልል ውስጥ ይገኛል?",
+    options: [
+      "ሀ. ሰሜን አፍሪካ",
+      "ለ. ምዕራብ አፍሪካ",
+      "ሐ. ምሥራቅ አፍሪካ",
+      "መ. ደቡብ አፍሪካ",
+    ],
+    correctAnswer: "ሐ. ምሥራቅ አፍሪካ",
+    explanation:
+      "45 ምስራቅ ኬንትሮስ የሚገኘው በምስራቅ አፍሪካ (ለምሳሌ ማዳጋስካር አካባቢ) ነው:: የአፍሪካ ቀንድ እና ጎረቤት ሀገራት በዚህ መስመር አካባቢ ይገኛሉ::",
+  },
+
+  {
+    id: "grade6-science-23",
+    order: 23,
+    question:
+      "አለማየሁ የምስራቅ አፍሪካ ሀገራትን በአፍሪካ ካርታ ላይ ለማሳየት ኬክሮስ (ላቲቱድ) እና ኬንትሮስ (ሎንግቱድ) በመጠቀም እየሰራ ነው፡፡ ከታች ከተሰጡት መጠኖች ውስጥ የትኛው ለኬንያ ትክክለኛ መገኛ ይሆናል?",
+    options: [
+      "ሀ. 5 ሰሜን፤ 38 ምሥራቅ ኬንትሮስ",
+      "ለ. 10 ደቡብ፣ 15 ምዕራብ",
+      "ሐ. 25 ሰሜን 55 ምሥራቅ",
+      "መ. 30°ደቡብ፣ 10°ምዕራብ",
+    ],
+    correctAnswer: "ሀ. 5 ሰሜን፤ 38 ምሥራቅ ኬንትሮስ",
+    explanation:
+      "ኬንያ በኢኳተር (0) አካባቢ የምትገኝ ሀገር ናት:: 5 ሰሜን እና 38 ምስራቅ ለኬንያ እና ኢትዮጵያ ድንበር አካባቢ ቅርብ የሆነ መገኛ ነው::",
+  },
+
+  {
+    id: "grade6-science-24",
+    order: 24,
+    question:
+      "በምሥራቅ አፍሪካ አጎራባች ሀገራት ዝርዝር ውስጥ የተካተተው ሀገር የትኛው ነው?",
+    options: [
+      "ሀ. ኢትዮጵያ",
+      "ለ. ሶማሊያ",
+      "ሐ. ሱዳን",
+      "መ. ኬንያ",
+    ],
+    correctAnswer: "ሀ. ኢትዮጵያ",
+    explanation:
+      "በምስራቅ አፍሪካ ውስጥ ኢትዮጵያ፣ ኬንያ፣ ሶማሊያ፣ ጅቡቲ፣ ሱዳን፣ ደቡብ ሱዳን፣ ኡጋንዳ፣ ታንዛኒያ፣ ሩዋንዳ እና ቡሩንዲ ይገኛሉ:: በምርጫ የተሰጡት ሁሉም ሀገራት የዚህ ክልል አባላት ናቸው።",
+  },
+
+  {
+    id: "grade6-science-25",
+    order: 25,
+    question: "ዋና ዋና የደም ህዋሶች የሆኑት የትኞቹ ናቸው?",
+    options: [
+      "ሀ. ፕላዝማ፤ ኦክስጂን፤ ካርቦን ዳይኦክሳይድ",
+      "ለ. ቀይ የደም ህዋሶች፣ ነጭ የደም ህዋሶች እና ፕሌትሌቶች",
+      "ሐ. ፕላዝማ፤ ፕሌትሌቶች፣ ሄሞግሎቢን",
+      "መ. ውሃ፣ አልሚ ምግቦች፣ ጀርሞች",
+    ],
+    correctAnswer:
+      "ለ. ቀይ የደም ህዋሶች፣ ነጭ የደም ህዋሶች እና ፕሌትሌቶች",
+    explanation:
+      "ደም ከፈሳሽ (ፕላዝማ) እና ከህዋሳት የተገነባ ነው:: ቀይ የደም ህዋሶች ኦክስጂን ያጓጉዛሉ፤ ነጭ የደም ህዋሶች በሽታን ይከላከላሉ፣ ፕሌትሌቶች ደም እንዲረጋ ያደርጋሉ፡፡",
+  },
+
+  {
+    id: "grade6-science-26",
+    order: 26,
+    question:
+      "ከተሰጡት የጉልበት ምንጮች መካከል የቱ ታዳሽ የጉልበት ምንጮችን ብቻ ያካትታል?",
+    options: [
+      "ሀ. የጸሐይ ብርሃን፤ ንፋስ፤ የባትሪ ድንጋይ",
+      "ለ. የጸሐይ ብርሃን፣ ንፋስ፣ የሚፈስ ውሃ",
+      "ሐ. የማገዶ እንጨት፣ የተፈጥሮ ጋዝ፣ የድንጋይ ከሰል",
+      "መ. የቤንዚን፤ የነጭ ጋዝ፣ የኤሌክትሪክ",
+    ],
+    correctAnswer:
+      "ለ. የጸሐይ ብርሃን፣ ንፋስ፣ የሚፈስ ውሃ",
+    explanation:
+      "ታዳሽ ኃይል (Renewable energy) ማለት ተጠቅመን የማያልቁ እና በተፈጥሮ የሚተኩ ናቸው:: ፀሐይ፣ ንፋስ እና ውሃ ለአካባቢ ብክለት የማይዳርጉ ንፁህ የኃይል ምንጮች ናቸው::",
+  },
+
+  {
+    id: "grade6-science-27",
+    order: 27,
+    question: "የቀላል መኪናዎች ዋና ዓላማቸው ምንድነው?",
+    options: [
+      "ሀ. ጉልበትን ማሳደግ",
+      "ለ. የጊዜ ፍጆታን መጨመር",
+      "ሐ. የነዳጅ ፍጆታን መቀነስ",
+      "መ. ስራን በቀላሉ ማከናወን",
+    ],
+    correctAnswer: "መ. ስራን በቀላሉ ማከናወን",
+    explanation:
+      "ቀላል መኪናዎች ስራን ፈጣን እና ቀላል ያደርጋሉ፡፡ ለምሳሌ የለስላሳ መከፈቻዎች በቀላሉ ለመክፈት፣ ሽብልቅ በቀላሉ እንጨት ለመፍለጥ፣ በከራዎች ውሃ በቀላሉ ከጉድጓድ ለማውጣት::",
+  },
+
+  {
+    id: "grade6-science-28",
+    order: 28,
+    question:
+      "በምሥራቅ አፍሪካ ክፍሎች ውስጥ ከሰኔ እስከ መስከረም ባለው ወቅት በየትኛው አካባቢ ዝናብ ይከሰታል?",
+    options: [
+      "ሀ. በምድር ወገብ አካባቢ ያሉ ሀገራት",
+      "ለ. በምሥራቅ አፍሪካ ሰሜናዊ ክፍል ያለ አካባቢዎች",
+      "ሐ. ከምድር ወገብ በስተ ደቡብ ያሉ ሀገራት",
+      "መ. በደረቅ ክልሎች ያሉ ሀገራት",
+    ],
+    correctAnswer:
+      "ለ. በምሥራቅ አፍሪካ ሰሜናዊ ክፍል ያለ አካባቢዎች",
+    explanation:
+      "ከሰኔ እስከ መስከረም የሰሜናዊው ንፍቀ ክበብ ክረምት ነው:: እንደ ኢትዮጵያ እና ሱዳን ያሉ የሰሜን ምስራቅ አፍሪካ ሀገራት በዚህ ወቅት ዋናውን ዝናብ ያገኛሉ::",
+  },
+
+  {
+    id: "grade6-science-29",
+    order: 29,
+    question:
+      "ከምሥራቅ አፍሪካ ሀገራት ውስጥ የትኛው በብረት እና በወርቅ ማዕድናት ይታወቃል?",
+    options: [
+      "ሀ. ኢትዮጵያ",
+      "ለ. ሶማሊያ",
+      "ሐ. ዩጋንዳ",
+      "መ. ቡሩንዲ",
+    ],
+    correctAnswer: "ሀ. ኢትዮጵያ",
+    explanation:
+      "ኢትዮጵያ በወርቅ ማዕድን (ሻኪሶ/ለጋ ደምቢ) ትታወቃለች:: ዩጋንዳም የተለያዩ ማዕድናት ያሏት ሀገር ናት::",
+  },
+
+  {
+    id: "grade6-science-30",
+    order: 30,
+    question:
+      "የአፈር መሸርሸርን ለመከላከል ከሚጠቅሙ ዘዴዎች ውስጥ የትኛው ዘዴ ዘሮችን በተለያዩ ዓመታት በማሳው ላይ መዝራትን ያካትታል?",
+    options: [
+      "ሀ. ዳግም ድነና",
+      "ለ. ድነና",
+      "ሐ. ዘር ማፈራረቅ",
+      "መ. የእርከን ሥራ",
+    ],
+    correctAnswer: "ሐ. ዘር ማፈራረቅ",
+    explanation:
+      "ዘር ማፈራረቅ (Crop rotation) በአንድ ማሳ ላይ በየዓመቱ የተለያየ ሰብል የመዝራት ዘዴ ነው:: ይህም የአፈር ለምነት እንዳይጠፋ እና ተባዮች እንዳይራቡ ይረዳል::",
+  },
+
+  {
+    id: "grade6-science-31",
+    order: 31,
+    question:
+      "በምሥራቅ አፍሪካ ውስጥ የሚገኝ እና በዓለም በርዝመቱ ትልቁ ወንዝ የትኛው ነው?",
+    options: [
+      "ሀ. የዛምቤዚ ወንዝ",
+      "ለ. የገናሌ ወንዝ",
+      "ሐ. የአባይ ወንዝ",
+      "መ. የሴቤ ወንዝ",
+    ],
+    correctAnswer: "ሐ. የአባይ ወንዝ",
+    explanation:
+      "የአባይ ወንዝ (Nile River) ከኢትዮጵያ እና ከቪክቶሪያ ሐይቅ ተነስቶ ሜዲትራኒያን ባህር ይገባል:: በዓለም ላይ ረጅሙ ወንዝ በመባል ይታወቃል::",
+  },
+
+  {
+    id: "grade6-science-32",
+    order: 32,
+    question:
+      "በምስራቅ አፍሪካ የውሃ ሃብት አጠቃቀም ዋና ፈተና የሆነው ምንድን ነው?",
+    options: [
+      "ሀ. የኢንዱስትሪ ብክለት",
+      "ለ. በሀይቆች ላይ ከመጠን በላይ ዓሣ ማስገር",
+      "ሐ. የኢኳቶሪያ የምድር ምልክት",
+      "መ. የደን መትከል",
+    ],
+    correctAnswer: "ሀ. የኢንዱስትሪ ብክለት",
+    explanation:
+      "ከፋብሪካዎች የሚወጡ ቆሻሻዎች ወደ ወንዞች እና ሐይቆች በመግባት ውሃውን ይበክላሉ:: ይህም ለሰው ጤና እና ለውሃ ውስጥ ህይወት አደገኛ ነው፡፡",
+  },
+
+  {
+    id: "grade6-science-33",
+    order: 33,
+    question:
+      "ባህላዊ ቅርሶች የምጣኔ ሀብት ዕቅድን ለማሳደግ ከሚከተሉት ውስጥ የትኛውን ያካትታሉ?",
+    options: [
+      "ሀ. የሀገር ውስጥ እና የውጭ ቱሪስቶችን መሳብ",
+      "ለ. የውጭ ንግድ ቅናሾችን መጨመር",
+      "ሐ. የእርሻ ምርታማነትን ማሳደግ",
+      "መ. የኤሌክትሪክ አጠቃቀምን መቀነስ",
+    ],
+    correctAnswer:
+      "ሀ. የሀገር ውስጥ እና የውጭ ቱሪስቶችን መሳብ",
+    explanation:
+      "ቅርሶች በጎብኝዎች ሲጎበኙ ሀገር የውጭ ምንዛሬ እና ገቢ ታገኛለች:: ይህም የሀገርን ገፅታ ከመገንባት ባለፈ ለኢኮኖሚ እድገት ይረዳል::",
+  },
+
+  {
+    id: "grade6-science-34",
+    order: 34,
+    question: "በምሥራቅ አፍሪካ የቱሪዝም ምጣኔ ሀብታዊ ጠቀሜታ ምንድነው?",
+    options: [
+      "ሀ. የመንግሥት የውጭ ምንዛሬን ይቀንሳል፡፡",
+      "ለ. የአካባቢውን ባህል ይጎዳል፡፡",
+      "ሐ. የሥራ እድልን ያመቻቻል፡፡",
+      "መ. የግብርና ሥራን ይጎዳል፡፡",
+    ],
+    correctAnswer: "ሐ. የሥራ እድልን ያመቻቻል፡፡",
+    explanation:
+      "ቱሪዝም በሆቴል፤ በትራንስፖርት እና በንግድ ዘርፍ ለብዙ ዜጎች የስራ እድል ይፈጥራል:: ይህም የሰዎችን ገቢ በማሳደግ የኑሮ ደረጃን ያሻሽላል፡፡",
+  },
+
+  {
+    id: "grade6-science-35",
+    order: 35,
+    question:
+      "በምስራቅ አፍሪካ የአትክልት እርባታ ኢንዱስትሪ የሚያጋጥመው ዋና ፈተና የሆነው የቱ ነው?",
+    options: [
+      "ሀ. በመጓጓዣ ወቅት በቂ የማቀዝቀዣ አቅም አለመኖር",
+      "ለ. ለምርቶች ዝቅተኛ ሀገራዊ ፍላጎት አለመኖር",
+      "ሐ. የሰብል ግብይት ከፍተኛ ወጪዎች",
+      "መ. የብቃት ያለው የሰው ኃይል አለመኖር",
+    ],
+    correctAnswer:
+      "ሀ. በመጓጓዣ ወቅት በቂ የማቀዝቀዣ አቅም አለመኖር",
+    explanation:
+      "አትክልት እና ፍራፍሬ ቶሎ የሚበላሽ (Perishable) በመሆናቸው ቀዝቃዛ መጋዘን እና መጓጓዣ ይፈልጋሉ፡፡ ይህ መሰረተ ልማት አለመሟላት ለምርቱ መበላሸት እና ለገበሬው ኪሳራ ምክንያት ይሆናል፡፡",
+  },
+
+  {
+    id: "grade6-science-36",
+    order: 36,
+    question: "የውስጥ ንግድ ዋናው ባህሪው ምንድን ነው?",
+    options: [
+      "ሀ. በአንድ አህጉር ውስጥ አገሮች መካከል የሚደረግ ንግድ",
+      "ለ. በአንድ አገር ውስጥ በሚገኙ ሰዎች መካከል የሚካሄድ የንግድ እንቅስቃሴ",
+      "ሐ. በምስራቅ አፍሪካ እና በምዕራባዊ አገሮች መካከል የሚደረግ ንግድ",
+      "መ. ምርቶችን እና የሰብል ምርቶችን የሚያካትት ንግድ",
+    ],
+    correctAnswer:
+      "ለ. በአንድ አገር ውስጥ በሚገኙ ሰዎች መካከል የሚካሄድ የንግድ እንቅስቃሴ",
+    explanation:
+      "የውስጥ ንግድ (Internal Trade) ማለት በሀገር ውስጥ ባሉ ክልሎች ወይም ከተሞች መካከል የሚደረግ ልውውጥ ነው። ለምሳሌ ከጎጃም የመጣ ጤፍ አዲስ አበባ ላይ ሲሸጥ የውስጥ ንግድ ይባላል፡፡",
+  },
+
+  {
+    id: "grade6-science-37",
+    order: 37,
+    question: "ጫት ውስጥ የሚገኝ ኬሚካል ምን ይባላል?",
+    options: [
+      "ሀ. ኒኮቲን",
+      "ለ. ካቲኖን",
+      "ሐ. ሞርፊን",
+      "መ. ኢታኖል",
+    ],
+    correctAnswer: "ለ. ካቲኖን",
+    explanation:
+      "ጫት ውስጥ ካቲኖን (Cathinone) የተባለ አነቃቂ ኬሚካል ይገኛል:: ይህ ኬሚካል ሱስ የሚያስይዝ እና በጤና ላይ ጉዳት የሚያደርስ ነው።",
+  },
+
+  {
+    id: "grade6-science-38",
+    order: 38,
+    question: "ድርቅ የሚለው ቃል ዋናው ትርጉም ምንድን ነው?",
+    options: [
+      "ሀ. ድንገተኛ የዝናብ ሽፋን በመከሰቱ የሚፈጠር",
+      "ለ. እንደ ካንስር በሽታ በፍጥነት የሚሰራጭ",
+      "ሐ. ያልተለመደ የዝናብ እጥረት ወይም ረጅም ጊዜ ዝናብ አለመኖር",
+      "መ. በአንድ ክልል የምግብ ምርት መጨመር",
+    ],
+    correctAnswer:
+      "ሐ. ያልተለመደ የዝናብ እጥረት ወይም ረጅም ጊዜ ዝናብ አለመኖር",
+    explanation:
+      "ድርቅ የተፈጥሮ አደጋ ሲሆን የውሃ እጥረት እንዲከሰት ያደርጋል፡፡ ይህም ለሰብል መድረቅ እና ለከብቶች መሞት ምክንያት ይሆናል::",
+  },
+
+  {
+    id: "grade6-science-39",
+    order: 39,
+    question:
+      "በምስራቅ አፍሪካ የአፈር መሸርሸር በመጨመር እና የአካባቢውን የውሃ ዑደት በማዛባት ድርቅን የሚያስከትለው የቱ ነው?",
+    options: [
+      "ሀ. የደን መውደም",
+      "ለ. የኢንዱስትሪ መቀነስ",
+      "ሐ. ከመጠን በታች በእንስሳት ማስጋጥ",
+      "መ. የህዝብ ቁጥር መቀነሰ",
+    ],
+    correctAnswer: "ሀ. የደን መውደም",
+    explanation:
+      "ዛፎች ሲቆረጡ አፈር በዝናብ በቀላሉ ይታጠባል (መሸርሽር)። ደን መጥፋቱ ደግሞ ተክሎች የሚያመነጩትን እርጥበት በመቀነስ የዝናብ ዑደቱን ያዛባል፡፡",
+  },
+
+  {
+    id: "grade6-science-40",
+    order: 40,
+    question:
+      "የምስራቅ አፍሪካ አገሮች (ኢትዮጵያ፣ ሶማሊያ፣ ኡጋንዳ፤ ኬኒያ፣ ጂቡቲ) እንደ ድርቅ ተጋላጭ ክልሎች የሚያገናኛቸው የጂኦግራፊያዊ ባህሪ ምንድን ነው?",
+    options: [
+      "ሀ. በአፍሪካ ቀንድ እና በምስራቅ አፍሪካ ሪፍት ሸለቆ",
+      "ለ. በሳህራ በረሃ ውስጥ መገኘት",
+      "ሐ. በአትላንቲክ ውቅያኖስ ዳርቻ አቅራቢነት",
+      "መ. በትሮፒካል የደን ሽፋን ላይ ጥገኝነት",
+    ],
+    correctAnswer:
+      "ሀ. በአፍሪካ ቀንድ እና በምስራቅ አፍሪካ ሪፍት ሸለቆ",
+    explanation:
+      "የአፍሪካ ቀንድ አካባቢ ለድርቅ ተጋላጭ የሆነው በአየር ንብረት መለዋወጥ ምክንያት ነው። ስምጥ ሸለቆው ደግሞ ለተለያዩ የተፈጥሮ ለውጦች ተጋላጭ የሆነ አካባቢ ነው።",
+  },
+],
   "grade6-2016-civics": [
 
   {

@@ -1,5 +1,130 @@
 export const examProducts = [
   {
+  id: "grade6-english",
+  grade: "Grade 6",
+  subject: "English",
+  title: "Grade 6 2018 English Ministry Exam",
+  price: 65,
+  description:
+    "Practice the 2018 Grade 6 English Ministry Exam with the original passage, questions, answers and explanations.",
+  active: true,
+  questions: [
+    {
+      id: "g6english-1",
+      order: 1,
+      passage: `Technology has changed education in many ways. In the past, students only had books and teachers to help them leam Today, technology allows students to access information faster and in more creative ways. Students can use computers, tablets, and the intemet to find answers to their questions or watch videos that explain complex topics. Teachers can also use technology to create more engaging lessons. This makes learning more fun and effective for everyone.
+
+Students can learn in many different places now, not just in the classroom. With the help of technology, students can attend online classes, watch educational videos, and take part in virtual study groups. This is very helpful when students cannot go to school, for example, during school closures or when they are sick. Technology also allows. students to stay connected with their teachers and classmates through emails, video calls, and online chats, making leaming flexible accessible.
+
+Technology also helps students become more independent leamers Instead of waiting for a teacher to explain something, they can search for answers on their own. Many students also use educational apps and websites to help them practice skills like math or learn new languages. This ability to work independently helps students become more confident in their learning.
+
+However, it is important that students use technology in a balanced wav Spending too much time online can affect their health and social life. It's essential for students to make time for outdoor activities, exercise, and spending time with friends and family Teachers and parents can guide students in using technology for learning purposes and not just for entertainment. Finally, while technology is a powerful tool for education, students should learn to use it responsibly They should avoid distractions such as social media or games during study time. Technology can be very useful, but it is up to students to use it wisely to get the most out of it.`,
+
+      question: "What is the main message of the above passage?",
+      options: [
+        "Technology makes learning easier",
+        "Technology replaces teachers.",
+        "Technology makes school boring",
+        "Technology is only for fun."
+      ],
+      correctAnswer: "Technology makes learning easier",
+      explanation:
+        'The passage describes how technology allows students to access information faster. It mentions that technology makes learning more "effective for everyone". It emphasizes that technology helps students become more independent and confident in their learning.'
+    },
+
+    {
+      id: "g6english-2",
+      order: 2,
+      
+      question: "How does technology help students learn?",
+      options: [
+        "By replacing teachers in class.",
+        "By offering entertainment and games.",
+        "By making school work harder.",
+        "By helping students search for information."
+      ],
+      correctAnswer: "By helping students search for information",
+      explanation:
+        "The text states students can use computers and the internet to find answers to their questions. It notes that students can search for answers on their own instead of waiting for a teacher. Technology also provides access to videos that explain complex topics."
+    },
+
+    {
+      id: "g6english-3",
+      order: 3,
+      
+      question: "Why is it important for students to use technology responsibly?",
+      options: [
+        "To use social media for playing games.",
+        "To avoid distractions and health issues.",
+        "To spend more time online.",
+        "To stop learning in school."
+      ],
+      correctAnswer: "To avoid distractions and health issues",
+      explanation:
+        'The passage warns that spending too much time online can affect health and social life. It advises students to avoid distractions like social media or games during study time. Using technology responsibly ensures students get the most out of this "powerful tool".'
+    }
+  ]
+},
+  {
+  id: "grade6-2018-science",
+  grade: "Grade 6",
+  subject: "አካባቢ ሳይንስ",
+  title: "Grade 6 2018 አካባቢ ሳይንስ Ministry Exam",
+  price: 65,
+  description:
+    "Practice the 2018 Grade 6 አካባቢ ሳይንስ Ministry Exam with answers and explanations.",
+  active: true,
+  questions: [
+    {
+      id: "g6science2018-1",
+      order: 1,
+      question:
+        "የኢትዮጵያ ፍጹማዊ መገኛ የሆነው የትኛው ነው?",
+      options: [
+        "ሀ. ከ3° ሰሜን እስከ 15° ሰሜን ኬክሮስ እና ከ33° ምሥራቅ እስከ 48° ምሥራት ኬንትሮስ።",
+        "ለ. ከ0° ሰሜን እስከ 12° ሰሜን ኬክሮስ እና ከ30° ምሥራቅ እስከ 45° ምሥራቅ ኬንትሮስ።",
+        "ሐ. ከ5° ሰሜን እስከ 20° ሰሜን ኬክሮስ እና ከ25° ምሥራቅ እስከ 50° ምሥራቅ ኬንትሮስ።",
+        "መ. ከ10° ሰሜን እስከ 18° ሰሜን ኬክሮስ እና ከ35° ምሥራቅ እስከ 55° ምሥራቅ ኬንትሮስ።"
+      ],
+      correctAnswer: "ሀ",
+      explanation:
+        "ፍጹማዊ መገኛ የሚገለፀው በኬክሮስ (Latitude) እና በኬንትሮስ (Longitude) መስመሮች ነው። ኢትዮጵያ በምስራቅ አፍሪካ የምትገኝ ሲሆን መገኛዋም ከ3-15° ሰሜን እና 33-48° ምስራት ነው።"
+    },
+
+    {
+      id: "g6science2018-2",
+      order: 2,
+      question:
+        "ከሚከተሉት ውስጥ የትኛው ሀገር ከኢትዮጵያ ጋር ድንበር ይጋራል?",
+      options: [
+        "ሀ. ኡጋንዳ",
+        "ለ. ታንዛኒያ",
+        "ሐ. ኤርትራ",
+        "መ. ሩዋንዳ"
+      ],
+      correctAnswer: "ሐ",
+      explanation:
+        "ኢትዮጵያ በየብስ ከኤርትራ፣ ከጅቡቲ፣ ከሶማሊያ፣ ከኬንያ፣ ከደቡብ ሱዳን እና ከሱዳን ጋር ትዋሰናለች። ኤርትራ በሰሜን በኩል የኢትዮጵያ አጎራባች ሀገር ናት።"
+    },
+
+    {
+      id: "g6science2018-3",
+      order: 3,
+      question:
+        "ተማሪ ፀጋዬ ኬክሮስ 9° ሰሜን እና ኬንትሮስ 39° ምስራቅ በመጠቀም በኢትዮጵያ ካርታ ላይ የትኛውን ቦታ እንደሚያሳይ ይገመታል?",
+      options: [
+        "ሀ. አዲስ አበባ",
+        "ለ. ላሊበላ ቤተክርስቲያን",
+        "ሐ. ሰሜናዊ ተራሮች",
+        "መ. ግድብ ላይ ያለ ፓርክ"
+      ],
+      correctAnswer: "ሀ",
+      explanation:
+        "የአዲስ አበባ ትክክለኛ መገኛ 9° ሰሜን ኬክሮስ እና 38° እስከ 39° ምስራቅ ኬንትሮስ አካባቢ ነው። ይህ መገኛ የሀገሪቱን መሀል ማሳያ ነው።"
+    }
+  ]
+},
+  {
   id: "grade6-2016-civics",
   grade: "Grade 6",
   subject: "ግብረ ገብ",
@@ -38,6 +163,21 @@ export const examProducts = [
       correctAnswer: "ሀ",
       explanation:
         "ምሉዕነት ያለው ሰው በድርጊቱ ታማኝና ግልጽ ስለሚሆን የሰራውን ስህተት አምኖ ለመቀበል አይፈራም። ይህም ለራስና ለሌሎች ታማኝ የመሆን መገለጫ ነው።"
+    },
+    {
+      id: "g6civics-3",
+      order: 3,
+      question:
+        "	እውነተኛ የግብረ ገብ ምሉዕነት የተላበሱ ሰዎች ባህሪ የሆነው የትኛው ነው?",
+      options: [
+        "ሀ. በዙሪያቸው ካሉ ሰዎች ጋር ያላቸውን ግንኙነት ተገቢውን ዋጋ አይሰጡም",
+        "ለ. የሌሎች ሰዎችን ሚስጥሮች ለሌሎች አሳልፈው ይሰጣሉ",
+        "ሐ. በማንኛውም ሁኔታ ውስጥ ቢሆኑም እውነትን ይናገራሉ",
+        "መ. በሌሎች ላይ ጉዳት የሚያስከትል ነገር ሲመለከቱ አይቃወሙ”"
+      ],
+      correctAnswer: "ሐ",
+      explanation:
+        "እውነተኛ ምሉዕነት ያላቸው ሰዎች በማንኛውም አስቸጋሪ ሁኔታ ውስጥ ቢሆኑ እንኳን ለእውነት ቅድሚያ ይሰጣሉ ።ውሸትንና ማታለልን አጥብቀው ይቃወማሉ ።"
     }
   ]
 },
