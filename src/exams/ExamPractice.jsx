@@ -877,9 +877,36 @@ const handlePurchase = async () => {
               Question {currentQuestionData.order}
             </div>
 
-            <h2 style={styles.question}>
-              {currentQuestionData.question}
-            </h2>
+            {currentQuestionData.passage && (
+  <div
+    style={{
+      marginBottom: "20px",
+      padding: "18px",
+      background: "#f8fafc",
+      border: "1px solid #e2e8f0",
+      borderRadius: "10px",
+      lineHeight: "1.8",
+      whiteSpace: "pre-line",
+      color: "#1e293b",
+    }}
+  >
+    <div
+      style={{
+        fontWeight: "700",
+        marginBottom: "10px",
+        fontSize: "16px",
+      }}
+    >
+      ምንባብ
+    </div>
+
+    {currentQuestionData.passage}
+  </div>
+)}
+
+<h2 style={styles.question}>
+  {currentQuestionData.question}
+</h2>
 
             <div style={styles.options}>
               {currentQuestionData.options.map(
