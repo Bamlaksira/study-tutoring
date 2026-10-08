@@ -59,21 +59,11 @@ const [pendingPurchase, setPendingPurchase] = useState(false);
     grade6-2017-amharic  -> 2017
   */
   const getProductYear = (product) => {
-  const id = String(product.id || "");
-  const title = String(product.title || "");
+    const match = product.id.match(/-(20\d{2})-/);
 
-  const idMatch = id.match(/20\d{2}/);
-  if (idMatch) {
-    return idMatch[0];
-  }
+    return match ? match[1] : "2018";
+  };
 
-  const titleMatch = title.match(/20\d{2}/);
-  if (titleMatch) {
-    return titleMatch[0];
-  }
-
-  return null;
-};
   const yearProducts = selectedYear
     ? products.filter(
         (product) => getProductYear(product) === selectedYear
@@ -491,72 +481,35 @@ const handlePurchase = async () => {
   };
 
   const getOptionStyle = (option) => {
-  const base = {
-    ...styles.option,
-  };
+    const base = {
+      ...styles.option,
+    };
 
-  if (!showExplanation) {
+    if (!showExplanation) {
+      return base;
+    }
+
+    if (
+      option === currentQuestionData.correctAnswer
+    ) {
+      return {
+        ...base,
+        border: "2px solid #22c55e",
+        background: "#f0fdf4",
+      };
+    }
+
+    if (option === selectedAnswer) {
+      return {
+        ...base,
+        border: "2px solid #ef4444",
+        background: "#fef2f2",
+      };
+    }
+
     return base;
-  }
-
-  const englishLabels = ["A", "B", "C", "D"];
-  const amharicLabels = ["ሀ", "ለ", "ሐ", "መ"];
-
-  const normalizeOption = (value) => {
-    return String(value ?? "")
-      .replace(/^(A|B|C|D|ሀ|ለ|ሐ|መ)[.)]\s*/, "")
-      .trim();
   };
 
-  const correctAnswer = String(
-    currentQuestionData.correctAnswer ?? ""
-  ).trim();
-
-  let correctOption = normalizeOption(correctAnswer);
-
-  // If correctAnswer is a letter, find the actual option it refers to
-  if (englishLabels.includes(correctAnswer)) {
-    const correctIndex = englishLabels.indexOf(correctAnswer);
-
-    if (currentQuestionData.options[correctIndex]) {
-      correctOption = normalizeOption(
-        currentQuestionData.options[correctIndex]
-      );
-    }
-  }
-
-  if (amharicLabels.includes(correctAnswer)) {
-    const correctIndex = amharicLabels.indexOf(correctAnswer);
-
-    if (currentQuestionData.options[correctIndex]) {
-      correctOption = normalizeOption(
-        currentQuestionData.options[correctIndex]
-      );
-    }
-  }
-
-  const normalizedOption = normalizeOption(option);
-
-  // Correct answer = GREEN
-  if (normalizedOption === correctOption) {
-    return {
-      ...base,
-      border: "2px solid #22c55e",
-      background: "#f0fdf4",
-    };
-  }
-
-  // Selected wrong answer = RED
-  if (option === selectedAnswer) {
-    return {
-      ...base,
-      border: "2px solid #ef4444",
-      background: "#fef2f2",
-    };
-  }
-
-  return base;
-};
   const renderGrades = () => {
     return (
       <div style={styles.page}>
@@ -956,132 +909,72 @@ const handlePurchase = async () => {
 </h2>
 
             <div style={styles.options}>
-              {currentQuestionData.options.map((option, index) => {
-  const labels = ["A", "B", "C", "D"];
-  const amharicLabels = ["ሀ", "ለ", "ሐ", "መ"];
+              {currentQuestionData.options.map(
+                (option, index) => {
+                  const letter =
+                    option.charAt(0);
 
-  // Check whether this option already has a label
-  const existingLabelMatch = option.match(
-    /^(A|B|C|D|ሀ|ለ|ሐ|መ)[.)]\s*/
-  );
+                  return (
+                    <button
+                      key={index}
+                      style={getOptionStyle(letter)}
+                      onClick={() =>
+                        handleAnswer(letter)
+                      }
+                      disabled={showExplanation}
+                    >
+                      <span
+                        style={styles.optionLetter}
+                      >
+                        {letter}
+                      </span>
 
-  const existingLabel = existingLabelMatch
-    ? existingLabelMatch[1]
-    : null;
-
-  // Use the existing label if there is one.
-  // Otherwise generate one from the option position.
-  const isAmharic =
-    existingLabel &&
-    amharicLabels.includes(existingLabel);
-
-  const letter = existingLabel
-    ? existingLabel
-    : isAmharic
-      ? amharicLabels[index]
-      : labels[index];
-
-  // Remove an existing label from the displayed text
-  const optionText = existingLabelMatch
-    ? option.substring(existingLabelMatch[0].length)
-    : option;
-
-  return (
-    <button
-      key={index}
-      style={getOptionStyle(option)}
-      onClick={() => handleAnswer(option)}
-      disabled={showExplanation}
-    >
-      <span style={styles.optionLetter}>
-        {letter}
-      </span>
-
-      <span style={styles.optionText}>
-        {optionText}
-      </span>
-    </button>
-  );
-})}
+                      <span
+                        style={styles.optionText}
+                      >
+                        {option.substring(3)}
+                      </span>
+                    </button>
+                  );
+                }
+              )}
             </div>
 
-            {showExplanation && (() => {
-  const englishLabels = ["A", "B", "C", "D"];
-  const amharicLabels = ["ሀ", "ለ", "ሐ", "መ"];
+            {showExplanation && (
+              <div
+                style={{
+                  ...styles.explanationBox,
+                  background:
+                    selectedAnswer ===
+                    currentQuestionData.correctAnswer
+                      ? "#ecfdf3"
+                      : "#fff1f2",
+                  borderColor:
+                    selectedAnswer ===
+                    currentQuestionData.correctAnswer
+                      ? "#86efac"
+                      : "#fda4af",
+                }}
+              >
+                <strong
+                  style={
+                    selectedAnswer ===
+                    currentQuestionData.correctAnswer
+                      ? styles.correctText
+                      : styles.incorrectText
+                  }
+                >
+                  {selectedAnswer ===
+                  currentQuestionData.correctAnswer
+                    ? "✓ Correct"
+                    : "✕ Not quite"}
+                </strong>
 
-  const normalizeOption = (value) => {
-    return String(value ?? "")
-      .replace(/^(A|B|C|D|ሀ|ለ|ሐ|መ)[.)]\s*/, "")
-      .trim();
-  };
-
-  const correctAnswer = String(
-    currentQuestionData.correctAnswer ?? ""
-  ).trim();
-
-  let correctOption = normalizeOption(correctAnswer);
-
-  // If correctAnswer is A/B/C/D
-  if (englishLabels.includes(correctAnswer)) {
-    const correctIndex = englishLabels.indexOf(correctAnswer);
-
-    if (currentQuestionData.options[correctIndex]) {
-      correctOption = normalizeOption(
-        currentQuestionData.options[correctIndex]
-      );
-    }
-  }
-
-  // If correctAnswer is ሀ/ለ/ሐ/መ
-  if (amharicLabels.includes(correctAnswer)) {
-    const correctIndex = amharicLabels.indexOf(correctAnswer);
-
-    if (currentQuestionData.options[correctIndex]) {
-      correctOption = normalizeOption(
-        currentQuestionData.options[correctIndex]
-      );
-    }
-  }
-
-  const isCorrect =
-    normalizeOption(selectedAnswer) === correctOption;
-
-  return (
-    <div
-      style={{
-        ...styles.explanationBox,
-        background: isCorrect
-          ? "#ecfdf3"
-          : "#fff1f2",
-        borderColor: isCorrect
-          ? "#86efac"
-          : "#fda4af",
-      }}
-    >
-      <strong
-        style={
-          isCorrect
-            ? styles.correctText
-            : styles.incorrectText
-        }
-      >
-        {isCorrect
-          ? "✓ Correct"
-          : "✕ Not quite"}
-      </strong>
-
-      <div style={styles.explanationText}>
-  <strong>ትክክለኛ መልስ:</strong>{" "}
-  {currentQuestionData.correctAnswer}
-
-  <br />
-
-  <strong>ማብራሪያ:</strong>{" "}
-  {currentQuestionData.explanation}
-</div>
-    </div>
-  );
-})()}
+                <p style={styles.explanationText}>
+                  {currentQuestionData.explanation}
+                </p>
+              </div>
+            )}
 
             <div style={styles.navigation}>
               <button

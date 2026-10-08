@@ -296,31 +296,31 @@ Finally, maintaining a healthy lifestyle is an important part of developing stro
   ]
 },
   {
-  id: "grade6-2017-civics",
+  id: "grade6-2016-civics",
   grade: "Grade 6",
   subject: "Civics",
-  title: "Grade 6 2017 Civics Ministry Exam",
+  title: "Grade 6 2016 Civics Ministry Exam",
   price: 65,
   description:
-    "Practice the 2017 Grade 6 Civics Ministry Exam with the original questions, answers and explanations.",
+    "Practice the 2016 Grade 6 Civics Ministry Exam with the original questions, answers and explanations.",
   active: true,
   questions: [
     {
-      id: "g6c2017-1",
+      id: "g6c2016-1",
       question:
         "ከሚከተሉት ውስጥ ሃላፊነት መወጣትን የሚያሳየው የቱ ነው?",
       options: [
         "ሀ. ሠዎች እንዲጠነቀቁልን ማሳሰብ እና መምከር",
         "ለ. ጓደኞች እና ለቤተሰቦች ደህንነት መጠንቀቅ",
         "ሐ. ለሌሎች ኃላፊነት መስጠት እና መከታተል",
-        "መ. ከአቅም በላይ የሆነን ሥራ መሥራት"
+        "መ, ከአቅም በላይ የሆነን ሥራ መሥራት"
       ],
       correctAnswer: "ለ",
       explanation:
         "ለቤተሰብ እና ለጓደኞች ደህንነት ግድ ማለት እና ጥንቃቄ ማድረግ እንዱ የሃላፊነት መገለጫ ነው ::"
     },
     {
-      id: "g6c2017-2",
+      id: "g6c2016-2",
       question:
         "ሉሊት የስድስተኛ ክፍል ተማሪ ስትሆን በየሳምንቱ ቅዳሜ ዕለት በካንሰር ማገገሚያ ማዕከል ውስጥ ካሉ ልጆች ጋር በመዋል ተረት ታወራላቸዋለች፣አብራ ትጫውታለች፤ ከሚከተሉት ውስጥ በትክክል የሉሊትን ድርጊት የሚገልፀው የቱ ነው?",
       options: [
@@ -334,7 +334,7 @@ Finally, maintaining a healthy lifestyle is an important part of developing stro
         "ሉሊት ለታመሙ ልጆች በፈቃደኝነት ጊዜዋን እና ፍቅሯን መስጠቷ የግብረገብ (ሞራል) ሀላፊነትን መወጣቷን ያሳያል ::"
     },
     {
-      id: "g6c2017-3",
+      id: "g6c2016-3",
       question:
         "ከሚከተሉት ሃላፊነትን የመወጣት መርሆች ውስጥ ለማህበረሠብ አንድነት ከፍተኛ አስተዋፅኦ ያለው የቱ ነው።",
       options: [

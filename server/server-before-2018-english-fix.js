@@ -1,0 +1,6374 @@
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");const examPurchaseSchema = new mongoose.Schema(
+  {
+    customerName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    studentName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    parentName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    email: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    grade: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    preferredLanguage: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    productId: {
+      type: String,
+      required: true,
+    },
+
+    productName: {
+      type: String,
+      required: true,
+    },
+
+    amount: {
+      type: Number,
+      required: true,
+    },
+
+    transactionReference: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Approved", "Rejected"],
+      default: "Pending",
+    },
+
+    accessStatus: {
+      type: String,
+      enum: ["Locked", "Unlocked"],
+      default: "Locked",
+    },
+
+    paidAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const ExamPurchase = mongoose.model("ExamPurchase", examPurchaseSchema);
+const freeQuizLeadSchema = new mongoose.Schema(
+  {
+    studentName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    parentName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    parentPhone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    parentEmail: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    region: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    preferredLanguage: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    subject: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    score: {
+      type: Number,
+      required: true,
+    },
+    totalQuestions: {
+      type: Number,
+      required: true,
+    },
+    percentage: {
+      type: Number,
+      required: true,
+    },
+    marketingConsent: {
+      type: Boolean,
+      default: false,
+    },
+    marketingConsentAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  { timestamps: true }
+);
+
+const FreeQuizLead = mongoose.model("FreeQuizLead", freeQuizLeadSchema);
+const app = express();
+
+app.use(cors());
+app.use(express.json({ limit: "100kb" }));
+
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
+const ADMIN_KEY = process.env.ADMIN_KEY || "studycare-admin";
+
+// ===============================
+// HEALTH CHECK
+// ===============================
+
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "StudyCare backend is running",
+  });
+});
+
+app.get("/api/health", (req, res) => {
+  res.json({
+    success: true,
+    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+  });
+});
+
+// ===============================
+// HELPERS
+// ===============================
+
+const clean = (value) => {
+  if (value === undefined || value === null) return "";
+  return String(value).trim();
+};
+
+const requireAdmin = (req, res, next) => {
+  if (req.headers["x-admin-key"] !== ADMIN_KEY) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+  next();
+};
+
+// ===============================
+// FREE GUIDE LEADS
+// ===============================
+
+const leadSchema = new mongoose.Schema(
+  {
+    parentName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    grade: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    childName: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    subject: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    city: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    location: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    area: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    country: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    preferredLanguage: {
+      type: String,
+      default: "en",
+      trim: true,
+    },
+
+    mainLearningChallenge: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    marketingSource: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    heardAbout: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    leadStatus: {
+      type: String,
+      enum: [
+        "New",
+        "Contacted",
+        "Interested",
+        "Consultation",
+        "Enrolled",
+        "Active",
+        "Completed",
+        "Lost",
+      ],
+      default: "New",
+    },
+
+    // Kept for compatibility with the existing system.
+    serviceStatus: {
+      type: String,
+      default: "active",
+    },
+
+    utmSource: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    utmMedium: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    utmCampaign: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    utmContent: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    utmTerm: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    landingPage: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    referrer: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  {
+    strict: true,
+  }
+);
+
+const Lead = mongoose.model("Lead", leadSchema);
+
+// ===============================
+// SAVE FREE GUIDE LEAD
+// ===============================
+app.post("/api/exam-purchases", async (req, res) => {
+  try {
+    const {
+  customerName,
+  studentName,
+  parentName,
+  phone,
+  email,
+  grade,
+  city,
+  preferredLanguage,
+  productId,
+  productName,
+  amount,
+  transactionReference,
+} = req.body;
+
+    if (
+  !customerName ||
+  !studentName ||
+  !parentName ||
+  !phone ||
+  !grade ||
+  !city ||
+  !preferredLanguage ||
+  !productId ||
+  !productName ||
+  !amount ||
+  !transactionReference
+) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide all required payment information.",
+      });
+    }
+
+    const existingPurchase = await ExamPurchase.findOne({
+      transactionReference: transactionReference.trim(),
+    });
+
+    if (existingPurchase) {
+      return res.status(409).json({
+        success: false,
+        message: "This transaction reference has already been submitted.",
+      });
+    }
+
+    const purchase = await ExamPurchase.create({
+  customerName: customerName.trim(),
+  studentName: studentName.trim(),
+  parentName: parentName.trim(),
+  phone: phone.trim(),
+  email: email ? email.trim() : "",
+  grade: grade.trim(),
+  city: city.trim(),
+  preferredLanguage: preferredLanguage.trim(),
+  productId,
+  productName,
+  amount,
+  transactionReference: transactionReference.trim(),
+  paymentStatus: "Pending",
+  accessStatus: "Locked",
+});
+
+    res.status(201).json({
+      success: true,
+      message:
+        "Payment information submitted successfully. Your payment will be verified before access is granted.",
+      purchaseId: purchase._id,
+    });
+  } catch (error) {
+    console.error("Exam purchase error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to submit payment information.",
+    });
+  }
+});
+
+app.post("/api/free-quiz-leads", async (req, res) => {
+  try {
+    const {
+      studentName,
+      parentName,
+      parentPhone,
+      parentEmail,
+      region,
+      city,
+      preferredLanguage,
+      subject,
+      score,
+      totalQuestions,
+      percentage,
+      marketingConsent,
+    } = req.body;
+
+    if (
+      !studentName ||
+      !parentName ||
+      !parentPhone ||
+      !region ||
+      !city ||
+      !subject ||
+      score === undefined ||
+      totalQuestions === undefined ||
+      percentage === undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Please complete all required information.",
+      });
+    }
+
+    const lead = await FreeQuizLead.create({
+      studentName: studentName.trim(),
+      parentName: parentName.trim(),
+      parentPhone: parentPhone.trim(),
+      parentEmail: parentEmail?.trim() || "",
+      region: region.trim(),
+      city: city.trim(),
+      preferredLanguage: preferredLanguage?.trim() || "",
+      subject: subject.trim(),
+      score: Number(score),
+      totalQuestions: Number(totalQuestions),
+      percentage: Number(percentage),
+      marketingConsent: Boolean(marketingConsent),
+      marketingConsentAt: marketingConsent ? new Date() : null,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Quiz result saved successfully.",
+      leadId: lead._id,
+    });
+  } catch (error) {
+    console.error("Free quiz lead error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to save quiz result.",
+    });
+  }
+});
+app.post("/api/exam-purchases/check-access", async (req, res) => {
+  try {
+    const {
+      phone,
+      transactionReference,
+      productId,
+    } = req.body;
+
+    if (!phone || !transactionReference || !productId) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Please provide your phone number, transaction reference, and product.",
+      });
+    }
+
+    const purchase = await ExamPurchase.findOne({
+      phone: phone.trim(),
+      transactionReference: transactionReference.trim(),
+      productId,
+    });
+
+    if (!purchase) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "No purchase was found with these details.",
+      });
+    }
+
+    res.json({
+      success: true,
+      purchaseId: purchase._id,
+      paymentStatus: purchase.paymentStatus,
+      accessStatus: purchase.accessStatus,
+    });
+  } catch (error) {
+    console.error(
+      "Exam access check error:",
+      error
+    );
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Failed to check exam access.",
+    });
+  }
+});
+
+// ===============================
+// PAID EXAM CONTENT
+// ===============================
+
+const paidExamQuestions = {
+  "grade-6-2017 english":[
+  {
+  id: "g6english-4",
+  order: 4,
+  question: 'What does the pronoun "they" in paragraph 3, line 2 refer to?',
+  options: [
+    "A. Apps and websites",
+    "B. Teachers",
+    "C. Students",
+    "D. Skills"
+  ],
+  correctAnswer: "C. Students",
+  explanation:
+    'The sentence says, "they can search for answers on their own." The previous sentence identifies "students" as the ones becoming independent learners. Therefore, "they" refers to "students".'
+},
+{
+  id: "g6english-5",
+  order: 5,
+  question: 'What does "it" in paragraph 5, line 2 refer to?',
+  options: [
+    "A. Education",
+    "B. Learning",
+    "C. Technology",
+    "D. Knowledge"
+  ],
+  correctAnswer: "C. Technology",
+  explanation:
+    'The sentence discusses technology as a powerful tool and later says students should learn to use "it" responsibly. Therefore, "it" refers to technology.'
+},
+{
+  id: "g6english-6",
+  order: 6,
+  question: 'What does "balanced way" in paragraph 4, line 1 refer to?',
+  options: [
+    "A. Spend all day outside.",
+    "B. Focus only on studying.",
+    "C. Use technology all the time.",
+    "D. Manage time between online and offline activities"
+  ],
+  correctAnswer: "D. Manage time between online and offline activities",
+  explanation:
+    'The text explains balance as making time for outdoor activities, exercise, and family while avoiding spending too much time online.'
+},
+{
+  id: "g6english-7",
+  order: 7,
+  question:
+    '"Teachers can also use technology to create more engaging lessons." What does "engaging" mean in the sentence?',
+  options: [
+    "A. Interesting and exciting",
+    "B. Boring and hard",
+    "C. Expensive and unnecessary",
+    "D. Quick and easy"
+  ],
+  correctAnswer: "A. Interesting and exciting",
+  explanation:
+    'The sentence explains that technology can make learning more fun. "Engaging" describes something that holds attention and interest.'
+},
+{
+  id: "g6english-8",
+  order: 8,
+  question:
+    'What does "independent" mean in the sentence "Technology also helps students become more independent learners?"',
+  options: [
+    "A. Depend on others for help",
+    "B. Work and find answers on their own",
+    "C. Only learn in groups",
+    "D. Avoid studying"
+  ],
+  correctAnswer: "B. Work and find answers on their own",
+  explanation:
+    'The passage explains that students can search for answers on their own instead of always waiting for a teacher. This means becoming independent learners.'
+},
+{
+  id: "g6english-9",
+  order: 9,
+  question:
+    '"Finally, while technology is a powerful tool for education, students should learn to use it responsibly." What does "responsibly" mean in the sentence?',
+  options: [
+    "A. Carelessly and without thinking",
+    "B. In a safe and thoughtful way",
+    "C. To play games and chat online",
+    "D. To spend all day on devices"
+  ],
+  correctAnswer: "B. In a safe and thoughtful way",
+  explanation:
+    'The text relates responsibility to avoiding distractions and using technology wisely to get the most benefit.'
+},
+{
+  id: "g6english-10",
+  order: 10,
+  question:
+    "Teacher: What do you do every day?\n\nStudent: I                     a book every day.",
+  options: [
+    "A. am reading",
+    "B. will read",
+    "C. reads",
+    "D. read"
+  ],
+  correctAnswer: "D. read",
+  explanation:
+    'The phrase "every day" shows a daily habit, so the Simple Present tense is required. With the subject "I", the base form "read" is used.'
+},
+{
+  id: "g6english-12",
+  order: 12,
+  question:
+    "Teacher: Do I need to bring my lunch today?\n\nStudent: Yes, you                             bring your lunch today because there's no food at school.",
+  options: [
+    "A. has",
+    "B. have to",
+    "C. have",
+    "D. has to"
+  ],
+  correctAnswer: "B. have to",
+  explanation:
+    '"Have to" expresses necessity or obligation. With the subject "you", the correct form is "have to".'
+},
+{
+  id: "g6english-13",
+  order: 13,
+  question:
+    "Student A: I have never visited the zoo.\n\nStudent B: Oh, really? I                            (not/visit) the zoo either.",
+  options: [
+    "A. have not visited",
+    "B. did not visit",
+    "C. have visited",
+    "D. visit"
+  ],
+  correctAnswer: "A. have not visited",
+  explanation:
+    'Student A uses the Present Perfect tense. Student B also needs the negative Present Perfect form: "have not visited".'
+},
+{
+  id: "g6english-14",
+  order: 14,
+  question:
+    "Student A:                              you                          (finish) your homework yet?\n\nStudent B: I have already finished my homework.",
+  options: [
+    "A. Do / finish",
+    "B. Did / finish",
+    "C. Have / finished",
+    "D. Have / finish"
+  ],
+  correctAnswer: "C. Have / finished",
+  explanation:
+    'The word "yet" commonly appears in Present Perfect questions. The structure is "Have/Has + subject + past participle"; "finished" is the past participle.'
+},
+{
+  id: "g6english-15",
+  order: 15,
+  question:
+    "Student A: Who will send the letter?\n\nStudent B: The letter                           (send) by the post office tomorrow.",
+  options: [
+    "A. sent",
+    "B. will send",
+    "C. is sent",
+    "D. will be sent"
+  ],
+  correctAnswer: "D. will be sent",
+  explanation:
+    'The subject "the letter" receives the action, so the sentence is passive. The Future Passive structure is "will + be + past participle".'
+},
+{
+  id: "g6english-16",
+  order: 16,
+  question:
+    "Student A: I will study for the test tonight.\n\nStudent B: I                             (practice) the piano later.",
+  options: [
+    "A. will practice",
+    "B. practice",
+    "C. is practicing",
+    "D. practiced"
+  ],
+  correctAnswer: "A. will practice",
+  explanation:
+    'The word "later" indicates future time. "Will practice" is the correct Simple Future form for the subject "I".'
+},
+{
+  id: "g6english-17",
+  order: 17,
+  question:
+    "Student A: This book is good, but the other one is better.\n\nStudent B: Yes, but the first book is the                              of the three.",
+  options: [
+    "A. good",
+    "B. better",
+    "C. best",
+    "D. more better"
+  ],
+  correctAnswer: "C. best",
+  explanation:
+    'When comparing three or more things, the Superlative degree is used. The irregular forms of "good" are good, better, and best.'
+},
+{
+  id: "g6english-18",
+  order: 18,
+  question:
+    "Student A: This car is fast, but the red one is faster.\n\nStudent B: I agree, but the blue car is the                                of all.",
+  options: [
+    "A. fastest",
+    "B. faster",
+    "C. most fast",
+    "D. fast"
+  ],
+  correctAnswer: "A. fastest",
+  explanation:
+    'The phrase "of all" compares more than two cars, so the Superlative degree is required. The superlative of "fast" is "fastest".'
+},
+{
+  id: "g6english-19",
+  order: 19,
+  question:
+    "Student A: I am going to Addis Ababa next week.\n\nStudent B: Wow! I heard Addis Ababa is a beautiful city. Is it your first time there? Which of the following is a proper noun in this dialogue?",
+  options: [
+    "A. city",
+    "B. week",
+    "C. Addis Ababa",
+    "D. heard"
+  ],
+  correctAnswer: "C. Addis Ababa",
+  explanation:
+    'A proper noun is the specific name of a person, place, or organization. "Addis Ababa" is the specific name of a city.'
+},
+{
+  id: "g6english-20",
+  order: 20,
+  question:
+    "Student A: She writes a letter to her friend every week.\n\nStudent B: The letter                           (write) by her every week.",
+  options: [
+    "A. writes",
+    "B. was written",
+    "C. will be written",
+    "D. is written"
+  ],
+  correctAnswer: "D. is written",
+  explanation:
+    'The original sentence is in the Simple Present tense. The Present Passive structure is "is/am/are + past participle".'
+},
+{
+  id: "g6english-21",
+  order: 21,
+  question:
+    "Student A: If it rains tomorrow, I will stay at home.\n\nStudent B: But if it                                   we can go outside.",
+  options: [
+    "A. does not rain",
+    "B. did not rain",
+    "C. will not rain",
+    "D. has not rained"
+  ],
+  correctAnswer: "A. does not rain",
+  explanation:
+    'This is a First Conditional sentence. The if-clause uses the Simple Present, so "does not rain" is correct.'
+},
+{
+  id: "g6english-22",
+  order: 22,
+  question:
+    "Student A: I love playing football with my friends.\n\nStudent B: I also enjoy playing football. It's so much fun! Which sentence shows the correct way to express liking something?",
+  options: [
+    "A. I dislike playing football.",
+    "B. I enjoy playing football.",
+    "C. I hate playing football.",
+    "D. I never play football"
+  ],
+  correctAnswer: "B. I enjoy playing football.",
+  explanation:
+    '"Enjoy" expresses a positive feeling of liking or finding an activity pleasurable.'
+},
+{
+  id: "g6english-23",
+  order: 23,
+  question:
+    "Student A: Excuse me, can you tell me how to get to the library?\n\nStudent B: Sure! Go straight, and then turn left at the traffic light. The library is on your right. Which of the following correctly describes the directions?",
+  options: [
+    "A. Turn right at the traffic light, and then go straight.",
+    "B. Go straight, then turn left, and the library will be on the left.",
+    "C. Go straight, turn left at the traffic light, and the library will be on your right.",
+    "D. Go left, then turn right, and the library is on your left."
+  ],
+  correctAnswer: "C. Go straight, turn left at the traffic light, and the library will be on your right.",
+  explanation:
+    'Option C follows the exact directions: go straight, turn left at the traffic light, and the library is on the right.'
+},
+{
+  id: "g6english-24",
+  order: 24,
+  question:
+    "Student A: I think the movie was great! The acting was amazing.\n\nStudent B: I agree with you. I also think the special effects were fantastic. Which of the following expresses Student B's opinion about the movie?",
+  options: [
+    "A. I think the movie was boring.",
+    "B. I believe the movie was too long.",
+    "C. I didn't like the movie.",
+    "D. I agree with you. The special effects were fantastic."
+  ],
+  correctAnswer: "D. I agree with you. The special effects were fantastic.",
+  explanation:
+    'Student B agrees with Student A and describes the special effects as fantastic, showing a positive opinion.'
+},
+{
+  id: "g6english-25",
+  order: 25,
+  question:
+    "Student A: I believe that eating healthy food is very important for our health.\n\nStudent B: I totally agree with you. Eating healthy food gives us energy and keeps us strong.\n\nHow does Student B express his agreement with Student A?",
+  options: [
+    "A. Student B disagrees with Student A.",
+    "B. Student B agrees and gives reasons.",
+    "C. Student B changes the topic to something else.",
+    "D. Student B says he/she doesn't know much about the topic."
+  ],
+  correctAnswer: "B. Student B agrees and gives reasons.",
+  explanation:
+    'Student B says "I totally agree with you" and then gives reasons: healthy food gives energy and keeps us strong.'
+},
+{
+  id: "g6english-26",
+  order: 26,
+  question: "She                           when I called her last night.",
+  options: [
+    "A. was studying",
+    "B. studied",
+    "C. has studied",
+    "D. is studying"
+  ],
+  correctAnswer: "A. was studying",
+  explanation:
+    'The action "was studying" was in progress when the shorter past action "called" happened. This requires the Past Continuous tense.'
+},
+{
+  id: "g6english-27",
+  order: 27,
+  question: "I was walking in the park when it                               raining.",
+  options: [
+    "A. was starting",
+    "B. starts",
+    "C. starting",
+    "D. started"
+  ],
+  correctAnswer: "D. started",
+  explanation:
+    '"Was walking" is the ongoing Past Continuous action, while "started" is the Simple Past action that happened at that moment.'
+},
+{
+  id: "g6english-28",
+  order: 28,
+  question: "If I were rich, I                          travel around the world.",
+  options: [
+    "A. am",
+    "B. are",
+    "C. will",
+    "D. would"
+  ],
+  correctAnswer: "D. would",
+  explanation:
+    'This is the Second Conditional, used for hypothetical situations. The structure is "If + past form, would + base verb".'
+},
+{
+  id: "g6english-29",
+  order: 29,
+  question:
+    "She sang the song beautifully. Which word in the sentence is an adverb of manner?",
+  options: [
+    "A. the song",
+    "B. sang",
+    "C. beautifully",
+    "D. song"
+  ],
+  correctAnswer: "C. beautifully",
+  explanation:
+    '"Beautifully" describes how she sang, so it is an adverb of manner.'
+},
+{
+  id: "g6english-30",
+  order: 30,
+  question:
+    "I need a new toothbrush. My old one is broken. Which of the following is a compound noun in the sentence?",
+  options: [
+    "A. new",
+    "B. toothbrush",
+    "C. broken",
+    "D. old one"
+  ],
+  correctAnswer: "B. toothbrush",
+  explanation:
+    '"Toothbrush" is a compound noun formed from the words "tooth" and "brush".'
+},
+{
+  id: "g6english-31",
+  order: 31,
+  question:
+    "Which of the following sentences is correctly written in the passive voice?",
+  options: [
+    "A. A new school was built by them last year.",
+    "B. A new school built by them last year.",
+    "C. A new school is built last year by them.",
+    "D. A new school were built by them last year."
+  ],
+  correctAnswer: "A. A new school was built by them last year.",
+  explanation:
+    'The Past Passive uses "was/were + past participle". Because "school" is singular, "was built" is correct.'
+},
+{
+  id: "g6english-32",
+  order: 32,
+  question:
+    "Which one of the following sentences is constructed in the negative form of present perfect tense?",
+  options: [
+    "A. I have not finished my homework.",
+    "B. I did not finish my homework.",
+    "C. I am not finishing my homework.",
+    "D. I will not finish my homework."
+  ],
+  correctAnswer: "A. I have not finished my homework.",
+  explanation:
+    'The negative Present Perfect uses "have/has + not + past participle". "Have not finished" follows this structure.'
+},
+{
+  id: "g6english-33",
+  order: 33,
+  question:
+    "Which sentence is written in the present perfect interrogative form?",
+  options: [
+    "A. Did he gone to school?",
+    "B. Has he gone to school?",
+    "C. He doesn't go to school.",
+    "D. Is he going to school?"
+  ],
+  correctAnswer: "B. Has he gone to school?",
+  explanation:
+    'Present Perfect questions begin with "Have/Has", followed by the subject and past participle. "Has he gone" is correct.'
+},
+{
+  id: "g6english-34",
+  order: 34,
+  question:
+    "Identify the simple future passive sentence from the following:",
+  options: [
+    "A. The students complete the project next week.",
+    "B. The students will complete the project next week.",
+    "C. The project completed by the students next week.",
+    "D. The project will be completed by the students next week."
+  ],
+  correctAnswer: "D. The project will be completed by the students next week.",
+  explanation:
+    'The Simple Future Passive uses "will be + past participle". "Will be completed" follows this structure.'
+},
+{
+  id: "g6english-35",
+  order: 35,
+  question:
+    "Which of the following sentences is in the simple future passive tense?",
+  options: [
+    "A. The letter will be sent by the post office.",
+    "B. The post office will send the letter.",
+    "C. The letter is being sent by the post office.",
+    "D. The letter was sent by the post office."
+  ],
+  correctAnswer: "A. The letter will be sent by the post office.",
+  explanation:
+    'The Future Passive uses "will be + past participle". "Will be sent" is the correct form.'
+},
+{
+  id: "g6english-36",
+  order: 36,
+  question: "Which sentence is written in the first conditional form?",
+  options: [
+    "A. If it rained tomorrow, I will stay home.",
+    "B. If it rains tomorrow, I stayed home.",
+    "C. If it rains tomorrow, I will stay home.",
+    "D. If it will rain tomorrow, I would stay home."
+  ],
+  correctAnswer: "C. If it rains tomorrow, I will stay home.",
+  explanation:
+    'The First Conditional uses "If + Simple Present, will + base verb". Option C follows this structure.'
+},
+{
+  id: "g6english-37",
+  order: 37,
+  question: "Which sentence is written in the second conditional form?",
+  options: [
+    "A. If I had you, I would study harder.",
+    "B. If I would be you, I will study harder.",
+    "C. If I am you, I will study harder.",
+    "D. If I were you, I would study harder."
+  ],
+  correctAnswer: "D. If I were you, I would study harder.",
+  explanation:
+    'The Second Conditional uses "If + past form, would + base verb". "If I were you, I would study" follows the correct pattern.'
+},
+{
+  id: "g6english-38",
+  order: 38,
+  question:
+    "I went to the supermarket, and I bought apples bananas grapes and oranges. Which punctuation mark is used in this sentence to separate items in a list?",
+  options: [
+    "A. Period (.)",
+    "B. Comma (,)",
+    "C. Colon (:)",
+    "D. Semicolon (;)"
+  ],
+  correctAnswer: "B. Comma (,)",
+  explanation:
+    'Commas are used to separate three or more items in a list, such as apples, bananas, grapes, and oranges.'
+},
+{
+  id: "g6english-39",
+  order: 39,
+  question: "Which of the following is a simple sentence?",
+  options: [
+    "A. I love reading books, but I also enjoy watching movies.",
+    "B. She goes to the park every day.",
+    "C. He went to the store, and she stayed home.",
+    "D. I like pizza, so I eat it every weekend."
+  ],
+  correctAnswer: "B. She goes to the park every day.",
+  explanation:
+    'A simple sentence contains one independent clause. "She goes to the park every day" has one independent clause.'
+},
+{
+  id: "g6english-40",
+  order: 40,
+  question:
+    '"I went to bed early. I finished my homework." Which of the following properly joins these two simple sentences into a compound sentence?',
+  options: [
+    "A. I finished my homework because I went to bed early.",
+    "B. I went to bed early because I finished my homework.",
+    "C. I finished my homework, and I went to bed early.",
+    "D. I finished my homework, after I went to bed early."
+  ],
+  correctAnswer: "C. I finished my homework, and I went to bed early.",
+  explanation:
+    'A compound sentence joins two independent clauses with a comma and a coordinating conjunction. Option C uses "and" correctly.'
+},
+  ],
+  "grade6-2017-science": [
+  {
+    id: "grade6-science-4",
+    order: 4,
+    question:
+      "ተማሪ መስፍን የኢትዮጵያን ንድፍ ካርታ ካስራ የትግራይ ክልል ከአዲስ አበባ ጋር ያለውን አንጻራዊ መገኛ ለማሳየት የሚያስፈልገው ምንድን ነው?",
+    options: [
+      "ሀ. ትግራይን ከአዲስ አበባ ደቡብ-ምሥራቅ ላይ ማስቀመጥ",
+      "ለ. ትግራይን ከአዲስ አበባ ሰሜን-ምዕራብ ላይ ማስቀመጥ",
+      "ሐ. ትግራይን ከአዲስ አበባ ደቡብ-ምሥራቅ ላይ ማስቀመጥ",
+      "መ. ትግራይን ከአዲስ አበባ ሰሜን-ምሥራቅ ላይ ማስቀመጥ",
+    ],
+    correctAnswer:
+      "መ. ትግራይን ከአዲስ አበባ ሰሜን-ምሥራቅ ላይ ማስቀመጥ",
+    explanation:
+      "አንጻራዊ መገኛን ለመግለፅ አቅጣጫዎችን (ሰሜን፣ ደቡብ፣ ምስራቅ፣ ምዕራብ) እንጠቀማለን:: ትግራይ ከአዲስ አበባ በስተ ሰሜን አቅጣጫ ስለሚገኝ በካርታው ላይ ከላይ በኩል መቀመጥ አለበት፡፡",
+  },
+
+  {
+    id: "grade6-science-5",
+    order: 5,
+    question: "ቁስ አካል ምን ማለት ነው?",
+    options: [
+      "ሀ. ማንኛውም ቦታ የሚይዝና መጠነ-ቁስ ያለው",
+      "ለ. ቀለም ወይም ግርዶሽ ያለው",
+      "ሐ. ኃይል የሚፈጥር",
+      "መ. ቅርጽ ወይም መጠን ያለው",
+    ],
+    correctAnswer:
+      "ሀ. ማንኛውም ቦታ የሚይዝና መጠነ-ቁስ ያለው",
+    explanation:
+      "በሳይንስ ትርጓሜ ቁስ (Matter) ማለት መጠነ-ቁስ (Mass) ያለው እና ቦታ (Volume) የሚይዝ ማንኛውም ነገር ነው። ድንጋይ፣ ውሃ እና አየር የቁስ አካል ምሳሌዎች ናቸው::",
+  },
+
+  {
+    id: "grade6-science-6",
+    order: 6,
+    question:
+      "ሁለትና ከሁለት በላይ ከሆነ ንጥረ ነገሮች በኬሚካዊ መስተጋብር የሚፈጠር ልዩ ቁስ የሆነው የቱ ነው?",
+    options: [
+      "ሀ. ቤዝ",
+      "ለ. ጨው",
+      "ሐ. ውህድ",
+      "መ. ኦክሳይዶች",
+    ],
+    correctAnswer: "ሐ. ውህድ",
+    explanation:
+      "ውህድ (Compound) የሚፈጠረው የተለያዩ ንጥረ ነገሮች በኬሚካዊ መንገድ ሲጣመሩ ነው:: ለምሳሌ ውሃ (H₂O) የሃይድሮጂን እና የኦክስጂን ውህድ ነው።",
+  },
+
+  {
+    id: "grade6-science-7",
+    order: 7,
+    question: "አሲድ ከቤዝ ጋር ሲፀገበር ምን ይፈጠራል?",
+    options: [
+      "ሀ. እክሳይድ",
+      "ለ. ጨው",
+      "ሐ. ቤዝ",
+      "መ. አሲድ",
+    ],
+    correctAnswer: "ለ. ጨው",
+    explanation:
+      "አሲድ እና ቤዝ እርስ በእርስ ሲዋሃዱ ገለልተኛ መስተጋብር (Neutralization) ይፈጥራሉ:: የዚህ መስተጋብር ውጤቶች ጨው እና ውሃ ናቸው።",
+  },
+
+  {
+    id: "grade6-science-8",
+    order: 8,
+    question: "የጉልበት ምንጭ የሆነው የቱ ነው?",
+    options: [
+      "ሀ. ውሃ",
+      "ለ. ፕላስቲክ",
+      "ሐ. ብርጭቆ",
+      "መ. ወረቀት",
+    ],
+    correctAnswer: "ሀ. ውሃ",
+    explanation:
+      "ውሃ የሚፈስበትን ጉልበት በመጠቀም የኤሌክትሪክ ኃይል ማመንጨት ይቻላል::",
+  },
+
+  {
+    id: "grade6-science-9",
+    order: 9,
+    question: "ድምጽ በየትኛው ቁስ በፍጥነት ይተላለፋል?",
+    options: [
+      "ሀ. በአየር",
+      "ለ. በውሃ",
+      "ሐ. በብረት",
+      "መ. በባዶ",
+    ],
+    correctAnswer: "ሐ. በብረት",
+    explanation:
+      "ድምፅ ሞገድ ስለሆነ ለማለፍ ቁስ ይፈልጋል። በጠጣር ነገሮች ውስጥ ደግሞ ህዋሳቱ ተቀራራቢ ስለሆኑ በፍጥነት ይተላለፋል:: ብረት ጠጣር በመሆኑ ከአየር እና ከውሃ በበለጠ ፍጥነት ድምፅን ያስተላልፋል፡፡",
+  },
+
+  {
+    id: "grade6-science-10",
+    order: 10,
+    question:
+      "ከሚከተሉት ውስጥ በኢትዮጵያ ከዋና ዋና የአየር ንብረት ዓይነቶች ውስጥ የሚመደበው የቱ ነው?",
+    options: [
+      "ሀ. ሞቃታማ እና ደረቃማ",
+      "ለ. ቀዝቃዛ እና እርጥበታማ",
+      "ሐ. ሞቃታማ እና እርጥበታማ",
+      "መ. ሞቃታማ እና ደረቅ",
+    ],
+    correctAnswer: "ሐ. ሞቃታማ እና እርጥበታማ",
+    explanation:
+      "ኢትዮጵያ በሐሩር ክልል (Tropical zone) ውስጥ ስለምትገኝ አብዛኛው አካባቢዋ ሞቃታማ እና ዝናባማ/እርጥበታማ ነው:: ይህም ለተለያዩ ዕፅዋት እና እንስሳት እድገት ምቹ ሁኔታን ይፈጥራል::",
+  },
+
+  {
+    id: "grade6-science-11",
+    order: 11,
+    question: "የኢትዮጵያን የአየር ንብረት በዋናነት የሚቆጣጠረው ምንድነው?",
+    options: [
+      "ሀ. የውቅያኖስ ፍሰቶች",
+      "ለ. ከኢኳተር ርቀት",
+      "ሐ. የአፈር አይነት",
+      "መ. ኤክሮስ እና ከፍታ",
+    ],
+    correctAnswer: "መ. ኤክሮስ እና ከፍታ",
+    explanation:
+      "በኢትዮጵያ የአየር ንብረት ላይ ከፍተኛ ተፅዕኖ ያለው የከፍታ (Altitude) ልዩነት ነው:: ከፍታ በጨመረ ቁጥር የአየር ሙቀት እየቀነሰ ይሄዳል፡፡",
+  },
+
+  {
+    id: "grade6-science-12",
+    order: 12,
+    question:
+      "በኢትዮጵያ ስምጥ ሸለቆ ውስጥ የሚገኙ ሐይቆች የተለመደ ባህሪአቸው የሆነው?",
+    options: [
+      "ሀ. ሁሉም ንፁህ ውሃ ያላቸው ሐይቆች ናቸው::",
+      "ለ. በከፍታ ቦታዎች ይገኛሉ፡፡",
+      "ሐ. በዝቅተኛ ስፍራዎች የሚገኙ እና ብዙውን ጊዜ ጠባብ ናቸው::",
+      "መ. በወቅታዊ ለውጦች አይጎዱም።",
+    ],
+    correctAnswer:
+      "ሐ. በዝቅተኛ ስፍራዎች የሚገኙ እና ብዙውን ጊዜ ጠባብ ናቸው::",
+    explanation:
+      "የስምጥ ሸለቆ ሐይቆች በመሬት መንቀጥቀጥ በተፈጠሩ ዝቅተኛ ስንጥቆች ውስጥ የተከማቹ ናቸው። አብዛኛዎቹ ሐይቆች ጨዋማ ባህሪ ያላቸው እና በሸለቆው ወለል ላይ የሚገኙ ናቸው።",
+  },
+
+  {
+    id: "grade6-science-13",
+    order: 13,
+    question: "ለአካባቢ ብክለት ዋና ምክንያቶች የትኞቹ ናቸው?",
+    options: [
+      "ሀ. ዛፎችን መትከል እና መንከባከብ",
+      "ለ. የፕላስቲክ ምርቶችን እና ቆሻሻ ቁሶችን በተገቢው ሳይጠቀሙ መጣል",
+      "ሐ. ንብረቶችን እንደገና መጠቀም እና ማደስ",
+      "መ. የተፈጥሮ ሀብቶችን በተገቢው መጠቀም",
+    ],
+    correctAnswer:
+      "ለ. የፕላስቲክ ምርቶችን እና ቆሻሻ ቁሶችን በተገቢው ሳይጠቀሙ መጣል",
+    explanation:
+      "ቆሻሻን ያለአግባብ መጣል አየርን፣ ውሃን እና አፈርን ይበክላል፡፡ በተለይ ፕላስቲክ በቀላሉ የማይበሰብስ በመሆኑ ለአካባቢ ብክለት ዋነኛ መንስኤ ነው፡፡",
+  },
+
+  {
+    id: "grade6-science-14",
+    order: 14,
+    question: "በሰሜን ኢትዮጲያ በጣም የተለመዱ ባህላዊ ክንዋኔዎች የሆኑት የትኛዎቹ ናቸው?",
+    options: [
+      "ሀ. ገና እና ቡሄ",
+      "ለ. አሸንዳ፣ ሻደይ እና ሶለል",
+      "ሐ. ጨምበላላ እና የለቅሶ ሥነ-ሥርዓቶች",
+      "መ. የሰርግ ሥነ ሥርዓቶች እና በዓላት",
+    ],
+    correctAnswer: "ለ. አሸንዳ፣ ሻደይ እና ሶለል",
+    explanation:
+      "አሸንዳ (ትግራይ)፤ ሻደይ (ዋማ ኸምራ) እና ሶለል (ራያ) በሰሜኑ የሀገሪቱ ክፍል የሚከበሩ የልጃገረዶች ባህላዊ በዓላት ናቸው፡፡ እነዚህ በዓላት የባህል መገለጫ እና የቱሪስት መስህቦች ናቸው።",
+  },
+
+  {
+    id: "grade6-science-15",
+    order: 15,
+    question: "የኢትዮጵያ የቋንቋ ቤተሰብ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. ኢንዶ-አውሮፓዊ እና ሲኖ-ቲቤታን",
+      "ለ. ኦስትሮኔዥያን እና ናይጀር-ኮንጎ",
+      "ሐ. አፍሮ-እስያዊ እና ናይሎ ሰሐራዊ",
+      "መ. ድራቪዲያን እና ዩራሊክ",
+    ],
+    correctAnswer: "ሐ. አፍሮ-እስያዊ እና ናይሎ ሰሐራዊ",
+    explanation:
+      "የኢትዮጵያ ቋንቋዎች በሁለት ትልልቅ ቤተሰቦች ይመደባሉ፤ እነሱም አፍሮ-እስያዊ (ሴማዊ፤ ኩሻዊ፣ ኦሞአዊ) እና ናይሎ ሰሐራዊ ናቸው:: ይህም የሀገሪቱን የቋንቋ ብዝሃነት ያሳያል::",
+  },
+
+  {
+    id: "grade6-science-16",
+    order: 16,
+    question: "የኢትዮጵያ የተፈጥሮ የቱሪስት መስህብ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. እንደ ላሊበላ ያሉ ታሪካዊ ቦታዎች",
+      "ለ. የባህል ቅርሶች እና የዕደ ጥበብ ውጤቶች",
+      "ሐ. ቤተመዘክሮች እና የማስታወሻ ቦታዎች",
+      "መ. ልዩ የመልከአ ምድር አቀማመጥ",
+    ],
+    correctAnswer: "መ. ልዩ የመልከአ ምድር አቀማመጥ",
+    explanation:
+      "ተፈጥሯዊ መስህብ ሲባል በሰው እጅ ያልተሰሩ እንደ ተራሮች፤ ፏፏቴዎች እና ፓርኮች ያሉ ናቸው። ላሊበላ እና ቤተመዘክሮች ሰው ሰራሽ (ባህላዊ/ታሪካዊ) መስህቦች ናቸው፡፡",
+  },
+
+  {
+    id: "grade6-science-17",
+    order: 17,
+    question: "የቱሪዝም ኢንዱስትሪን የሚጎዳ ተግዳሮት የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. የቱሪዝም መስህቦችን ደካማ የማስተዋወቅ እና የገበያ ሁኔታ",
+      "ለ. የቱሪስቶች ብዛት መጨመር",
+      "ሐ. የትራንስፖርት ወጪ ከፍተኛ መሆን",
+      "መ. በአገር ውስጥ የባህል በዓላት ብዛት",
+    ],
+    correctAnswer:
+      "ሀ. የቱሪዝም መስህቦችን ደካማ የማስተዋወቅ እና የገበያ ሁኔታ",
+    explanation:
+      "የሀገርን መስህቦች በሚገባ አለማስተዋወቅ የጎብኝዎችን ቁጥር ይቀንሳል፡፡ መሰረተ ልማት አለመሟላትም ለቱሪዝም እድገት እንቅፋት ነው።",
+  },
+
+  {
+    id: "grade6-science-18",
+    order: 18,
+    question: "በሀገራችን የሚገኙ ጎጂ ልማዳዊ ድርጊቶች የትኞቹ ናቸው?",
+    options: [
+      "ሀ. የአበባ በዓል አከባበር",
+      "ለ. ባህላዊ መዚቃ ማሰማት",
+      "ሐ. የዕለታዊ ገበያ ጉብኝት",
+      "መ. የሴት ልጅ ግርዛት",
+    ],
+    correctAnswer: "መ. የሴት ልጅ ግርዛት",
+    explanation:
+      "ጎጂ ልማዳዊ ድርጊቶች በሰው ጤና እና ደህንነት ላይ ጉዳት የሚያደርሱ ናቸው:: የሴት ልጅ ግርዛት፣ ያለዕድሜ ጋብቻ እና ጠንቋይ ቤት መሄድ የጎጂ ልማዶች ምሳሌዎች ናቸው።",
+  },
+
+  {
+    id: "grade6-science-19",
+    order: 19,
+    question: "በኢትዮጵያ የድርቅ ምክንያት የሆነው የቱ ነው?",
+    options: [
+      "ሀ. የዝናብ መጠን መጨመር",
+      "ለ. የጫካ አካባቢዎች መስፋፋት",
+      "ሐ. የአየር ጠባይ እና የአየር ንብረት መለወጥ",
+      "መ. የውሃ ሀብት አስተዳደር መሻሻል",
+    ],
+    correctAnswer:
+      "ሐ. የአየር ጠባይ እና የአየር ንብረት መለወጥ",
+    explanation:
+      "የደን መጨፍጨፍ የአየር ሁኔታን በማዛባት የዝናብ እጥረት (ድርቅ) ያስከትላል:: ዛፎች ለዝናብ መፈጠር ትልቅ ሚና ስላላቸው ደን ሲጠፋ ድርቅ ይከሰታል፡፡",
+  },
+
+  {
+    id: "grade6-science-20",
+    order: 20,
+    question:
+      "በበለጸጉ ሀገራት ድርቅ ከተከሰተ በኋላ ረሀብ የማይከሰትባቸው ምክንያት ምንድን ነው?",
+    options: [
+      "ሀ. ከተለያዩ የምጣኔ ሀብት እንቅስቃሴዎች መሰረታዊ ፍላጎታቸውን ስለሚያሟሉ፡፡",
+      "ለ. ሙሉ በሙሉ በግብርና ላይ የሚመረኮዙ ናቸው::",
+      "ሐ. ድርቅ በጭራሽ አይከሰትባቸውም::",
+      "መ. ሁሉንም ምግብ ከሌሎች ሀገሮች ስለሚያገቡ::",
+    ],
+    correctAnswer:
+      "ሀ. ከተለያዩ የምጣኔ ሀብት እንቅስቃሴዎች መሰረታዊ ፍላጎታቸውን ስለሚያሟሉ፡፡",
+    explanation:
+      "በለፀጉ ሀገራት በግብርና ላይ ብቻ ጥገኛ አይደሉም፤ በኢንዱስትሪ እና አገልግሎት ዘርፍ ጠንካራ ኢኮኖሚ አላቸው። ድርቅ ቢከሰት እንኳ ምግብ የመግዛት እና የማከማቸት አቅማቸው ከፍተኛ ነው::",
+  },
+
+  {
+    id: "grade6-science-21",
+    order: 21,
+    question: "ካርታን በማንበብ እና በመጠቀም ምን መረጃ መለዋወጥ ይቻላል?",
+    options: [
+      "ሀ. የገንዘብ ሂሳቦች",
+      "ለ. የመሬት አቀማመጦች",
+      "ሐ. የሰው ሰራሽ አስተውሎች",
+      "መ. የስነ-ምግብ መረጃ",
+    ],
+    correctAnswer: "ለ. የመሬት አቀማመጦች",
+    explanation:
+      "ካርታ የመሬትን ገፅታ በወረቀት ላይ ቀንሶ የሚያሳይ መሳሪያ ነው:: ተራሮች፤ ወንዞች፤ ከተሞች እና መንገዶች የት እንደሚገኙ መረጃ ይሰጠናል::",
+  },
+
+  {
+    id: "grade6-science-22",
+    order: 22,
+    question:
+      "ከበደ አንድን ሀገር በአፍሪካ ካርታ ላይ ለማሳየት ከ15° ደቡብ ኬክሮስ እና 45 ምሥራቅ ኬንትሮስ መጠኖችን ተጠቅሟል:: ይህ ሀገር በምን ዓይነት ክልል ውስጥ ይገኛል?",
+    options: [
+      "ሀ. ሰሜን አፍሪካ",
+      "ለ. ምዕራብ አፍሪካ",
+      "ሐ. ምሥራቅ አፍሪካ",
+      "መ. ደቡብ አፍሪካ",
+    ],
+    correctAnswer: "ሐ. ምሥራቅ አፍሪካ",
+    explanation:
+      "45 ምስራቅ ኬንትሮስ የሚገኘው በምስራቅ አፍሪካ (ለምሳሌ ማዳጋስካር አካባቢ) ነው:: የአፍሪካ ቀንድ እና ጎረቤት ሀገራት በዚህ መስመር አካባቢ ይገኛሉ::",
+  },
+
+  {
+    id: "grade6-science-23",
+    order: 23,
+    question:
+      "አለማየሁ የምስራቅ አፍሪካ ሀገራትን በአፍሪካ ካርታ ላይ ለማሳየት ኬክሮስ (ላቲቱድ) እና ኬንትሮስ (ሎንግቱድ) በመጠቀም እየሰራ ነው፡፡ ከታች ከተሰጡት መጠኖች ውስጥ የትኛው ለኬንያ ትክክለኛ መገኛ ይሆናል?",
+    options: [
+      "ሀ. 5 ሰሜን፤ 38 ምሥራቅ ኬንትሮስ",
+      "ለ. 10 ደቡብ፣ 15 ምዕራብ",
+      "ሐ. 25 ሰሜን 55 ምሥራቅ",
+      "መ. 30°ደቡብ፣ 10°ምዕራብ",
+    ],
+    correctAnswer: "ሀ. 5 ሰሜን፤ 38 ምሥራቅ ኬንትሮስ",
+    explanation:
+      "ኬንያ በኢኳተር (0) አካባቢ የምትገኝ ሀገር ናት:: 5 ሰሜን እና 38 ምስራቅ ለኬንያ እና ኢትዮጵያ ድንበር አካባቢ ቅርብ የሆነ መገኛ ነው::",
+  },
+
+  {
+    id: "grade6-science-24",
+    order: 24,
+    question:
+      "በምሥራቅ አፍሪካ አጎራባች ሀገራት ዝርዝር ውስጥ የተካተተው ሀገር የትኛው ነው?",
+    options: [
+      "ሀ. ኢትዮጵያ",
+      "ለ. ሶማሊያ",
+      "ሐ. ሱዳን",
+      "መ. ኬንያ",
+    ],
+    correctAnswer: "ሀ. ኢትዮጵያ",
+    explanation:
+      "በምስራቅ አፍሪካ ውስጥ ኢትዮጵያ፣ ኬንያ፣ ሶማሊያ፣ ጅቡቲ፣ ሱዳን፣ ደቡብ ሱዳን፣ ኡጋንዳ፣ ታንዛኒያ፣ ሩዋንዳ እና ቡሩንዲ ይገኛሉ:: በምርጫ የተሰጡት ሁሉም ሀገራት የዚህ ክልል አባላት ናቸው።",
+  },
+
+  {
+    id: "grade6-science-25",
+    order: 25,
+    question: "ዋና ዋና የደም ህዋሶች የሆኑት የትኞቹ ናቸው?",
+    options: [
+      "ሀ. ፕላዝማ፤ ኦክስጂን፤ ካርቦን ዳይኦክሳይድ",
+      "ለ. ቀይ የደም ህዋሶች፣ ነጭ የደም ህዋሶች እና ፕሌትሌቶች",
+      "ሐ. ፕላዝማ፤ ፕሌትሌቶች፣ ሄሞግሎቢን",
+      "መ. ውሃ፣ አልሚ ምግቦች፣ ጀርሞች",
+    ],
+    correctAnswer:
+      "ለ. ቀይ የደም ህዋሶች፣ ነጭ የደም ህዋሶች እና ፕሌትሌቶች",
+    explanation:
+      "ደም ከፈሳሽ (ፕላዝማ) እና ከህዋሳት የተገነባ ነው:: ቀይ የደም ህዋሶች ኦክስጂን ያጓጉዛሉ፤ ነጭ የደም ህዋሶች በሽታን ይከላከላሉ፣ ፕሌትሌቶች ደም እንዲረጋ ያደርጋሉ፡፡",
+  },
+
+  {
+    id: "grade6-science-26",
+    order: 26,
+    question:
+      "ከተሰጡት የጉልበት ምንጮች መካከል የቱ ታዳሽ የጉልበት ምንጮችን ብቻ ያካትታል?",
+    options: [
+      "ሀ. የጸሐይ ብርሃን፤ ንፋስ፤ የባትሪ ድንጋይ",
+      "ለ. የጸሐይ ብርሃን፣ ንፋስ፣ የሚፈስ ውሃ",
+      "ሐ. የማገዶ እንጨት፣ የተፈጥሮ ጋዝ፣ የድንጋይ ከሰል",
+      "መ. የቤንዚን፤ የነጭ ጋዝ፣ የኤሌክትሪክ",
+    ],
+    correctAnswer:
+      "ለ. የጸሐይ ብርሃን፣ ንፋስ፣ የሚፈስ ውሃ",
+    explanation:
+      "ታዳሽ ኃይል (Renewable energy) ማለት ተጠቅመን የማያልቁ እና በተፈጥሮ የሚተኩ ናቸው:: ፀሐይ፣ ንፋስ እና ውሃ ለአካባቢ ብክለት የማይዳርጉ ንፁህ የኃይል ምንጮች ናቸው::",
+  },
+
+  {
+    id: "grade6-science-27",
+    order: 27,
+    question: "የቀላል መኪናዎች ዋና ዓላማቸው ምንድነው?",
+    options: [
+      "ሀ. ጉልበትን ማሳደግ",
+      "ለ. የጊዜ ፍጆታን መጨመር",
+      "ሐ. የነዳጅ ፍጆታን መቀነስ",
+      "መ. ስራን በቀላሉ ማከናወን",
+    ],
+    correctAnswer: "መ. ስራን በቀላሉ ማከናወን",
+    explanation:
+      "ቀላል መኪናዎች ስራን ፈጣን እና ቀላል ያደርጋሉ፡፡ ለምሳሌ የለስላሳ መከፈቻዎች በቀላሉ ለመክፈት፣ ሽብልቅ በቀላሉ እንጨት ለመፍለጥ፣ በከራዎች ውሃ በቀላሉ ከጉድጓድ ለማውጣት::",
+  },
+
+  {
+    id: "grade6-science-28",
+    order: 28,
+    question:
+      "በምሥራቅ አፍሪካ ክፍሎች ውስጥ ከሰኔ እስከ መስከረም ባለው ወቅት በየትኛው አካባቢ ዝናብ ይከሰታል?",
+    options: [
+      "ሀ. በምድር ወገብ አካባቢ ያሉ ሀገራት",
+      "ለ. በምሥራቅ አፍሪካ ሰሜናዊ ክፍል ያለ አካባቢዎች",
+      "ሐ. ከምድር ወገብ በስተ ደቡብ ያሉ ሀገራት",
+      "መ. በደረቅ ክልሎች ያሉ ሀገራት",
+    ],
+    correctAnswer:
+      "ለ. በምሥራቅ አፍሪካ ሰሜናዊ ክፍል ያለ አካባቢዎች",
+    explanation:
+      "ከሰኔ እስከ መስከረም የሰሜናዊው ንፍቀ ክበብ ክረምት ነው:: እንደ ኢትዮጵያ እና ሱዳን ያሉ የሰሜን ምስራቅ አፍሪካ ሀገራት በዚህ ወቅት ዋናውን ዝናብ ያገኛሉ::",
+  },
+
+  {
+    id: "grade6-science-29",
+    order: 29,
+    question:
+      "ከምሥራቅ አፍሪካ ሀገራት ውስጥ የትኛው በብረት እና በወርቅ ማዕድናት ይታወቃል?",
+    options: [
+      "ሀ. ኢትዮጵያ",
+      "ለ. ሶማሊያ",
+      "ሐ. ዩጋንዳ",
+      "መ. ቡሩንዲ",
+    ],
+    correctAnswer: "ሀ. ኢትዮጵያ",
+    explanation:
+      "ኢትዮጵያ በወርቅ ማዕድን (ሻኪሶ/ለጋ ደምቢ) ትታወቃለች:: ዩጋንዳም የተለያዩ ማዕድናት ያሏት ሀገር ናት::",
+  },
+
+  {
+    id: "grade6-science-30",
+    order: 30,
+    question:
+      "የአፈር መሸርሸርን ለመከላከል ከሚጠቅሙ ዘዴዎች ውስጥ የትኛው ዘዴ ዘሮችን በተለያዩ ዓመታት በማሳው ላይ መዝራትን ያካትታል?",
+    options: [
+      "ሀ. ዳግም ድነና",
+      "ለ. ድነና",
+      "ሐ. ዘር ማፈራረቅ",
+      "መ. የእርከን ሥራ",
+    ],
+    correctAnswer: "ሐ. ዘር ማፈራረቅ",
+    explanation:
+      "ዘር ማፈራረቅ (Crop rotation) በአንድ ማሳ ላይ በየዓመቱ የተለያየ ሰብል የመዝራት ዘዴ ነው:: ይህም የአፈር ለምነት እንዳይጠፋ እና ተባዮች እንዳይራቡ ይረዳል::",
+  },
+
+  {
+    id: "grade6-science-31",
+    order: 31,
+    question:
+      "በምሥራቅ አፍሪካ ውስጥ የሚገኝ እና በዓለም በርዝመቱ ትልቁ ወንዝ የትኛው ነው?",
+    options: [
+      "ሀ. የዛምቤዚ ወንዝ",
+      "ለ. የገናሌ ወንዝ",
+      "ሐ. የአባይ ወንዝ",
+      "መ. የሴቤ ወንዝ",
+    ],
+    correctAnswer: "ሐ. የአባይ ወንዝ",
+    explanation:
+      "የአባይ ወንዝ (Nile River) ከኢትዮጵያ እና ከቪክቶሪያ ሐይቅ ተነስቶ ሜዲትራኒያን ባህር ይገባል:: በዓለም ላይ ረጅሙ ወንዝ በመባል ይታወቃል::",
+  },
+
+  {
+    id: "grade6-science-32",
+    order: 32,
+    question:
+      "በምስራቅ አፍሪካ የውሃ ሃብት አጠቃቀም ዋና ፈተና የሆነው ምንድን ነው?",
+    options: [
+      "ሀ. የኢንዱስትሪ ብክለት",
+      "ለ. በሀይቆች ላይ ከመጠን በላይ ዓሣ ማስገር",
+      "ሐ. የኢኳቶሪያ የምድር ምልክት",
+      "መ. የደን መትከል",
+    ],
+    correctAnswer: "ሀ. የኢንዱስትሪ ብክለት",
+    explanation:
+      "ከፋብሪካዎች የሚወጡ ቆሻሻዎች ወደ ወንዞች እና ሐይቆች በመግባት ውሃውን ይበክላሉ:: ይህም ለሰው ጤና እና ለውሃ ውስጥ ህይወት አደገኛ ነው፡፡",
+  },
+
+  {
+    id: "grade6-science-33",
+    order: 33,
+    question:
+      "ባህላዊ ቅርሶች የምጣኔ ሀብት ዕቅድን ለማሳደግ ከሚከተሉት ውስጥ የትኛውን ያካትታሉ?",
+    options: [
+      "ሀ. የሀገር ውስጥ እና የውጭ ቱሪስቶችን መሳብ",
+      "ለ. የውጭ ንግድ ቅናሾችን መጨመር",
+      "ሐ. የእርሻ ምርታማነትን ማሳደግ",
+      "መ. የኤሌክትሪክ አጠቃቀምን መቀነስ",
+    ],
+    correctAnswer:
+      "ሀ. የሀገር ውስጥ እና የውጭ ቱሪስቶችን መሳብ",
+    explanation:
+      "ቅርሶች በጎብኝዎች ሲጎበኙ ሀገር የውጭ ምንዛሬ እና ገቢ ታገኛለች:: ይህም የሀገርን ገፅታ ከመገንባት ባለፈ ለኢኮኖሚ እድገት ይረዳል::",
+  },
+
+  {
+    id: "grade6-science-34",
+    order: 34,
+    question: "በምሥራቅ አፍሪካ የቱሪዝም ምጣኔ ሀብታዊ ጠቀሜታ ምንድነው?",
+    options: [
+      "ሀ. የመንግሥት የውጭ ምንዛሬን ይቀንሳል፡፡",
+      "ለ. የአካባቢውን ባህል ይጎዳል፡፡",
+      "ሐ. የሥራ እድልን ያመቻቻል፡፡",
+      "መ. የግብርና ሥራን ይጎዳል፡፡",
+    ],
+    correctAnswer: "ሐ. የሥራ እድልን ያመቻቻል፡፡",
+    explanation:
+      "ቱሪዝም በሆቴል፤ በትራንስፖርት እና በንግድ ዘርፍ ለብዙ ዜጎች የስራ እድል ይፈጥራል:: ይህም የሰዎችን ገቢ በማሳደግ የኑሮ ደረጃን ያሻሽላል፡፡",
+  },
+
+  {
+    id: "grade6-science-35",
+    order: 35,
+    question:
+      "በምስራቅ አፍሪካ የአትክልት እርባታ ኢንዱስትሪ የሚያጋጥመው ዋና ፈተና የሆነው የቱ ነው?",
+    options: [
+      "ሀ. በመጓጓዣ ወቅት በቂ የማቀዝቀዣ አቅም አለመኖር",
+      "ለ. ለምርቶች ዝቅተኛ ሀገራዊ ፍላጎት አለመኖር",
+      "ሐ. የሰብል ግብይት ከፍተኛ ወጪዎች",
+      "መ. የብቃት ያለው የሰው ኃይል አለመኖር",
+    ],
+    correctAnswer:
+      "ሀ. በመጓጓዣ ወቅት በቂ የማቀዝቀዣ አቅም አለመኖር",
+    explanation:
+      "አትክልት እና ፍራፍሬ ቶሎ የሚበላሽ (Perishable) በመሆናቸው ቀዝቃዛ መጋዘን እና መጓጓዣ ይፈልጋሉ፡፡ ይህ መሰረተ ልማት አለመሟላት ለምርቱ መበላሸት እና ለገበሬው ኪሳራ ምክንያት ይሆናል፡፡",
+  },
+
+  {
+    id: "grade6-science-36",
+    order: 36,
+    question: "የውስጥ ንግድ ዋናው ባህሪው ምንድን ነው?",
+    options: [
+      "ሀ. በአንድ አህጉር ውስጥ አገሮች መካከል የሚደረግ ንግድ",
+      "ለ. በአንድ አገር ውስጥ በሚገኙ ሰዎች መካከል የሚካሄድ የንግድ እንቅስቃሴ",
+      "ሐ. በምስራቅ አፍሪካ እና በምዕራባዊ አገሮች መካከል የሚደረግ ንግድ",
+      "መ. ምርቶችን እና የሰብል ምርቶችን የሚያካትት ንግድ",
+    ],
+    correctAnswer:
+      "ለ. በአንድ አገር ውስጥ በሚገኙ ሰዎች መካከል የሚካሄድ የንግድ እንቅስቃሴ",
+    explanation:
+      "የውስጥ ንግድ (Internal Trade) ማለት በሀገር ውስጥ ባሉ ክልሎች ወይም ከተሞች መካከል የሚደረግ ልውውጥ ነው። ለምሳሌ ከጎጃም የመጣ ጤፍ አዲስ አበባ ላይ ሲሸጥ የውስጥ ንግድ ይባላል፡፡",
+  },
+
+  {
+    id: "grade6-science-37",
+    order: 37,
+    question: "ጫት ውስጥ የሚገኝ ኬሚካል ምን ይባላል?",
+    options: [
+      "ሀ. ኒኮቲን",
+      "ለ. ካቲኖን",
+      "ሐ. ሞርፊን",
+      "መ. ኢታኖል",
+    ],
+    correctAnswer: "ለ. ካቲኖን",
+    explanation:
+      "ጫት ውስጥ ካቲኖን (Cathinone) የተባለ አነቃቂ ኬሚካል ይገኛል:: ይህ ኬሚካል ሱስ የሚያስይዝ እና በጤና ላይ ጉዳት የሚያደርስ ነው።",
+  },
+
+  {
+    id: "grade6-science-38",
+    order: 38,
+    question: "ድርቅ የሚለው ቃል ዋናው ትርጉም ምንድን ነው?",
+    options: [
+      "ሀ. ድንገተኛ የዝናብ ሽፋን በመከሰቱ የሚፈጠር",
+      "ለ. እንደ ካንስር በሽታ በፍጥነት የሚሰራጭ",
+      "ሐ. ያልተለመደ የዝናብ እጥረት ወይም ረጅም ጊዜ ዝናብ አለመኖር",
+      "መ. በአንድ ክልል የምግብ ምርት መጨመር",
+    ],
+    correctAnswer:
+      "ሐ. ያልተለመደ የዝናብ እጥረት ወይም ረጅም ጊዜ ዝናብ አለመኖር",
+    explanation:
+      "ድርቅ የተፈጥሮ አደጋ ሲሆን የውሃ እጥረት እንዲከሰት ያደርጋል፡፡ ይህም ለሰብል መድረቅ እና ለከብቶች መሞት ምክንያት ይሆናል::",
+  },
+
+  {
+    id: "grade6-science-39",
+    order: 39,
+    question:
+      "በምስራቅ አፍሪካ የአፈር መሸርሸር በመጨመር እና የአካባቢውን የውሃ ዑደት በማዛባት ድርቅን የሚያስከትለው የቱ ነው?",
+    options: [
+      "ሀ. የደን መውደም",
+      "ለ. የኢንዱስትሪ መቀነስ",
+      "ሐ. ከመጠን በታች በእንስሳት ማስጋጥ",
+      "መ. የህዝብ ቁጥር መቀነሰ",
+    ],
+    correctAnswer: "ሀ. የደን መውደም",
+    explanation:
+      "ዛፎች ሲቆረጡ አፈር በዝናብ በቀላሉ ይታጠባል (መሸርሽር)። ደን መጥፋቱ ደግሞ ተክሎች የሚያመነጩትን እርጥበት በመቀነስ የዝናብ ዑደቱን ያዛባል፡፡",
+  },
+
+  {
+    id: "grade6-science-40",
+    order: 40,
+    question:
+      "የምስራቅ አፍሪካ አገሮች (ኢትዮጵያ፣ ሶማሊያ፣ ኡጋንዳ፤ ኬኒያ፣ ጂቡቲ) እንደ ድርቅ ተጋላጭ ክልሎች የሚያገናኛቸው የጂኦግራፊያዊ ባህሪ ምንድን ነው?",
+    options: [
+      "ሀ. በአፍሪካ ቀንድ እና በምስራቅ አፍሪካ ሪፍት ሸለቆ",
+      "ለ. በሳህራ በረሃ ውስጥ መገኘት",
+      "ሐ. በአትላንቲክ ውቅያኖስ ዳርቻ አቅራቢነት",
+      "መ. በትሮፒካል የደን ሽፋን ላይ ጥገኝነት",
+    ],
+    correctAnswer:
+      "ሀ. በአፍሪካ ቀንድ እና በምስራቅ አፍሪካ ሪፍት ሸለቆ",
+    explanation:
+      "የአፍሪካ ቀንድ አካባቢ ለድርቅ ተጋላጭ የሆነው በአየር ንብረት መለዋወጥ ምክንያት ነው። ስምጥ ሸለቆው ደግሞ ለተለያዩ የተፈጥሮ ለውጦች ተጋላጭ የሆነ አካባቢ ነው።",
+  },
+],
+  "grade6-2016-civics": [
+
+  {
+    id: "g6civics-2016-4",
+    order: 4,
+    question:
+      "ከሚከተሉት የግብረ ገብ ምሉዕነት ጠቀሜታ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. በራሳቸው የሚተማመኑ ጠንካራ የስራ ባህል ያለው ማህበረሰብ ይፈጥራል",
+      "ለ. በቀላሉ የገቡትን ቃል የሚያፈርሱ ግለሰቦች መበራከት",
+      "ሐ. ችግሮችን በብቃት የመፍታት አቅምን ያሳጣል",
+      "መ. መጥፎ ተግባራትን የሚያጋልጡ ግለሰቦች ማነስ"
+    ],
+    correctAnswer: "ሀ",
+    explanation:
+      "ግብረ ገብነትና ምሉዕነት በሰዎች መካከል እምነት እንዲኖር ያደርጋል። ይህም ጠንካራ የስራ ባህልና በራስ መተማመን ያለው ማህበረሰብ እንዲገነባ ይረዳል።"
+  },
+  {
+    id: "g6civics-2016-5",
+    order: 5,
+    question:
+      "ከሚከተሉት ውስጥ እውነተኛ ግብረገብነት የተላበሰ ሰው ባህሪ ያልሆነው የትኛው ነው?",
+    options: [
+      "ሀ. ግብዝነት",
+      "ለ. እውነተኛነት",
+      "ሐ. ብርታት",
+      "መ. ትህትና"
+    ],
+    correctAnswer: "ሀ",
+    explanation:
+      "ግብዝነት ማለት ከውስጥ ሳይሆኑ በውጭ ሌላ ሆኖ መታየት በመሆኑ የመልካም ስነ-ምግባር ተቃራኒ ነው። እውነተኛነት፣ ብርታትና ትህትና ግን የመልካም ስነ-ምግባር መገለጫዎች ናቸው።"
+  },
+  {
+    id: "g6civics-2016-6",
+    order: 6,
+    question:
+      "ከሚከተሉት አንዱ ማጭበርበርና ስርቆትን በሚፈጽሙ ሰዎች ላይ የሚደርስ ጉዳት ነው?",
+    options: [
+      "ሀ. ጠንካራ በራስ የመተማመን ችሎታን ያዳብራሉ",
+      "ለ. መጥፎ ድርጊትን በድፍረት መቃወም ይችላሉ",
+      "ሐ. በዙሪያቸው ያሉ ሰዎችን እምነት አያገኙም",
+      "መ. እውነተኛ ወዳጅነትን ለመመስረት ይችላሉ"
+    ],
+    correctAnswer: "ሐ",
+    explanation:
+      "አጭበርባሪና ሌባ ሰዎች በማህበረሰቡ ዘንድ አይታመኑም። እምነት ማጣት ደግሞ ማህበራዊ ግንኙነታቸውንና ክብራቸውን ይጎዳል።"
+  },
+  {
+    id: "g6civics-2016-7",
+    order: 7,
+    question:
+      "የህጎችን ምንነት በተመለከተ እውነት የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. ከዜጎች ጋር ጥብቅ ቁርኝት የላቸውም",
+      "ለ. ጥቂት ዜጎች ሊከተሏቸው የሚገቡ የስነምግባር ደንቦች ናቸው",
+      "ሐ. በፍጥነት ተለዋዋጭና ወጥነት የላላቸው መመሪያዎች ናቸው",
+      "መ. የዜጎችን መብትና ግዴታ የሚያሳውቁ መመሪያዎች ናቸው"
+    ],
+    correctAnswer: "መ",
+    explanation:
+      "ህግ ማለት አንድ ዜጋ ሊኖረው የሚገባውን መብትና ሊወጣው የሚገባውን ግዴታ የሚወስን መመሪያ ነው። ህግ የሰዎችን ግንኙነት በስርአት ለመምራት ይረዳል።"
+  },
+  {
+    id: "g6civics-2016-8",
+    order: 8,
+    question:
+      "ለህግ ተገዢ የሆኑ ዜጎች የቋንቋ፣ ሃይማኖትና የባህል ግጭቶችን በ--- ይፈታሉ።",
+    options: [
+      "ሀ. በጦርነት",
+      "ለ. በአድርባይነት",
+      "ሐ. በሰላም",
+      "መ. በቸልታ"
+    ],
+    correctAnswer: "ሐ",
+    explanation:
+      "ለህግ የሚገዛ ዜጋ በማንኛውም ልዩነት ምክንያት የሚፈጠሩ ግጭቶችን በሰላማዊ ውይይትና በህጋዊ መንገድ ይፈታል። ኃይልን ወይም ጦርነትን መጠቀም ህገ-ወጥነት ነው።"
+  },
+  {
+    id: "g6civics-2016-9",
+    order: 9,
+    question:
+      "የህግ ተገዢነት ጠቀሜታ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. ሙሉ ነጻነትና እኩልነት ማግኘት",
+      "ለ. የሚፈልጉትን ሃይማኖት መከተል አለመቻል",
+      "ሐ. በፓለቲካ ለመሳተፍ ፈቃድ ማጣት",
+      "መ. የራስን የንግድ ስራ ለመስራት መከልከል"
+    ],
+    correctAnswer: "ሀ",
+    explanation:
+      "ህግ ሲከበር የዜጎች መብት ይጠበቃል። ይህም ሙሉ ነጻነትና እኩልነት እንዲሰፍን ያደርጋል። ህግ ባለበት ቦታ ሁሉም ሰው በእኩልነት ይስተናገዳል።"
+  },
+  {
+    id: "g6civics-2016-10",
+    order: 10,
+    question:
+      "ከሚከተሉት ውስጥ ለህግ ተገዢ የሆኑ ሰዎች ባህሪ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. መብትና ግዴታን ጠንቅቆ አለማወቅ",
+      "ለ. ህግን ከማወቅና ከማክበር መቆጠብ",
+      "ሐ. ህግን እንደፈለጉ መጣስ",
+      "መ. ህግ ሲጣስ ለሚመለከተው ማሳወቅ"
+    ],
+    correctAnswer: "መ",
+    explanation:
+      "ለህግ ተገዢ የሆነ ሰው ህግ ሲጣስ ሲመለከት ለሚመለከተው አካል ለምሳሌ ለፖሊስ የመጠቆም ኃላፊነት አለበት። ይህም ህጋዊነትን ለማስፈን የሚደረግ ጥረት ነው።"
+  },
+  {
+    id: "g6civics-2016-11",
+    order: 11,
+    question:
+      "ከሚከተሉት ውስጥ ለህግ ተገዢ አለመሆን አሉታዊ ውጤት የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. የሰላም እጦት",
+      "ለ. የዜጎች ፍላጎት መጠበቁ",
+      "ሐ. ፍትሃዊ የሀብት ክፍል መኖሩ",
+      "መ. የሰብአዊ መብቶች መከበር"
+    ],
+    correctAnswer: "ሀ",
+    explanation:
+      "ህግ በማይከበርበት ቦታ ስርዓት አልበኝነት ስለሚነግስ ሰላም ይጠፋል። ሰላም ከሌለ ደግሞ እድገትና ደህንነት ሊታሰብ አይችልም።"
+  },
+  {
+    id: "g6civics-2016-12",
+    order: 12,
+    question:
+      "ከሚከተሉት አንዱ ለህግ ተገዢ የመሆን ውጤት ነው?",
+    options: [
+      "ሀ. ስርአት አልበኝነት",
+      "ለ. የሙስና መስፋፋት",
+      "ሐ. የመብቶች መጣስ",
+      "መ. በነጻነት መኖር"
+    ],
+    correctAnswer: "መ",
+    explanation:
+      "ህግ ሲከበር ዜጎች ያለ ምንም ስጋት መብታቸው ተጠብቆ በነጻነት መኖር ይችላሉ። ህግ የነጻነት ዋስትና ነው።"
+  },
+  {
+    id: "g6civics-2016-13",
+    order: 13,
+    question:
+      "ከሚከተሉት ውስጥ ግብርን የሚሰውሩ ሰዎች ባህሪ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. ገቢን አሳንሰው እያቀረቡም",
+      "ለ. የተጋነነ ወጪን ለማቅረብ ይቆጥባሉ",
+      "ሐ. ሀሰተኛ የግብር ሰነድ ማዘጋጀት",
+      "መ. ትክክለኛ ግብርን ማሳወቅና መክፈል"
+    ],
+    correctAnswer: "ሐ",
+    explanation:
+      "ግብር የሚሰውሩ ሰዎች ግብር ላለመክፈል ሲሉ የውሸት ሰነዶችን ያዘጋጃሉ። ይህም በሀገር ኢኮኖሚ ላይ ትልቅ ጉዳት የሚያደርስ ህገ-ወጥ ተግባር ነው።"
+  },
+  {
+    id: "g6civics-2016-14",
+    order: 14,
+    question:
+      "ከሚከተሉት የመልካም ስነምግባር የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. ትህትናን ማጣት",
+      "ለ. በራስ አለመተማመን",
+      "ሐ. ስህተትን አለመቀበል",
+      "መ. ጥሩ ጓደኞችን መምረጥ"
+    ],
+    correctAnswer: "መ",
+    explanation:
+      "ጥሩ ጓደኛን መምረጥ ለመልካም ስነ-ምግባር መጎልበት መሰረት ነው። መልካም ጓደኛ ወደ በጎ ተግባር ስለሚመራን ስነ-ምግባራችን እንዲስተካከል ይረዳል።"
+  },
+  {
+    id: "g6civics-2016-15",
+    order: 15,
+    question:
+      "ከሚከተሉት መልካም ስነምግባር የተላበሰ ሰው ባህሪ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. እራስ ወዳድነት",
+      "ለ. ደግነት",
+      "ሐ. ማጭበርበር",
+      "መ. ፍርሃት"
+    ],
+    correctAnswer: "ለ",
+    explanation:
+      "ደግነት ሰዎችን መርዳትንና ለሌሎች ማሰብን የሚያካትት የመልካም ስነ-ምግባር ዋና መገለጫ ነው። ሌሎቹ አማራጮች ራስ ወዳድነትና ማጭበርበር መጥፎ ባህሪያት ናቸው።"
+  },
+  {
+    id: "g6civics-2016-16",
+    order: 16,
+    question:
+      "የመልካም ባህሪ መገለጫ ክብር መስጠት ውስጥ የማይካተተው የትኛው ነው?",
+    options: [
+      "ሀ. ለአካባቢ ክብር መስጠት",
+      "ለ. ለራስ ብቻ ክብር መስጠት",
+      "ሐ. ለወላጅ ክብር መስጠት",
+      "መ. በሀላፊነት ላይ ለተቀመጡ ሰዎች ክብር መስጠት"
+    ],
+    correctAnswer: "ለ",
+    explanation:
+      "ክብር መስጠት ለራስ ብቻ ሳይሆን ለሌሎች ሰዎች፣ ለወላጆችና ለአካባቢም መሆን አለበት። ለራስ ብቻ ክብር መስጠት ወደ ራስ ወዳድነት ስለሚያደላ የመልካም ባህሪ መገለጫ ተደርጎ አይወሰድም።"
+  },
+  {
+    id: "g6civics-2016-17",
+    order: 17,
+    question:
+      "ከሚከተሉት የመልካም ስነ ምግባር ባለቤት መሆን ጠቀሜታ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. ሰዎች ዘንድ አመኔታን ማግኘት",
+      "ለ. የመልካም ግንኙነት መጓደል",
+      "ሐ. የጓደኛ እጦት",
+      "መ. ከሌሎች ሰዎች ጋር መጋጨት"
+    ],
+    correctAnswer: "ሀ",
+    explanation:
+      "መልካም ስነ-ምግባር ያለው ሰው በማህበረሰቡ ዘንድ ይወደዳል እንዲሁም ይታመናል። አመኔታ ማግኘት ለስኬታማ ማህበራዊ ኑሮ ቁልፍ ነው።"
+  },
+  {
+    id: "g6civics-2016-18",
+    order: 18,
+    question:
+      "አንድ ሰው ሀሳቡን፣ ስሜቱን፣ ፍላጎቱንና ልምዶቹን የመቆጣጠር ብቃት ካለው የትኛውን የመልካም ስነ ምግባር ዘዴ አዳብሯል ማለት ይቻላል?",
+    options: [
+      "ሀ. የትምህርት ቤት ህግና ደንብ ማክበር",
+      "ለ. የማህበረሰብ እሴትን ማክበር",
+      "ሐ. ራስን መቆጣጠር",
+      "መ. ለህግ ተገዢነት"
+    ],
+    correctAnswer: "ሐ",
+    explanation:
+      "ራስን መቆጣጠር ማለት ስሜታችንና ፍላጎታችንን ለበጎ ነገር ማዋልና መጥፎ ድርጊቶችን መግታት መቻል ነው። ይህም ጠንካራ ስብዕናን ለመገንባት ይረዳል።"
+  },
+  {
+    id: "g6civics-2016-19",
+    order: 19,
+    question:
+      "ከመልካም ስነምግባር ማበልጸጊያ ዘዴዎች ውስጥ የሚካተተው የትኛው ነው?",
+    options: [
+      "ሀ. የግብረገብ መርሆዎችን ለመተግበር የሚያስችል ብቃት አለማሳደግ",
+      "ለ. ታማኝ መሆንና የገቡትን ቃል መጠበቅ የሚያስችል ብቃትን አለማዳበር",
+      "ሐ. አላስፈላጊ የሆኑ ምኞቶችንና ተግባሮችን ማከናወን",
+      "መ. ሃላፊነት መወጣትና ለተጠያቂነት መዘጋጀት"
+    ],
+    correctAnswer: "መ",
+    explanation:
+      "የተሰጠንን ኃላፊነት በአግባቡ መወጣትና ለስራችን ተጠያቂ መሆን ስነ-ምግባርን ለማበልጸግ ይረዳል። ይህም ታማኝነትንና ጥንካሬን ይገነባል።"
+  },
+  {
+    id: "g6civics-2016-20",
+    order: 20,
+    question:
+      "ከሚከተሉት ውስጥ የመልካም ስነ ምግባር አለመላበስ ውጤት የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. እውነተኛነት",
+      "ለ. የእርስ በእርስ ግጭት",
+      "ሐ. ታማኘነት",
+      "መ. ሚስጢር ጠባቂነት"
+    ],
+    correctAnswer: "ለ",
+    explanation:
+      "መልካም ስነ-ምግባር በሌለበት ቦታ ጥላቻና አለመግባባት ስለሚሰፍን ሰዎች እርስ በእርስ ይጋጫሉ። ይህም የማህበረሰቡን ሰላምና አንድነት ያናጋል።"
+  },
+  {
+    id: "g6civics-2016-21",
+    order: 21,
+    question:
+      "ከሚከተሉት ውስጥ ማህበራዊ ተሳትፎ ምሳሌ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. ጫማ መጥረግ",
+      "ለ. በጎ ፈቃደኛነት",
+      "ሐ. በሱቅ ላይ እቃ መሸጥ",
+      "መ. እርሻ ላይ መሰማራት"
+    ],
+    correctAnswer: "ለ",
+    explanation:
+      "በጎ ፈቃደኝነት ያለ ምንም ክፍያ ማህበረሰቡን ለማገልገል የሚደረግ ተሳትፎ በመሆኑ የማህበራዊ ተሳትፎ ዋነኛ ምሳሌ ነው። ሌሎቹ አማራጮች የግል ገቢ ለማግኘት የሚሰሩ ስራዎች ናቸው።"
+  },
+  {
+    id: "g6civics-2016-22",
+    order: 22,
+    question:
+      "ከታች ከተጠቀሱት በማህበራዊ እንቅስቃሴ ውስጥ የሚካተተው የትኛው ነው?",
+    options: [
+      "ሀ. የገንዘብ ልውውጥ ማድረግ",
+      "ለ. ማህበራዊ ችግሮችን መፍታት",
+      "ሐ. ምርቶችን ማምረትና መሽጥ",
+      "መ. ገቢ ማግኘትና ሀብት ማፍራት"
+    ],
+    correctAnswer: "ለ",
+    explanation:
+      "ማህበራዊ እንቅስቃሴ የሚባለው ማህበረሰቡን የሚጠቅሙና ችግሮችን የሚፈቱ ተግባራት ላይ መሳተፍ ነው። ለምሳሌ አካባቢን ማጽዳት ወይም ችግረኞችን መርዳት ሊሆን ይችላል።"
+  },
+  {
+    id: "g6civics-2016-23",
+    order: 23,
+    question:
+      "የበጎ አድራጎት ተግባራት ያልሆነው የቱ ነው?",
+    options: [
+      "ሀ. ገንዘብና ሽልማት ተቀብሎ መስራት",
+      "ለ. በሙሉ ፈቃደኝነት ማገልገል",
+      "ሐ. የአካባቢ ጥበቃ ስራ",
+      "መ. ድሃ የማህበረሰብ ክፍልን መርዳት"
+    ],
+    correctAnswer: "ሀ",
+    explanation:
+      "በጎ አድራጎት ማለት በፈቃደኝነትና ያለ ጥቅም ለሌሎች መልካም ማድረግ ነው። ክፍያ ወይም ሽልማት ፈልጎ መስራት ግን በጎ አድራጎት አይባልም።"
+  },
+  {
+    id: "g6civics-2016-24",
+    order: 24,
+    question:
+      "ከሚከተሉት ውስጥ ስለበጎ ፈቃድ ማህበራዊ አገልግሎት እውነት የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. የማህበረሰብ አኗኗርን ለማሻሻል አስተዋፅኦ የለውም",
+      "ለ. አካባቢያዊና ሀገራዊ እድገት አያመጣም",
+      "ሐ. የመንፈስ እርካታ ያስገኛል",
+      "መ. የግል ትርፍና ጥቅምን ያስገኛል"
+    ],
+    correctAnswer: "ሐ",
+    explanation:
+      "በጎ ፈቃደኝነት ሰዎችን በመርዳት የሚገኝ ውስጣዊ ሰላምና የመንፈስ እርካታ ያስገኛል። ምንም እንኳን የግል የገንዘብ ጥቅም ባይኖረውም ለሰው ልጅ ትልቅ ደስታ ይሰጣል።"
+  },
+  {
+    id: "g6civics-2016-25",
+    order: 25,
+    question:
+      "ከሚከተሉት ውስጥ የጋራ ጥቅም ምሳሌ ያልሆነው የትኛው ነው?",
+    options: [
+      "ሀ. መሰረተ ልማት",
+      "ለ. የቤት መኪና",
+      "ሐ. ንጹህ አካባቢ",
+      "መ. ቤተ መጻህፍት"
+    ],
+    correctAnswer: "ለ",
+    explanation:
+      "የጋራ ጥቅም ማለት ሁሉም ሰው በእኩልነት ሊገለገልበት የሚችል ነገር ነው። የቤት መኪና ግን የግል ንብረት በመሆኑ ለጋራ ጥቅም ምሳሌ አይሆንም።"
+  },
+  {
+    id: "g6civics-2016-26",
+    order: 26,
+    question:
+      "ግብርን በታማኝነት የመክፈል ጠቀሜታ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. የዜጎች የመሰረተ ልማት ተደራሽነትን ያጓትታል",
+      "ለ. የተለያዩ አገልግሎቶች ለመስጠት እንቀፋት ነው",
+      "ሐ. የግለሰቦች ገቢ እና ሀብት ያድግበታል",
+      "መ. ድህንነትን ለማስወገድ በከፍተኛ ሁኔታ ይረዳል"
+    ],
+    correctAnswer: "መ",
+    explanation:
+      "መንግስት ከዜጎች የሚሰበስበውን ግብር ለድህነት ቅነሳና ለልማት ስራዎች ያውለዋል። ስለዚህ ግብር መክፈል ድህነትን ለመዋጋት ትልቅ አስተዋጽኦ አለው።"
+  },
+  {
+    id: "g6civics-2016-27",
+    order: 27,
+    question:
+      "ከሚከተሉት ውስጥ የባህላዊ ቁጠባ ተቋም የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. ባንክ",
+      "ለ. እቁብ",
+      "ሐ. እነስተኛ የፋይናንስ ተቋማት",
+      "መ. የመድህን ድርጅቶች"
+    ],
+    correctAnswer: "ለ",
+    explanation:
+      "እቁብ በኢትዮጵያ ማህበረሰብ ውስጥ ለዘመናት የቆየና ሰዎች ተሰባስበው ገንዘብ የሚቆጥቡበት ባህላዊ መንገድ ነው። ባንክና ሌሎች ተቋማት ግን ዘመናዊ የቁጠባ ተቋማት ናቸው።"
+  },
+  {
+    id: "g6civics-2016-28",
+    order: 28,
+    question:
+      "ከሚከተሉት ውስጥ የሀገር መውደድን የሚገልጽ የትኛው ነው?",
+    options: [
+      "ሀ. ለሀገር ያለ የታማኝነት መንፈስ ማነስ",
+      "ለ. የግል ጥቅምን ማስቀደም",
+      "ሐ. ለሀገር ጥልቅ ፍቅር ማሳየት",
+      "መ. ማህበረሰብን ለማገልገል ፍላጎት ማጣት"
+    ],
+    correctAnswer: "ሐ",
+    explanation:
+      "ሀገር መውደድ ወይም ፓትሪዮቲዝም ማለት ለሀገር ያለ ጥልቅ ፍቅርና ኩራት ነው። ይህም ለሀገር እድገትና ደህንነት በቁርጠኝነት መስራትን ይጨምራል።"
+  },
+  {
+    id: "g6civics-2016-29",
+    order: 29,
+    question:
+      "ከሚከተሉት ውስጥ የሀገር ወዳድነት መገለጫ የሆነው?",
+    options: [
+      "ሀ. የባለቤትነት ስሜት ማጣት",
+      "ለ. በሀገር ሉአላዊነት አለመኩራት",
+      "ሐ. ሙስናን መፈፀም",
+      "መ. ጀግኖችን ማክበር"
+    ],
+    correctAnswer: "መ",
+    explanation:
+      "ለሀገራቸው መስዋዕትነት የከፈሉ ጀግኖችን ማክበርና ታሪካቸውን ማስታወስ የሀገር ወዳድነት ዋነኛ መገለጫ ነው። ይህም ለሀገር ያለንን ክብር ያሳያል።"
+  },
+  {
+    id: "g6civics-2016-30",
+    order: 30,
+    question:
+      "ከሚከተሉት ውስጥ ሀገር ወዳድ የሆኑ ዜጎች መብዛት ለሀገር ከሚሰጠው ጠቀሜታ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. የተንሸራሸረ አንድነት መኖር",
+      "ለ. ፈጣን እድገት አለመኖር",
+      "ሐ. ለሌሎች ጥቃት መጋለጥ",
+      "መ. ሀገሩን የሚወድ መሪ መፈጠር"
+    ],
+    correctAnswer: "መ",
+    explanation:
+      "ማህበረሰቡ ሀገር ወዳድ ከሆነ፣ ከዚሁ ማህበረሰብ የሚወጡ መሪዎችም ሀገራቸውን የሚወዱና ለህዝብ የሚያስቡ ይሆናሉ። ይህም ለሀገር እድገትና ሰላም ትልቅ አስተዋጽኦ አለው።"
+  },
+  {
+    id: "g6civics-2016-31",
+    order: 31,
+    question:
+      "ሀገር ወዳድ የሆኑ ግለሰቦች ሚና የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. የራስን ፍላጎት ብቻ ማራመድ",
+      "ለ. ለሀገር እድገት አነስተኛ አስዋፅኦ ማድረግ",
+      "ሐ. የሙስናን ተግባርን ማስወገድ",
+      "መ. ስልጣንን ያለአግባቡ መጠቀም"
+    ],
+    correctAnswer: "ሐ",
+    explanation:
+      "ሀገሩን የሚወድ ዜጋ ለሀገሩ ሃብት ስለሚቆረቆር ሙስናንና ብክነትን ይዋጋል። ታማኝነት የሀገር ወዳድነት አንዱ አካል ነው።"
+  },
+  {
+    id: "g6civics-2016-32",
+    order: 32,
+    question:
+      "ከታች ከቀረቡት ሀገርን መውደድ ውስጥ የሚካተተው የትኛው ነው?",
+    options: [
+      "ሀ. ትውልድ ሀገሩን እንዲያውቅ ማድረግ",
+      "ለ. በተግባር የሀገርን ፍቅር ለማሳየት መቸገር",
+      "ሐ. ሀገርን ለመጠበቅ ዝግጁ አለመሆን",
+      "መ. ከማህበረሰብ ራስን ማራቅ"
+    ],
+    correctAnswer: "ሀ",
+    explanation:
+      "አዲሱ ትውልድ ስለ ሀገሩ ታሪክ፣ ባህልና እሴት እንዲያውቅ ማድረግ ለሀገር ፍቅር መጎልበት ወሳኝ ነው። ሀገርን ማወቅ መውደድን ያመጣል።"
+  },
+  {
+    id: "g6civics-2016-33",
+    order: 33,
+    question:
+      "ከሚከተሉት ውስጥ የሰላማዊ ባህሪ ምሳሌ የትኛው ነው?",
+    options: [
+      "ሀ. ጥላቻ",
+      "ለ. የበታችነት ስሜት",
+      "ሐ. መከባበር",
+      "መ. አለመግባባት"
+    ],
+    correctAnswer: "ሐ",
+    explanation:
+      "ሰዎች እርስ በእርስ ሲከባበሩና የሌሎችን መብት ሲያከብሩ ሰላም ይሰፍናል። መከባበር ለሰላማዊ ግንኙነት መሰረት ነው።"
+  },
+  {
+    id: "g6civics-2016-34",
+    order: 34,
+    question:
+      "የሰላም ጠቀሜታ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. ችግሮችን በሃይል መፍታት",
+      "ለ. የተግባቦት ክህሎት መበልፀግ",
+      "ሐ. በራስ መተማመን ማጣት",
+      "መ. የሁከትና መገለል መስፈን"
+    ],
+    correctAnswer: "ለ",
+    explanation:
+      "ሰላም ባለበት ሁኔታ ሰዎች በግልጽ መነጋገርና ሃሳባቸውን መለዋወጥ ስለሚችሉ የመግባባት ክህሎታቸው ይዳብራል። ይህም ግጭቶችን በውይይት ለመፍታት ይረዳል።"
+  },
+  {
+    id: "g6civics-2016-35",
+    order: 35,
+    question:
+      "ከሚከተሉት ውስጥ መተባበርን የሚገልጽ የትኛው ነው?",
+    options: [
+      "ሀ. እርስ በእርስ አለመረዳዳት",
+      "ለ. አገልግሎቶችን አለማዳረስ",
+      "ሐ. የሌሎችን ሀዘንና ደስታ መካፈል",
+      "መ. ተራን ሳይጠብቁ መስተናገድ"
+    ],
+    correctAnswer: "ሐ",
+    explanation:
+      "መተባበር ማለት በችግር ጊዜ መረዳዳትና በደስታ ጊዜም አብሮ መሆን ነው። ይህም በማህበረሰቡ መካከል ያለውን ትስስር ያጠናክራል።"
+  },
+  {
+    id: "g6civics-2016-36",
+    order: 36,
+    question:
+      "ከሚከተሉት መተባበርን ለማሳየት የማይጠቅመው የትኛው ነው?",
+    options: [
+      "ሀ. የሌሎችን ሚስጥር አሳልፎ መስጠት",
+      "ለ. ከሌሎች ጋር መተማመን",
+      "ሐ. ምቹና ሰላማዊ የሆነ አካባቢ መፈጠር",
+      "መ. እርስ በእርስ መረዳዳት"
+    ],
+    correctAnswer: "ሀ",
+    explanation:
+      "የሰዎችን ሚስጥር አሳልፎ መስጠት እምነትን ስለሚያጠፋ በትብብር ላይ አሉታዊ ተጽዕኖ ይኖረዋል። መተባበር የሚገነባው በመተማመን ላይ ነው።"
+  },
+  {
+    id: "g6civics-2016-37",
+    order: 37,
+    question:
+      "ከሚከተሉት የመተባበር ጠቀሜታ የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. ከሌሎች ጋር ያለውን ተግባቦት ያዳብራል",
+      "ለ. ሌሎችን ለማድመጥና ለመረዳት ያዳግታል",
+      "ሐ. በጥልቀት ማሰብን አያጎለብትም",
+      "መ. የራስ ወዳድነት ይንጸባረቅበታል"
+    ],
+    correctAnswer: "ሀ",
+    explanation:
+      "ሰዎች አብረው ሲሰሩና ሲተባበሩ ሃሳብ የመለዋወጥና የመግባባት ችሎታቸው ይጨምራል። ይህም ለጋራ ስኬት መንገድ ይከፍታል።"
+  },
+  {
+    id: "g6civics-2016-38",
+    order: 38,
+    question: "ግልጽነት ምን ማለት ነው?",
+    options: [
+      "ሀ. ስሜትን መደበቅ",
+      "ለ. ሀሳብን በታማኝነት መግለጽ",
+      "ሐ. ውሸትና ማስመሰል",
+      "መ. ሁሉንም ሀሳብ መቀበል"
+    ],
+    correctAnswer: "ለ",
+    explanation:
+      "ግልጽነት ማለት የምናስበውንና የሚሰማንን ነገር በትክክልና በታማኝነት ለሌሎች ማካፈል ነው። ይህም በሰዎች መካከል ጥርጣሬ እንዳይኖር ያደርጋል።"
+  },
+  {
+    id: "g6civics-2016-39",
+    order: 39,
+    question: "የሰላምና ትብብር መኖር ውጤት የሆነው?",
+    options: [
+      "ሀ. ግጭትና ጦርነት",
+      "ለ. የሀገር አንድነት መጠናከር",
+      "ሐ. የመንግስታት መውደቅ",
+      "መ. የሰዎች ሞትና መፈናቀል"
+    ],
+    correctAnswer: "ለ",
+    explanation:
+      "ሰላምና ትብብር ባለበት ሀገር ዜጎች ተከባብረውና ተረዳድተው ስለሚኖሩ የሀገር አንድነት ይጠነክራል። አንድነት ደግሞ ለሀገር ሉአላዊነትና እድገት ዋስትና ነው።"
+  },
+  {
+    id: "g6civics-2016-40",
+    order: 40,
+    question:
+      "ከታች ከቀረቡት ስለሰላምና ትብብር ስህተት የሆነው የትኛው ነው?",
+    options: [
+      "ሀ. ሰላምና ትብብር የማይነጣጠሉ ጉዳዮች ናቸው",
+      "ለ. ሰላምና ትብብር በጥቂቶች ርብርብ ይገኛሉ",
+      "ሐ. ሰላምና ትብብር የሰዎችን ደህንነት ያስከብራሉ",
+      "መ. ሰላምና ትብብር በዜጎች ትብብር ይረጋገጣሉ"
+    ],
+    correctAnswer: "ለ",
+    explanation:
+      "ሰላምና ትብብር የጥቂት ሰዎች ስራ ሳይሆን የሁሉም ዜጎች የጋራ ርብርብ ውጤት ነው። ሁሉም ሰው የበኩሉን ካላበረከተ ዘላቂ ሰላም ሊመጣ አይችልም።"
+  }
+],
+"grade6-2016-science": [
+  {
+    id: "g6-2016-science-4",
+    order: 4,
+    question: `ከሚከተሉት የምስራቅ አፍሪካ ሃገራት ውስጥ በእንጻራዊነት ወደ ምስራቅ አፍሪካ ጫፍ የሆነው የትኛው ነው?`,
+    options: [
+      "ሀ. ደቡብ ሱዳን",
+      "ሊ. ሶማሊያ",
+      "ሐ. ሞዛምቢክ",
+      "መ. ዚምባብዌ"
+    ],
+    correctAnswer: "ሊ. ሶማሊያ",
+    explanation: `ሶማሊያ “የአፍሪካ ቀንድ ተብሎ በሚጠራው ጫፍ ላይየምትገኝ ሲሆን፣ ከቀረቡት አማራጮች ውስጥ በጣም ወደ
+
+ምስራቅ ወጥታ የምትገኝ ሀገር ናት፡፡`
+  },
+
+  {
+    id: "g6-2016-science-5",
+    order: 5,
+    question: `በአፍሪካ ካርታ ላይ ምስራቅ አፍሪካን በሰሜን በኩል የሚጎራበተው ሐገር የትኛው ነው?`,
+    options: [
+      "ሀ. ናይጄሪያ",
+      "ለ. አንጎላ",
+      "ሐ. ሱዳን",
+      "መ. ደቡብ አፍሪካ"
+    ],
+    correctAnswer: "ሐ. ሱዳን",
+    explanation: `ሱዳን ከምስራቅ አፍሪካ (በተለይም ከኤርትራና ኢትዮጵያ)
+
+በስተሰሜንና ሰሜን ምዕራብ አቅጣጫ ትገኛለች።`
+  },
+
+  {
+    id: "g6-2016-science-6",
+    order: 6,
+    question: `ጋሽ አበበ ልባቸውን ተመርምረው በኦክስጂን ያልበለፀገ ደም የሚይዙ የልብ ዋና ዋና ክፍሎች ተጎድቷል ቢባሉና አንተ ሃኪም ብትሆን ምን ታደርጋልህ?`,
+    options: [
+      "ሀ. ቀኝ ተቀባይ እና ቀኝ አቀባይ ልበ ገንዳዎችን አክማለሁ",
+      "ሊ በቀኝና በግራ በኩል የሚገኙ ተቀባይ ልበ ገንዳዎችን አክማለሁ",
+      "ሒ ግራ ተቀባይ እና ግራ አቀባይ ልበ ገንዳዎችን አክማለሁ",
+      "መ. ቀኝ አቀባይ እና ግራ አቀባይ ልበ ገንዳዎችን እክማለሁ"
+    ],
+    correctAnswer: "ሀ. ቀኝ ተቀባይ እና ቀኝ አቀባይ ልበ ገንዳዎችን አክማለሁ",
+    explanation: `የልብ ቀኝ ክፍል (Right Atrium and Ventricle) ሁልጊዜም ከሰውነት የመጣን ኦክስጂን አልባ (ያልበለጸገ) ደም የመቀበልና ወደ ሳምባ የመላክ ስራ ይሰራል::`
+  },
+
+  {
+    id: "g6-2016-science-7",
+    order: 7,
+    question: `ቀይ የደም ህዋስ ለምን ኦክስጂን ይሸከማል?`,
+    options: [
+      "ሀ. ቀይ ስለሆነ",
+      "ለ. ዶናት ቅርጽ ስላለው",
+      "ሐ. በውስጡ ሄሞግሎቢን ስለያዘ",
+      "መ. በመቅኔ ውስጥ ስለምመረት"
+    ],
+    correctAnswer: "ሐ. በውስጡ ሄሞግሎቢን ስለያዘ",
+    explanation: `ሄሞግሎቢን (Hemoglobin) ኦክስጂንን የመሳብና የመሸከም ባህሪ ያለው ፕሮቲን በመሆኑ ቀይ የደም ህዋሶች ኦክስጂንን እንዲያጓጉዙ ያስችላቸዋል፡፡`
+  },
+
+  {
+    id: "g6-2016-science-8",
+    order: 8,
+    question: `በኮረዳነትና በጉርምስና ወቅት በሁለቱም ጾታዎች በተቃራኒ መልኩ የሚከሰት ሥነ-ሕይወታዊ ለውጥ የትኛው ነው?`,
+    options: [
+      "ሀ. የድምፅ መለወጥ",
+      "ለ. የክብደት መጨመር",
+      "ሐ. የቁመት መጨመር",
+      "መ. ፀጉር ማብቀል"
+    ],
+    correctAnswer: "ሀ. የድምፅ መለወጥ",
+    explanation: `በጉርምስና ወቅት የወንዶች ድምፅ ይጎረንናል (ይወፍራል)፤ የሴቶች ደግሞ ይበልጥ ይቀጥናል ወይም ይለሰልሳል፡፡ ሌሎች ለውጦች (ቁመት፤ ክብደት) ለሁለቱም ተመሳሳይ ሊሆኑ ይችላሉ፡፡`
+  },
+
+  {
+    id: "g6-2016-science-9",
+    order: 9,
+    question: `ድብልቁና የድብልቁ ምንዝሮች ተመሳሳይ ባህሪ የሚያሳዩት ለምንድነው?`,
+    options: [
+      "ሀ. ጥምረታቸው ኬሚካዊ ስለሆነ ነው",
+      "ሊ ጥምረታቸው አካላዊ ስለሆነ ነው",
+      "ሐ. ልይ ቁሱ በመጠን ትልቅ ስለሆነ ነው",
+      "መ. ድብልቁና ልይ ቁሱ ተመሳሳይ ስለሆነ ነው"
+    ],
+    correctAnswer: "ለ ጥምረታቸው አካላዊ ስለሆነ ነው",
+    explanation: `በድብልቅ (Mixture) ውስጥ ያሉ ነገሮች የሚጣመሩት በአካላዊ (Physical) መንገድ እንጂ በኬሚካዊ ለውጥ ስላልሆነ
+
+እያንዳንዱ ነገር የራሱን ባህሪ ይዞ ይቆያል፡፡`
+  },
+
+  {
+    id: "g6-2016-science-10",
+    order: 10,
+    question: `ከሚከተሉት ውስጥ ልይ-ዘር (Heterogeneous) ድብልቅ የሆነው የቱ ነው?`,
+    options: [
+      "ሀ. አረቄ እና ውሃ",
+      "ለ. የስኳር ሙሙት",
+      "ሐ. ፔፕሲ",
+      "መ. እሸዋና በቆሎ"
+    ],
+    correctAnswer: "መ. አሸዋና በቆሎ",
+    explanation: `ልይ-ዘር ድብልቅ ማለት በውስጡ ያሉትን ነገሮች በአይን ለይቶ ማየት የሚቻልበት የድብልቅ አይነት ነው:: አሸዋና በቆሎን
+
+በቀላሉ መለየት ይቻላል::`
+  },
+
+  {
+    id: "g6-2016-science-11",
+    order: 11,
+    question: `ከስኳር፣ አሸዋ እና ውሃ ድብልቅ ውስጥ ስኳሩን ብቻ ለመለየት የሚንጠቀመው ዘዴ በቅደም ተከተል የቱ ነው?`,
+    options: [
+      "ሀ. ማሟሟት -> ጥሊያ -> ማትነን",
+      "ለ. ማትነን -> ማሟሟት -> ጥሊያ",
+      "ሐ. ማቀዝቀዝ -> ማትነን -> ጥሊያ",
+      "መ. ማሟሟት -> ጥሊያ -> ማቀዝቀዝ"
+    ],
+    correctAnswer: "ሀ. ማሟሟት -> ጥሊያ -> ማትነን",
+    explanation: `መጀመሪያ ድብልቁን በማሟሟት ስኳሩ እንዲሟሟ
+
+ይደረጋል፤ ከዚያም ባልሟሟው አሸዋ ላይ ጥሊያ (Filtering) በማካሄድ አሸዋውን እንለያለን፣ በመጨረሻም ውሃውን በማትነን (Evaporation) ስኳሩን እናገኛለን::`
+  },
+
+  {
+    id: "g6-2016-science-12",
+    order: 12,
+    question: `ታዳሽ የጉልበት ምንጭ የሆነው የቱ ነው?`,
+    options: [
+      "ሀ. የድንጋይ ከሰል",
+      "ለ. ቤንዚን",
+      "ሐ. የማገዶ እንጨት",
+      "መ. ነፋስ"
+    ],
+    correctAnswer: "መ. ነፋስ",
+    explanation: `ታዳሽ የሃይል ምንጮች ተጠቅመንባቸው የማያልቁ ናቸው። ነፋስ ዘላቂና የማይጠፋ የተፈጥሮ ሃይል ነው፡፡`
+  },
+
+  {
+    id: "g6-2016-science-13",
+    order: 13,
+    question: `በምስራቅ አፍሪካ ዝቅተኛ ወቅታዊ አማካይ የሙቀት መጠን እስከ 6 ዲግሪ ሴንቲ ግሬድ የሚመዘገበው በየትኞቹ ቦታዎች ነው?`,
+    options: [
+      "ሀ. በዝቅተኛ ቦታዎች",
+      "ለ. በከፍተኛ ቦታዎች",
+      "ሐ. በሁሎም የቀጠናው አከባቢዎች",
+      "መ. በቆላማ ቦታዎች"
+    ],
+    correctAnswer: "ለ. በከፍተኛ ቦታዎች",
+    explanation: `በከፍተኛ ቦታዎች (ደጋማ ቦታዎች) ከፍታ በጨመረ ቁጥር የሙቀት መጠን ስለሚቀንስ ዝቅተኛ ሙቀት ይመዘገባል::`
+  },
+
+  {
+    id: "g6-2016-science-14",
+    order: 14,
+    question: `በምስራቅ አፍሪካ ሰሜናዊ ክፍል ኢትዮጵያን ጨምሮ ዝናብ የሚያገኙት ከሰኔ እስከ መስከረም ነው፡፡ ይህ ምን ያመለክታል?`,
+    options: [
+      "ሀ. በዝናብ ማምረት ዉጤታማ አይደለም",
+      "ለ. ኢትዮጵያ ከጥር እስከ መጋቢት በዝናብ ማምረት ትችላለች",
+      "ሐ. ኢትዮጵያ ከሰኔ እስከ መስከረም በዝናብ ማምረት ትችላለች",
+      "መ. ከሰኔ እስከ መስከረም በነዚህ አከባቢዎች በመስኖ ማምረት ተምራጭ ነው"
+    ],
+    correctAnswer: "ሐ. ኢትዮጵያ ከሰኔ እስከ መስከረም በዝናብ ማምረት ትችላለች",
+    explanation: `የክረምት ወቅት (ከሰኔ እስከ መስከረም) በኢትዮጵያ የዝናብ ወቅት ስለሆነ በዚህ ጊዜ በዝናብ እርሻ ማምረት ይቻላል::`
+  },
+
+  {
+    id: "g6-2016-science-15",
+    order: 15,
+    question: `የምስራቅ አፍሪካ የሳር ምድር ሞቃታማ የአየር ንብረት ክልል ከበረሃ አየር ንብረት ክልል በምን ይለያል?`,
+    options: [
+      "ሀ. የሣር አየር ንብረት ክልል እርጥበታማ በመሆኑ",
+      "ለ. የሣር ምድር ሞቃታማ የአየር ንብረት ክልል በአብዛኛው በሳር በመሸፈኑ",
+      "ሐ. የሣር ምድር ሞቃታማ የአየር ንብረት ክልል የበለጠ ደረቅ በመሆኑ",
+      "መ. የሣር ምድር በጣም ዝቅተኛ አመታዊ የዝናብ መጠን በመኖሩ"
+    ],
+    correctAnswer: "ለ. የሣር ምድር ሞቃታማ የአየር ንብረት ክልል በአብዛኛው በሳር በመሸፈኑ",
+    explanation: `የሳር ምድር (Savanna) አበረሃ የሚለየው የተወሰነ የዝናብ መጠን ስለሚያገኝና ረጅም ሳሮች ስለሚበቅሉበት ነው::`
+  },
+
+  {
+    id: "g6-2016-science-16",
+    order: 16,
+    question: `በምስራቅ አፍሪካ ቀጠና የተፈጥሮ ሀብት እንደ ውሃ፤ አፈር፤ ማዕድናት፣ የዱር እንስሳት እና የመሳሰሉት በብዛት ለምን ይገኛሉ?`,
+    options: [
+      "ሀ. ለህንድ ዉቅያኖስ አጎራባች በመሆኑ",
+      "ለ. ሰፊ እና በብዛት በድርቅ የሚጠቃ በመሆኑ",
+      "ሐ. በብዛት በደቡባዊ ንፍቀ ክበብ አክባቢ በመሆኑ",
+      "መ. የተለያዩ ተራሮች፤ አምባ ምድሮች እና ዝቅተኛ ሥፍራዎች ባለቤት በመሆኑ"
+    ],
+    correctAnswer: "መ. የተለያዩ ተራሮች፤ አምባ ምድሮች እና ዝቅተኛ ሥፍራዎች ባለቤት በመሆኑ",
+    explanation: `የምስራቅ አፍሪካ የመሬት አቀማመጥ (Physical features) የተለያየ መሆኑ ለተፈጥሮ ሀብት መብዛት ትልቅ አስተዋጽኦ አለው፡፡`
+  },
+
+  {
+    id: "g6-2016-science-17",
+    order: 17,
+    question: `ከምስራቅ አፍሪካ ሃገራት የወርቅ ማዕድን የሌላት ሃገር ማን ናት?`,
+    options: [
+      "ሀ. ኢትዮጵያ",
+      "ለ. ኬንያ",
+      "ሐ. ዩጋንዳ",
+      "መ. ሩዋንዳ"
+    ],
+    correctAnswer: "መ. ሩዋንዳ",
+    explanation: `እንደ ኢትዮጵያና ኬንያ ያሉ ሀገራት የወርቅ ክምችት ሲኖራቸው፣ ሩዋንዳ ግን በዋናነት በቲንና በሌሎች ማዕድናት
+
+ትታወቃለች፡፡`
+  },
+
+  {
+    id: "g6-2016-science-18",
+    order: 18,
+    question: `ከምስራቅ አፍሪካ ሃገራት ከማዕድናት የሚገኙ ምጣኔ ሀብታዊ ጥቅም ያልሆነው የቱ ነው?`,
+    options: [
+      "ሀ. የጤና አገልግሎት",
+      "ለ. ገቢ ማግኘት",
+      "ሐ. የውጭ ምንዛሪ ማስገኘት",
+      "መ. የሥራ ዕድል መፍጠር"
+    ],
+    correctAnswer: "ሀ. የጤና አገልግሎት",
+    explanation: `ማዕድናት ገቢ ያስገኛሉ፣ የስራ እድል ይፈጥራሉ፤
+
+የውጭ ምንዛሬ ይገኛል:: የጤና አገልግሎት ግን ቀጥተኛ የምጣኔ
+
+ሀብት ጥቅም አይደለም::`
+  },
+
+  {
+    id: "g6-2016-science-19",
+    order: 19,
+    question: `የተፈጥሮ ሀብት እንክብካቤ ዘዴ ያልሆነው የቱ ነው?`,
+    options: [
+      "ሀ. ሀገር በቀል ዕጽዋቶችን መትከልና መንከባከብ",
+      "ለ. ታዳሽ የሃይል ምንጮችን መጠቀም",
+      "ሐ. የተፈጥሮ ሀብቶችን በዘፈቀደ መጠቀም",
+      "መ. ተፈጥሮ ሀብትን ሳያባክኑ መጠቀም"
+    ],
+    correctAnswer: "ሐ. የተፈጥሮ ሀብቶችን በዘፈቀደ መጠቀም",
+    explanation: `የተፈጥሮ ሀብቶችን ያለ እቅድና በዘፈቀደ መጠቀም ሀብቱ እንዲጠፋና እንዲባክን ስለሚያደርግ የእንክብካቤ ዘዴ አይደለም::`
+  },
+
+  {
+    id: "g6-2016-science-20",
+    order: 20,
+    question: `በምስራቅ አፍሪካ ዝቅተኛ የዝናብ መጠን በሚያገኙ አከባቢዎች የሚበቅሉ የዕፅዋት ምድብ ምን ይባላል?`,
+    options: [
+      "ሀ, ቅጠለ ሰፋፊ ዛፎች ደን",
+      "ለ. የዉርጭ አከባቢ ደን ዛፎች",
+      "ሐ. የሣር ምድር",
+      "መ. የሞቃት በረሃ ዕፅዋት"
+    ],
+    correctAnswer: "መ. የሞቃት በረሃ ዕፅዋት",
+    explanation: `በጣም ዝቅተኛ ዝናብ በሚኖርባቸው በረሃማ ቦታዎች ላይየሚበቅሉ እፅዋት (እንደ ቁልቋል ያሉ) የሞቃት በረሃ እፅዋት
+
+ይባላሉ፡፡`
+  },
+
+  {
+    id: "g6-2016-science-21",
+    order: 21,
+    question: `ከሚከተሉት ውስጥ ማዕድን እና ሃገሩ በትክክል ያልተጣመረው የትኛው ነው?`,
+    options: [
+      "ሀ. ወርቅ - ኢትዮጵያ",
+      "ለ. መዳብ - ኬንያ",
+      "ሒ ወርቅ - ታንዛኒያ",
+      "መ. መዳብ - ዛምቢያ"
+    ],
+    correctAnswer: "ለ መዳብ - ኬንያ",
+    explanation: `ዛምቢያ በመዳብ (Copper) የምትታወቅ ሀገር ናት:: ኬንያ
+
+ግን በመዳብ ብዙ አትታወቅም::`
+  },
+
+  {
+    id: "g6-2016-science-22",
+    order: 22,
+    question: `ዜሮሶል፣ ሊቶሶል፤ የርሞሶል እና ሶላንቻክ የአፈር አይነት በሶማሊያ እና በኤርትራ በብዛት ይገኛል፡፡ ለምን ይመስልሃል?`,
+    options: [
+      "ሀ. ከፍተኛ የዝናብ መጠን ስላላቸው",
+      "ለ. ሃገራቱ ከውቅያኖስ ጋር ስለሚዋሰኑ",
+      "ሐ. ተራራማ አከባቢዎች ስለሚበዛባቸው",
+      "መ. አከባቢዎቹ በብዛት ዝቅተኛ እና በረሃማ ስለሆኑ"
+    ],
+    correctAnswer: "መ. አከባቢዎቹ በብዛት ዝቅተኛ እና በረሃማ ስለሆኑ",
+    explanation: `እነዚህ የአፈር አይነቶች በብዛት የሚገኙት ዝናብ ባነሰባቸውና
+
+በረሃማ በሆኑ ዝቅተኛ ቦታዎች ላይ ነው፡፡`
+  },
+
+  {
+    id: "g6-2016-science-23",
+    order: 23,
+    question: `በምስራቅ አፍሪካ በማገዶ እንጨት ሰበብ የሚከናወን የደን ጭፍጨፋን እንዴት ለመከላከል ይቻላል?`,
+    options: [
+      "ሀ. የድንጋይ ከሰል በመጠቀም",
+      "ለ. ምግብ ለማብሰል ታዳሽ ኃይል በመጠቀም",
+      "ሒ ነዳጅ በመጠቀም",
+      "መ. ሁሉም መልስ ነው"
+    ],
+    correctAnswer: "ለ. ምግብ ለማብሰል ታዳሽ ኃይል በመጠቀም",
+    explanation: `እንደ ፀሐይ ሃይል፣ ባዮጋዝ ወይም ኤሌክትሪክ ያሉ
+
+ታዳሽ ሃይሎችን በመጠቀም የማገዶ እንጨት ፍላጎትን በመቀነስ
+
+ደንን መታደግ ይቻላል፡፡`
+  },
+
+  {
+    id: "g6-2016-science-24",
+    order: 24,
+    question: `በደቡባዊ ንፍቀ ክበብ ውስጥ የሚገኝ የምስራቅ አፍሪካ ሃገር የትኛው ?`,
+    options: [
+      "ሀ. ደቡብ ሱዳን",
+      "ለ. ደቡብ አፍሪካ",
+      "ሒ ዩጋንዳ",
+      "መ. ኢትዮጵያ"
+    ],
+    correctAnswer: "ለ. ደቡብ አፍሪካ",
+    explanation: `ደበብ አፍሪካ ከምድር ወገብ በታች በደቡባዊ ንፍቀ ክበብ
+
+(Southern Hemisphere) የምትገኝ ሀገር ናት::`
+  },
+
+  {
+    id: "g6-2016-science-25",
+    order: 25,
+    question: `ከምስራቅ አፍሪካ ሀገራት በሕዝብ ቁጥር እነስተኛ መጠን ያላቸው የትኞቹ ናቸው?`,
+    options: [
+      "ሀ. ሲሸልስ፤ ኮሞሮስ እና ሪዩኒየን",
+      "ሊ ዩጋንዳ፤ ኢትዮጵያ እና ሩዋንዳ",
+      "ሒ ኢትዮጵያ፣ ኬንያና ታንዛኒያ",
+      "መ ታንዛኒያ፣ ማላዊና ዚምባብዊ"
+    ],
+    correctAnswer: "ሀ. ሲሸልስ፣ ኮሞሮስ እና ሪዩኒየን",
+    explanation: `እነዚህ የደሴት ሀገራት በመሬት ስፋታቸውም ሆነ በህዝብ
+
+ብዛታቸው በጣም ትናንሽ ናቸው::`
+  },
+
+  {
+    id: "g6-2016-science-26",
+    order: 26,
+    question: `ስለ ኑቢያና አክሱም በምስራቅ አፍሪካ ቀደምት ታዋቂ ስልጣኔዎች እውነት የሆነው የትኛው ነው?`,
+    options: [
+      "ሀ. ሁለቱም ስልጣኔዎች በአንድ ሃገር የነበሩ ናቸው",
+      "ለ. የአክሱም ስልጣኔ የሜሮይ ስልጣኔ ይባል ነበር",
+      "ሐ. የአክሱም መንግስት መነሳት ለኑቢያ ስልጣኔ መውደቅ መንስኤ ነበር",
+      "መ. የኑቢያ ስልጣኔ መነሻው ግብዕ ነበር"
+    ],
+    correctAnswer: "ሐ. የአክሱም መንግስት መነሳት ለኑቢያ ስልጣኔ መውደቅ መንስኤ ነበር",
+    explanation: `የአክሱም መንግስት እየጠነከረ ሲመጣና የንግድ መስመሩን ሲቆጣጠር የኑቢያ (ሜሮይ) ስልጣኔ እንዲዳከምና እንዲወድቅ ምክንያት ሆኗል፡፡`
+  },
+
+  {
+    id: "g6-2016-science-27",
+    order: 27,
+    question: `በምስራቅ አፍሪካ ትልቁ ፏፏቴ የትኛው ነው?`,
+    options: [
+      "ሀ. ጢስ አባይ ፏፏቴ",
+      "ሊ ቪክቶሪያ ፏፏቴ",
+      "ሐ. የህዳሴ ግድብ ፏፏቴ",
+      "መ. እሞ ፏፏቴ"
+    ],
+    correctAnswer: "ሊ ቪክቶሪያ ፏፏቴ",
+    explanation: `በዛምቢያና በዚምባብዌ ድንበር ላይ የሚገኘው ቪክቶሪያ ፏፏቴ በአፍሪካና በዓለም ትልቅ ከሚባሉ ፏፏቴዎች እንዱ ነው::`
+  },
+
+  {
+    id: "g6-2016-science-28",
+    order: 28,
+    question: `የቱሪዝም ምጣኔ ሀብታዊ ጠቀሜታ የሆነው የትኛው ነው?`,
+    options: [
+      "ሀ. ጎጂ ባህሎችን ማስፋፋት",
+      "ሊ ለወጣቶች የስራ ፈጠራ እንቅፋት መሆን",
+      "ሐ. የሃገር ሀብት መበዝበዝ",
+      "መ. ለሃገር የገቢ ምንጭ መሆን"
+    ],
+    correctAnswer: "መ. ለሃገር የገቢ ምንጭ መሆን",
+    explanation: `ቱሪዝም የውጭ ቱሪስቶችን በመሳብ ለሀገር ትልቅ የገቢ
+
+ምንጭ (የውጭ ምንዛሬ) ይሆናል፡፡`
+  },
+
+  {
+    id: "g6-2016-science-29",
+    order: 29,
+    question: `በምስራቅ አፍሪካ ከሚከናወኑ ዋና ዋና የኢንዱስትሪ ተግባራት ያልሆነው የትኛው ነው?`,
+    options: [
+      "ሀ. ጨርቃ ጨርቅ ኢንዱስትሪ",
+      "ሊ የግብርና ምርቶች ማቀነባበሪያ",
+      "ሒ የመኪና ማምረቻ",
+      "መ. ሆርቲካልቸር"
+    ],
+    correctAnswer: "ሐ. የመኪና ማምረቻ",
+    explanation: `ምስራቅ አፍሪካ በብዛት በግብርና ማቀነባበሪያና
+
+በጨርቃጨርቅ የታወቀ ሲሆን፤ የመኪና ማምረቻ ግን በቀጠናው
+
+በስፋት የለም::`
+  },
+
+  {
+    id: "g6-2016-science-30",
+    order: 30,
+    question: `በምስራቅ አፍሪካ እርስ በእርስ ካለው ንግድ ይልቅ ከምዕራባዊያን ጋርያለው ንግድ የዳበረው ለምንድነው?`,
+    options: [
+      "ሀ. እብዛኛው ምርት የግብርና በመሆኑ",
+      "ለ. የምስራቅ አፍሪካ ሃገራት በብዛት ሽቀጣ ሸቀጥ ስለምልኩ",
+      "ሐ. የቀጠናው ያልተረጋጋ የሰላም ሁኔታ",
+      "መ. ሀ እና ሐ መልስ ናቸው"
+    ],
+    correctAnswer: "መ. ሀ እና ሐ መልስ ናቸው",
+    explanation: `ሀገራቱ ተመሳሳይ የሆኑ የግብርና ምርቶችን
+
+ስለሚያመርቱ እርስ በእርስ መገበያየት ይቸገራሉ፤ በተጨማሪም
+
+ሰላም እጦት ንግድን ያደናቅፋል፡፡`
+  },
+
+  {
+    id: "g6-2016-science-31",
+    order: 31,
+    question: `በምስራቅ አፍሪካ ከሚከናወነ ዐበይት ምጣኔ ሀብታዊ እንቅስቃሴ
+
+ያልሆነውን ለዩ፡፡`,
+    options: [
+      "ሀ. ግብርና",
+      "ለ. የኢንተርኔት ቴክኖሎጂ",
+      "ሐ. ቱሪዝም",
+      "መ. ንግድ"
+    ],
+    correctAnswer: "ለ. የኢንተርኔት ቴክኖሎጂ",
+    explanation: `የኢንተርኔት ቴክኖሎጂ ገና በማደግ ላይ ያለ እንጂ እንደ
+
+ግብርናና ቱሪዝም የቀጠናው ዋና የኢኮኖሚ መሰረት አይደለም::`
+  },
+
+  {
+    id: "g6-2016-science-32",
+    order: 32,
+    question: `ኤች አይ ቪ/ኤድስ በሽታን የሚያመጣው ተህዋስ ምንድነው?`,
+    options: [
+      "ሀ. ባክቴሪያ",
+      "ለ. ትላትል",
+      "ሐ. ቫይረስ",
+      "መ. አሜባ"
+    ],
+    correctAnswer: "ሐ. ቫይረስ",
+    explanation: `ኤድስ (AIDS) የሚመጣው ኤች አይ ቪ (HIV) በተባለ
+
+ቫይረስ አማካኝነት ነው፡፡`
+  },
+
+  {
+    id: "g6-2016-science-33",
+    order: 33,
+    question: `ከኤች አይ ቪ/ኤድስ ራሳችንን ለመጠበቅ ምን ማድረግ አለብን?`,
+    options: [
+      "ሀ. ከልቅ ግብረ - ሥጋ ግንኙነት መታቀብ",
+      "ለ. ልቅ ግብረ - ሥጋ ግንኙነት ማድረግ",
+      "ሐ. ስለታም ነገሮችን በጋራ መጠቀም",
+      "መ. ማንኛውንም ደም በልግስና መቀበል"
+    ],
+    correctAnswer: "ሀ. ከልቅ ግብረ - ሥጋ ግንኙነት መታቀብ",
+    explanation: `ለኤች አይ ቪ የሚያጋልጡ ድርጊቶችን (ልቅ ግንኙነትና ስለታም ነገሮችን በጋራ መጠቀም) ማስወገድ ዋነኛው የመከላከያ ዘዴ ነው።`
+  },
+
+  {
+    id: "g6-2016-science-34",
+    order: 34,
+    question: `ከግብርና የሚገኝ ምርት ሆኖ ቅጠሉ እና ቀንበጡ የሚታኘክ ዕፅ የትኛው ነው?`,
+    options: [
+      "ሀ. አረቄ",
+      "ለ. አልኮል",
+      "ሐ. ሲጋራ",
+      "መ. ጫት"
+    ],
+    correctAnswer: "መ. ጫት",
+    explanation: `ጫት ቅጠሉና ቀንበጡ የሚታኘክ አደንዛዥነት ያለው
+
+የግብርና ምርት ነው፡፡`
+  },
+
+  {
+    id: "g6-2016-science-35",
+    order: 35,
+    question: `ጎጂ ልማዳዊ ድርጊቶችን እንዴት እናስወግዳለን?`,
+    options: [
+      "ሀ. ግን በማስነቀል፣ ሴት ልጅን በማስገረዝ እና በመጥለፍ",
+      "ለ. ኅብረተሰብን ስለ ጎጂ ልማዳዊ ድርጊቶች በማስተማር",
+      "ሐ. ሴት ልጆችን በቤተሰብ ፈቃድ ያለእድሜ እንዲጋቡ በማበረታታት",
+      "መ. ድርጊቶቹ ጎጂ ቢሆኑም ለባህል ሲባል እንዲቀጥሉ በማድረግ"
+    ],
+    correctAnswer: "ለ. ኅብረተሰብን ስለ ጎጂ ልማዳዊ ድርጊቶች በማስተማር",
+    explanation: `ትምህርትና ግንዛቤ መፍጠር ህብረተሰቡ ጎጂ የሆኑ ባህሎችን እንዲተው ለማድረግ ውጤታማ መንገድ ነው፡፡`
+  },
+
+  {
+    id: "g6-2016-science-36",
+    order: 36,
+    question: `በምስራቅ አፍሪካ ቀጠና በሚሊዮን የሚቆጠሩ ሰዎች ለረሃብ ይጋለጣሉ፡፡ ይህ የሚሆነው ለምንድን ነው?`,
+    options: [
+      "ሀ. በቀጠናው ያልተለመደ የዝናብ እጥረት በመኖሩ",
+      "ለ. የቀጠናው ህዝብ በመስኖ ጥገኛ በመሆኑ",
+      "ሐ. የቀጠናው አብዛኛው ቦታዎች ከፍታማ በመሆናቸው",
+      "መ. ድርቅ እና ረሃብ በቀጠናው ያልተለመዱ ክስተቶች ናቸው"
+    ],
+    correctAnswer: "ሀ. በቀጠናው ያልተለመደ የዝናብ እጥረት በመኖሩ",
+    explanation: `የቀጠናው ግብርና በዝናብ ላይ ጥገኛ ስለሆነ፣ የዝናብ
+
+እጥረት ወይም መዛባት በቀጥታ ለድርቅና ለረሃብ ይዳርጋል::`
+  },
+
+  {
+    id: "g6-2016-science-37",
+    order: 37,
+    question: `አንድ ሰው ከሚከተሉት የምስራቅ አፍሪካ ሃገራት የበለጠ ለድርቅ ተጋላጭ የሚሆነው በየትኛው ሃገር ነው?`,
+    options: [
+      "ሀ. ኢትዮጵያ",
+      "ለ. ሞዛምቢክ",
+      "ሐ. ዛምቢያ",
+      "መ. ታንዛኒያ"
+    ],
+    correctAnswer: "ሀ. ኢትዮጵያ",
+    explanation: `ኢትዮጵያ በምስራቅ አፍሪካ ቀጠና ውስጥ በተደጋጋሚ
+
+ለድርቅ ከሚጋለጡ ሀገራት አንዷ ናት፡፡`
+  },
+
+  {
+    id: "g6-2016-science-38",
+    order: 38,
+    question: `በምስራቅ አፍሪካ ድርቅ ለመቋቋም ሃገር በቀል ዘዴ ያልሆነው የትኛው ל?`,
+    options: [
+      "ሀ. ቡርቄ ጤፍ ማምረት",
+      "ለ. እህልን በቤት ጣሪያ ጭስ ላይ መስቀል",
+      "ሐ. ድርቅ የሚቋቋሙ እህሎችን ማምረት",
+      "መ. ብዙ ልጆችን መዉለድ"
+    ],
+    correctAnswer: "መ. ብዙ ልጆችን መዉለድ",
+    explanation: `ብዙ ልጆችን መውለድ በረሃብ ጊዜ ያለውን የምግብ
+
+ፍላጎት ስለሚጨምር ድርቅን ለመቋቋም ዘዴ ሊሆን አይችልም::`
+  },
+
+  {
+    id: "g6-2016-science-39",
+    order: 39,
+    question: `ስለድርቅ እና ረሃብ ዕንሰ-ሐሳብ ትክክል የሆነው የትኛው ነው?`,
+    options: [
+      "ሀ. ድርቅ እና ረሃብ ግንኙነት የላቸውም",
+      "ሊ ረሃብ ድርቅን ያመጣል",
+      "ሐ. ድርቅ ለረሃብ መንስኤ ነው",
+      "መ. ረሃብ እና ድርቅ የህፃናትን ዕድገት ያዳብራሉ"
+    ],
+    correctAnswer: "ሐ. ድርቅ ለረሃብ መንስኤ ነው",
+    explanation: `ድርቅ (የውሃ እጥረት) ሲከሰት ምርት ስለሚጠፋ ለረሃብ
+
+መከሰት ዋና መንስኤ ይሆናል፡፡`
+  },
+
+  {
+    id: "g6-2016-science-40",
+    order: 40,
+    question: `ከሚከተሉት ልማዳዊ ድርጊቶች ውስጥ ለኤች አይ ቪ/ኤድስ የማያጋልጠው የትኛው ነው?`,
+    options: [
+      "ሀ. አቻ ጋብቻ በመፍቀድ",
+      "ለ. ግግ ማስነቀል",
+      "ሒ የሴት ልጅ ጠለፋ",
+      "መ. የሴት ልጅ ግርዛት"
+    ],
+    correctAnswer: "ሀ. አቻ ጋብቻ በመፍቀድ",
+    explanation: `ግግ ማስነቀል፣ ጠለፋና ግርዛት ስለታም ነገሮችን
+
+በመጠቀም ለደም ንክኪ ስለሚያጋልጡ የኤች አይ ቪ ስርጭትን
+
+ይጨምራሉ:: እቻ ጋብቻ ግን ከዚህ ጋር ግንኙነት የለውም።`
+  }
+],
+
+  "grade6-2016-english": [
+  {
+    id: "g6english-4",
+    order: 4,
+    question: "Which drink contains minerals that build our body?",
+    options: [
+      "A. Milk",
+      "B. Water",
+      "C. Soft drinks",
+      "D. Fruit juice"
+    ],
+    correctAnswer: "A. Milk",
+    explanation:
+      "The text states that milk is rich in calcium, a mineral that helps build and maintain strong bones and teeth."
+  },
+  {
+    id: "g6english-5",
+    order: 5,
+    question:
+      "Absalat: Do you like going for vacation in winter?\n\nRediet: No, ______ because winter is cold and rainy.",
+    options: [
+      "A. I dislike",
+      "B. I like",
+      "C. I love",
+      "D. I want to"
+    ],
+    correctAnswer: "A. I dislike",
+    explanation:
+      "Rediet begins with “No” and gives negative reasons, so “I dislike” fits the context."
+  },
+  {
+    id: "g6english-6",
+    order: 6,
+    question:
+      "Balmak: ___________\n\nLamrot: She is tall and slim.",
+    options: [
+      "A. How is your mom?",
+      "B. What is your mom’s job?",
+      "C. Where does your mom live?",
+      "D. How can you describe your mom?"
+    ],
+    correctAnswer: "D. How can you describe your mom?",
+    explanation:
+      "Lamrot’s response describes physical characteristics, “tall and slim,” so the question asks for a description."
+  },
+  {
+    id: "g6english-7",
+    order: 7,
+    question:
+      "Simret: How does a chicken come into being?\n\nSimon: _____________________",
+    options: [
+      "A. It comes from an egg",
+      "B. A hen lays an egg. The eggs give a chick.",
+      "C. It grows up from a hen’s egg within some weeks on the farm.",
+      "D. First, a hen lays an egg. Next, the egg is hatched. Then, the chick grows up."
+    ],
+    correctAnswer:
+      "D. First, a hen lays an egg. Next, the egg is hatched. Then, the chick grows up.",
+    explanation:
+      "This option gives a complete chronological explanation using sequence markers such as “First,” “Next,” and “Then.”"
+  },
+  {
+    id: "g6english-8",
+    order: 8,
+    question:
+      "Dayamo: _______________\n\nMaria: In my view, it is good. It makes our capital more beautiful.",
+    options: [
+      "A. What is your opinion about the reform in the city?",
+      "B. Do you agree with the reform in the city?",
+      "C. Who is reforming the city?",
+      "D. How is the city today?"
+    ],
+    correctAnswer:
+      "A. What is your opinion about the reform in the city?",
+    explanation:
+      "Maria begins with “In my view,” which indicates that she is expressing an opinion. Option A asks specifically for an opinion."
+  },
+  {
+    id: "g6english-9",
+    order: 9,
+    question:
+      "Siyane: Chance is better than hard work.\n\nFarid: ___________________",
+    options: [
+      "A. Don’t you agree?",
+      "B. I’m afraid, I disagree",
+      "C. Yes, we must work hard.",
+      "D. I want to be chanceful."
+    ],
+    correctAnswer: "B. I’m afraid, I disagree",
+    explanation:
+      "Farid disagrees with the statement that chance is better than hard work, so “I’m afraid, I disagree” is appropriate."
+  },
+  {
+    id: "g6english-10",
+    order: 10,
+    question:
+      "Friend: I am feeling tired now. What should I do?\n\nYou: ________________________",
+    options: [
+      "A. What is your advice?",
+      "B. Can I help you?",
+      "C. You had better drink tea.",
+      "D. I think you are right."
+    ],
+    correctAnswer: "C. You had better drink tea.",
+    explanation:
+      "The friend is asking for advice, and “You had better drink tea” provides a suggestion."
+  },
+  {
+    id: "g6english-11",
+    order: 11,
+    question:
+      "You: What’s your feeling about “Unity”?\n\nFriend: ___________",
+    options: [
+      "A. I should help you.",
+      "B. I totally support this.",
+      "C. I believe it is strength.",
+      "D. You shouldn’t think that."
+    ],
+    correctAnswer: "C. I believe it is strength.",
+    explanation:
+      "The question asks about a feeling or belief concerning unity. “I believe it is strength” gives a direct response."
+  },
+  {
+    id: "g6english-12",
+    order: 12,
+    question:
+      "You: Where do you think students should use mobile phones?\n\nFriend: _________________",
+    options: [
+      "A. This is wrong idea.",
+      "B. I feel they should use it at home.",
+      "C. We should use it in class for internet.",
+      "D. I’m happy if we are allowed to use it in school."
+    ],
+    correctAnswer: "B. I feel they should use it at home.",
+    explanation:
+      "The question asks “Where?”, and option B gives a specific location: “at home.”"
+  },
+  {
+    id: "g6english-13",
+    order: 13,
+    question: "I and my friends _______ the Science Museum yesterday.",
+    options: [
+      "A. Visiting",
+      "B. Visited",
+      "C. Visits",
+      "D. Visit"
+    ],
+    correctAnswer: "B. Visited",
+    explanation:
+      "The word “yesterday” indicates the simple past tense. “Visited” is the past tense form."
+  },
+  {
+    id: "g6english-14",
+    order: 14,
+    question:
+      "Simret is busy now. She _______ her English Assignment.",
+    options: [
+      "A. Does",
+      "B. Did",
+      "C. Will do",
+      "D. Is doing"
+    ],
+    correctAnswer: "D. Is doing",
+    explanation:
+      "The word “now” indicates an action happening at the moment, so the present continuous “is doing” is required."
+  },
+  {
+    id: "g6english-15",
+    order: 15,
+    question:
+      "I am not sure, but Kenenisa _______ come tomorrow.",
+    options: [
+      "A. Will",
+      "B. Can",
+      "C. May",
+      "D. Must"
+    ],
+    correctAnswer: "C. May",
+    explanation:
+      "“I am not sure” expresses uncertainty or possibility. “May” is used for something possible but not certain."
+  },
+  {
+    id: "g6english-16",
+    order: 16,
+    question:
+      "I completed my primary education. Now, I _______ summer language tutorial class.",
+    options: [
+      "A. Am going to attend",
+      "B. Will attend",
+      "C. Am attended",
+      "D. Attended"
+    ],
+    correctAnswer: "A. Am going to attend",
+    explanation:
+      "“Am going to” expresses a plan or intention for the near future that has already been decided."
+  },
+  {
+    id: "g6english-17",
+    order: 17,
+    question:
+      "Rahel scored 10, and Loli scored 6 on their test. So, Rahel is _____ Loli.",
+    options: [
+      "A. As clever as",
+      "B. The cleverest",
+      "C. Cleverer than",
+      "D. Most clever than"
+    ],
+    correctAnswer: "C. Cleverer than",
+    explanation:
+      "The sentence compares two people. The comparative form of the short adjective “clever” is “cleverer than.”"
+  },
+  {
+    id: "g6english-18",
+    order: 18,
+    question: "We _____ our homework. Let’s go and play.",
+    options: [
+      "A. Has done",
+      "B. Have done",
+      "C. Doing",
+      "D. Does"
+    ],
+    correctAnswer: "B. Have done",
+    explanation:
+      "The plural subject “We” requires “have.” “Have done” is the present perfect form."
+  },
+  {
+    id: "g6english-19",
+    order: 19,
+    question: "Last week, my father ______ in Gondar.",
+    options: [
+      "A. Is",
+      "B. Will be",
+      "C. Was",
+      "D. Has been"
+    ],
+    correctAnswer: "C. Was",
+    explanation:
+      "“Last week” requires the simple past tense. The past form of “is” for “my father” is “was.”"
+  },
+  {
+    id: "g6english-20",
+    order: 20,
+    question: "Students _______ respect traffic rules while crossing roads.",
+    options: [
+      "A. Can",
+      "B. Have to",
+      "C. May",
+      "D. Will"
+    ],
+    correctAnswer: "B. Have to",
+    explanation:
+      "“Have to” expresses strong obligation or a requirement, such as following traffic rules."
+  },
+  {
+    id: "g6english-21",
+    order: 21,
+    question: "Kedija ______ Arabic before she went to Dubai.",
+    options: [
+      "A. Is learning",
+      "B. Will learn",
+      "C. Learned",
+      "D. Had learned"
+    ],
+    correctAnswer: "D. Had learned",
+    explanation:
+      "When two actions happened in the past, the action that happened first can be expressed using the past perfect “had learned.”"
+  },
+  {
+    id: "g6english-22",
+    order: 22,
+    question: "The room ______ now by the students.",
+    options: [
+      "A. Is cleaning",
+      "B. Was cleaned",
+      "C. Is being cleaned",
+      "D. Had been cleaned"
+    ],
+    correctAnswer: "C. Is being cleaned",
+    explanation:
+      "This is present continuous passive voice. The structure is is/am/are + being + past participle."
+  },
+  {
+    id: "g6english-23",
+    order: 23,
+    question: "If you come early, you _______ the bus.",
+    options: [
+      "A. Will not miss",
+      "B. Would not miss",
+      "C. Had missed",
+      "D. Missed"
+    ],
+    correctAnswer: "A. Will not miss",
+    explanation:
+      "This is a Type 1 conditional sentence. The structure is: if + present simple, will + verb."
+  },
+  {
+    id: "g6english-24",
+    order: 24,
+    question: "She puts off the light. The word “light” is ______.",
+    options: [
+      "A. Adverb",
+      "B. Verb",
+      "C. Adjective",
+      "D. Noun"
+    ],
+    correctAnswer: "D. Noun",
+    explanation:
+      "Here, “light” refers to a physical thing, so it functions as a noun."
+  },
+  {
+    id: "g6english-25",
+    order: 25,
+    question: "Feriyat _____ if she finished her work.",
+    options: [
+      "A. Sleeps",
+      "B. Will sleep",
+      "C. Would sleep",
+      "D. Slept"
+    ],
+    correctAnswer: "C. Would sleep",
+    explanation:
+      "This is a Type 2 conditional sentence expressing a hypothetical situation: would + verb with if + past simple."
+  },
+  {
+    id: "g6english-26",
+    order: 26,
+    question: "He drives fast. “Fast” is _____.",
+    options: [
+      "A. Adverb",
+      "B. Verb",
+      "C. Adjective",
+      "D. Noun"
+    ],
+    correctAnswer: "A. Adverb",
+    explanation:
+      "“Fast” describes how he drives, so it functions as an adverb."
+  },
+  {
+    id: "g6english-27",
+    order: 27,
+    question: "Mom has bought the _____ version i-phone.",
+    options: [
+      "A. Lately",
+      "B. Later",
+      "C. Late",
+      "D. Latest"
+    ],
+    correctAnswer: "D. Latest",
+    explanation:
+      "“Latest” is used to mean the most recent version available."
+  },
+  {
+    id: "g6english-28",
+    order: 28,
+    question:
+      "If Sibamo _____ his breakfast, he would have attended all the periods.",
+    options: [
+      "A. Had eaten",
+      "B. Ate",
+      "C. Eats",
+      "D. Eaten"
+    ],
+    correctAnswer: "A. Had eaten",
+    explanation:
+      "This is a Type 3 conditional sentence. The if-clause uses the past perfect: had + past participle."
+  },
+  {
+    id: "g6english-29",
+    order: 29,
+    question:
+      "Abel was kind boy. But now he started going alone and became selfish. This is his _______ behavior.",
+    options: [
+      "A. Good",
+      "B. Strange",
+      "C. Old",
+      "D. Happy"
+    ],
+    correctAnswer: "B. Strange",
+    explanation:
+      "Changing from kind to selfish and staying alone suggests an unusual or strange change in behavior."
+  },
+  {
+    id: "g6english-30",
+    order: 30,
+    question:
+      "Warming up your body before you do exercises protects you from _______.",
+    options: [
+      "A. Sport",
+      "B. Injury",
+      "C. Running",
+      "D. Damage"
+    ],
+    correctAnswer: "B. Injury",
+    explanation:
+      "In an exercise context, warming up helps prevent injury."
+  },
+  {
+    id: "g6english-31",
+    order: 31,
+    question: "Work hard! You will see the ______ soon.",
+    options: [
+      "A. Goals",
+      "B. Roles",
+      "C. Fruits",
+      "D. Products"
+    ],
+    correctAnswer: "C. Fruits",
+    explanation:
+      "“See the fruits” is an expression meaning to see the positive results or rewards of hard work."
+  },
+  {
+    id: "g6english-32",
+    order: 32,
+    question:
+      "We planted different vegetables in plastic pots and harvested good yield.",
+    options: [
+      "A. Put",
+      "B. Bought",
+      "C. Did",
+      "D. Got"
+    ],
+    correctAnswer: "D. Got",
+    explanation:
+      "In this farming context, “harvested” means gathering or getting the crop that was grown."
+  },
+  {
+    id: "g6english-33",
+    order: 33,
+    question: "Dady parks his automobile in the parking site.",
+    options: [
+      "A. Puts",
+      "B. Drives",
+      "C. Stops",
+      "D. Opens"
+    ],
+    correctAnswer: "C. Stops",
+    explanation:
+      "To park a car means to stop it and leave it in a certain place."
+  },
+  {
+    id: "g6english-34",
+    order: 34,
+    question:
+      "The poultry farm has a factory that processes a balanced feed for the chickens.",
+    options: [
+      "A. Food",
+      "B. Medicine",
+      "C. Machine",
+      "D. Meat"
+    ],
+    correctAnswer: "A. Food",
+    explanation:
+      "In the context of poultry, “feed” means food given to animals."
+  },
+  {
+    id: "g6english-35",
+    order: 35,
+    question:
+      "Computer, Internet, mobile phones, smart TVs, are examples of modern inventions by engineers.",
+    options: [
+      "A. Information",
+      "B. Innovations",
+      "C. Schools",
+      "D. Education"
+    ],
+    correctAnswer: "B. Innovations",
+    explanation:
+      "“Innovations” refers to new ideas, methods, or products created through study and experimentation."
+  },
+  {
+    id: "g6english-36",
+    order: 36,
+    passage: `The Seasons
+
+The seasons have different weather conditions in different parts of the world. In most parts like America and Europe it looks as follows.
+
+Spring is the season in which everything is going green. The first flowers are blooming. The sun is shining. The weather is mild. The spring months are March, April and May.
+
+Summer: it is very hot and sunny. People wear T-shirts, shorts, sunglasses and hat. This time people go on vacation. The children are on vacation. The first fruits are ripe. The months in summer are June, July and August.
+
+Autumn: the weather is cold, windy and foggy. It rains a lot. Birds fly to warmer places. People wear raincoats, trousers and sweaters, and go for a walk. The leaves of trees become red, brown, yellow and orange then fall. Farmers pick apples.
+
+Winter: It is very cold. The temperature is below zero. It is snowing and freezing. Children can build a snowman. They go skiing. In December is Christmas. The winter months are December, January and February.`,
+    question: "How many seasons are there in the year?",
+    options: [
+      "A. One",
+      "B. Three",
+      "C. Four",
+      "D. Twelve"
+    ],
+    correctAnswer: "C. Four",
+    explanation:
+      "The passage describes four seasons: Spring, Summer, Autumn, and Winter."
+  },
+  {
+    id: "g6english-37",
+    order: 37,
+    passage: `The Seasons
+
+The seasons have different weather conditions in different parts of the world. In most parts like America and Europe it looks as follows.
+
+Spring is the season in which everything is going green. The first flowers are blooming. The sun is shining. The weather is mild. The spring months are March, April and May.
+
+Summer: it is very hot and sunny. People wear T-shirts, shorts, sunglasses and hat. This time people go on vacation. The children are on vacation. The first fruits are ripe. The months in summer are June, July and August.
+
+Autumn: the weather is cold, windy and foggy. It rains a lot. Birds fly to warmer places. People wear raincoats, trousers and sweaters, and go for a walk. The leaves of trees become red, brown, yellow and orange then fall. Farmers pick apples.
+
+Winter: It is very cold. The temperature is below zero. It is snowing and freezing. Children can build a snowman. They go skiing. In December is Christmas. The winter months are December, January and February.`,
+    question: "In which season is Christmas?",
+    options: [
+      "A. Spring",
+      "B. Summer",
+      "C. Autumn",
+      "D. Winter"
+    ],
+    correctAnswer: "D. Winter",
+    explanation:
+      "The passage states that Christmas is in December, and December is one of the winter months."
+  },
+  {
+    id: "g6english-38",
+    order: 38,
+    passage: `The Seasons
+
+The seasons have different weather conditions in different parts of the world. In most parts like America and Europe it looks as follows.
+
+Spring is the season in which everything is going green. The first flowers are blooming. The sun is shining. The weather is mild. The spring months are March, April and May.
+
+Summer: it is very hot and sunny. People wear T-shirts, shorts, sunglasses and hat. This time people go on vacation. The children are on vacation. The first fruits are ripe. The months in summer are June, July and August.
+
+Autumn: the weather is cold, windy and foggy. It rains a lot. Birds fly to warmer places. People wear raincoats, trousers and sweaters, and go for a walk. The leaves of trees become red, brown, yellow and orange then fall. Farmers pick apples.
+
+Winter: It is very cold. The temperature is below zero. It is snowing and freezing. Children can build a snowman. They go skiing. In December is Christmas. The winter months are December, January and February.`,
+    question: "Which one is true statement?",
+    options: [
+      "A. People wear trousers and sweaters in winter.",
+      "B. Winter is good for plants and trees.",
+      "C. Autumn is time for fruits.",
+      "D. Summer is sunny season."
+    ],
+    correctAnswer: "D. Summer is sunny season.",
+    explanation:
+      "The passage explicitly states that summer is very hot and sunny."
+  },
+  {
+    id: "g6english-39",
+    order: 39,
+    passage: `The Seasons
+
+The seasons have different weather conditions in different parts of the world. In most parts like America and Europe it looks as follows.
+
+Spring is the season in which everything is going green. The first flowers are blooming. The sun is shining. The weather is mild. The spring months are March, April and May.
+
+Summer: it is very hot and sunny. People wear T-shirts, shorts, sunglasses and hat. This time people go on vacation. The children are on vacation. The first fruits are ripe. The months in summer are June, July and August.
+
+Autumn: the weather is cold, windy and foggy. It rains a lot. Birds fly to warmer places. People wear raincoats, trousers and sweaters, and go for a walk. The leaves of trees become red, brown, yellow and orange then fall. Farmers pick apples.
+
+Winter: It is very cold. The temperature is below zero. It is snowing and freezing. Children can build a snowman. They go skiing. In December is Christmas. The winter months are December, January and February.`,
+    question: "In which season do people become happy?",
+    options: [
+      "A. Spring",
+      "B. Summer",
+      "C. Winter",
+      "D. Autumn"
+    ],
+    correctAnswer: "A. Spring",
+    explanation:
+      "The passage describes spring with blooming flowers, sunshine, and mild weather, which are associated with happiness and renewal."
+  },
+  {
+    id: "g6english-40",
+    order: 40,
+    passage: `The Seasons
+
+The seasons have different weather conditions in different parts of the world. In most parts like America and Europe it looks as follows.
+
+Spring is the season in which everything is going green. The first flowers are blooming. The sun is shining. The weather is mild. The spring months are March, April and May.
+
+Summer: it is very hot and sunny. People wear T-shirts, shorts, sunglasses and hat. This time people go on vacation. The children are on vacation. The first fruits are ripe. The months in summer are June, July and August.
+
+Autumn: the weather is cold, windy and foggy. It rains a lot. Birds fly to warmer places. People wear raincoats, trousers and sweaters, and go for a walk. The leaves of trees become red, brown, yellow and orange then fall. Farmers pick apples.
+
+Winter: It is very cold. The temperature is below zero. It is snowing and freezing. Children can build a snowman. They go skiing. In December is Christmas. The winter months are December, January and February.`,
+    question: "Winter is",
+    options: [
+      "A. The hottest season",
+      "B. Before spring",
+      "C. A season for vacation",
+      "D. Time to stay home"
+    ],
+    correctAnswer: "B. Before spring",
+    explanation:
+      "In the seasonal cycle described, winter comes before spring."
+  }
+],
+  "grade6-2016-amharic": [
+  {
+    id: 4,
+    order: 4,
+    question: "“ውጤት-ኣማ-ነት-ም” በትክክል ሲጻፍ የቱ ነው?",
+    options: [
+      "ሀ. ውጤትአማነትም",
+      "ለ. ውጤታ-ማነትም",
+      "ሐ. ውጤት-አማነት",
+      "መ. ውጤታማነትም"
+    ],
+    correctAnswer: "መ",
+    explanation: "“ውጤት-ኣማ-ነት-ም” በትክክል “ውጤታማነትም” ይሆናል።"
+  },
+  {
+    id: 5,
+    order: 5,
+    question: "“ደራ” የሚለው ቃል ተቃራኒ ፍቺ የቱ ነው?",
+    options: [
+      "ሀ. ቀዘቀዘ",
+      "ለ. ሞቀ",
+      "ሐ. ፈሰሰ",
+      "መ. ተንቀሳቀሰ"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "“ደራ” የሚለው ቃል ተቃራኒ ፍቺ “ቀዘቀዘ” ነው።"
+  },
+  {
+    id: 6,
+    order: 6,
+    question: "“ታረስ” የሚለው ቃል ቀጥተኛ ፍቺ የቱ ነው?",
+    options: [
+      "ሀ. ተዘራ",
+      "ለ. ተሰበሰበ",
+      "ሐ. እማሬያዊ",
+      "መ. ተቆፈረ"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "በተሰጠው አውድ የቃሉ ቀጥተኛ ፍቺ እማሬያዊ ነው።"
+  },
+  {
+    id: 7,
+    order: 7,
+    question: "“ዓይን” በምሳሌያዊ ፍቺ ሲጠቀም ምን ማለት ይችላል?",
+    options: [
+      "ሀ. እይታ",
+      "ለ. ዋና",
+      "ሐ. ፊት",
+      "መ. እውቀት"
+    ],
+    correctAnswer: "ለ",
+    explanation: "በተሰጠው አውድ “ዓይን” በምሳሌያዊ ፍቺ “ዋና” ማለት ነው።"
+  },
+  {
+    id: 8,
+    order: 8,
+    question: "“ልብስ” በተሰጠው አውድ ትክክለኛው ንባብ የቱ ነው?",
+    options: [
+      "ሀ. ልበስ",
+      "ለ. ልብስ",
+      "ሐ. ልብሰ",
+      "መ. ጠብቆ"
+    ],
+    correctAnswer: "መ",
+    explanation: "በተሰጠው አውድ ትክክለኛው መልስ “ጠብቆ” ነው።"
+  },
+  {
+    id: 9,
+    order: 9,
+    question: "“የህጻናትን” በቅርጸ ቃል ትክክለኛው ክፍፍል የቱ ነው?",
+    options: [
+      "ሀ. የ-ህጻናት-ን",
+      "ለ. የ-ህጻን-ኣት-ን",
+      "ሐ. የህጻን-ኣት-ን",
+      "መ. የ-ህጻን-ን"
+    ],
+    correctAnswer: "ለ",
+    explanation: "“የህጻናትን” በቅርጸ ቃል የ-ህጻን-ኣት-ን ተብሎ ይከፋፈላል።"
+  },
+  {
+    id: 10,
+    order: 10,
+    question: "“በየቤታችን” ውስጥ ነጻ ሞርፊም የቱ ነው?",
+    options: [
+      "ሀ. ቤት",
+      "ለ. በየ",
+      "ሐ. ኣችን",
+      "መ. በ"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "“ቤት” በራሱ ትርጉም የሚሰጥ ነጻ ሞርፊም ነው።"
+  },
+
+  {
+    id: 11,
+    order: 11,
+    question: "ለሚከተለው ንባብ ተስማሚ ርዕስ የቱ ነው?",
+    options: [
+      "ሀ. የሰው ልጅ ስኬት",
+      "ለ. የጤናማ አእምሮ ጥቅም",
+      "ሐ. የሀሳብ ጉልበት",
+      "መ. የሕይወት ችግሮች"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "ንባቡ የሰው ሀሳብ በስሜት፣ በስብዕና እና በሕይወት ላይ ያለውን ተፅዕኖ ስለሚያብራራ ተስማሚው ርዕስ “የሀሳብ ጉልበት” ነው።"
+  },
+  {
+    id: 12,
+    order: 12,
+    question: "እንደ ንባቡ አባባል የትኛው አስተሳሰብ ብሩህ ተስፋና ተነሳሽነት እንዲፈጠር ያደርጋል?",
+    options: [
+      "ሀ. አሉታዊ ማሰብ",
+      "ለ. ጨለምተኛ ማሰብ",
+      "ሐ. ተዛብቶ ማሰብ",
+      "መ. በጎ ማሰብ"
+    ],
+    correctAnswer: "መ",
+    explanation: "በጎ ሀሳብ ብሩህ ተስፋና ተነሳሽነት እንዲፈጠር ያደርጋል።"
+  },
+  {
+    id: 13,
+    order: 13,
+    question: "እንደ ንባቡ አባባል ለአሉታዊ ስሜት መፈጠር ምክንያት የሚሆነው ምንድነው?",
+    options: [
+      "ሀ. በጎ ሀሳብ",
+      "ለ. አሉታዊ ሀሳብ",
+      "ሐ. ብሩህ ተስፋ",
+      "መ. ተነሳሽነት"
+    ],
+    correctAnswer: "ለ",
+    explanation: "አሉታዊ ሀሳብ ለአሉታዊ ስሜት መፈጠር ምክንያት ነው።"
+  },
+  {
+    id: 14,
+    order: 14,
+    question: "የንባቡ ዋና ሀሳብ ምንድነው?",
+    options: [
+      "ሀ. የሰው ልጅ የሀሳቡ ውጤት መሆኑን ማሳየት",
+      "ለ. የሰው ልጅ የሰውነት ጤናን ማሳየት",
+      "ሐ. የሰው ልጅ የስራ ችሎታን ማሳየት",
+      "መ. የሰው ልጅ የሀብት ሁኔታን ማሳየት"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "ንባቡ ሰው ልጅ በሚያስበው ሀሳብ እና አስተሳሰብ የሚመራ መሆኑን ያሳያል።"
+  },
+  {
+    id: 15,
+    order: 15,
+    question: "“ጨለምተኛ” የሚለው ቃል በንባቡ አውድ የቱን ፍቺ ይወክላል?",
+    options: [
+      "ሀ. ተስፈኛ",
+      "ለ. ደስተኛ",
+      "ሐ. ተነሳሽ",
+      "መ. ተስፋ አስቆራጭ"
+    ],
+    correctAnswer: "መ",
+    explanation: "“ጨለምተኛ” በአውዱ ተስፋ አስቆራጭ የሚለውን ሀሳብ ይወክላል።"
+  },
+  {
+    id: 16,
+    order: 16,
+    question: "“ወደ ስኬትም ያደርሳል” በሚለው አረፍተ ነገር “ያደርሳል” የሚያመለክተው ምንድነው?",
+    options: [
+      "ሀ. ምክንያት",
+      "ለ. ሀሳብ",
+      "ሐ. ውጤት",
+      "መ. ስሜት"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "በዚህ አውድ “ውጤት” የሚለው መልስ ትክክል ነው።"
+  },
+
+  {
+    id: 17,
+    order: 17,
+    question: "የሚከተለው ዓረፍተ ነገር የትኛውን የጽሑፍ ዘዴ ይወክላል?",
+    options: [
+      "ሀ. በአመዛዛኝ",
+      "ለ. በተረክ",
+      "ሐ. በገላጭ",
+      "መ. በትንተና"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "የተሰጠው አቀራረብ በአመዛዛኝ ዘዴ የተጻፈ ነው።"
+  },
+  {
+    id: 18,
+    order: 18,
+    question: "የሚከተለው ዓረፍተ ነገር የትኛውን የጽሑፍ ዓይነት ይወክላል?",
+    options: [
+      "ሀ. በትረካ",
+      "ለ. በገላጭ",
+      "ሐ. በአከራካሪ",
+      "መ. በመግለጫ"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "የተሰጠው የጽሑፍ ዓይነት አከራካሪ ጽሑፍ ነው።"
+  },
+  {
+    id: 19,
+    order: 19,
+    question: "በሚከተለው አረፍተ ነገር የተጠቀሰው የሥርዓተ ነጥብ ምልክት የቱ ነው?",
+    options: [
+      "ሀ. ነጥብ",
+      "ለ. ድርብ ነጥብ",
+      "ሐ. ነጠላ ሠረዝ",
+      "መ. ጥያቄ ምልክት"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "የተጠቀሰው ምልክት ነጠላ ሠረዝ ነው።"
+  },
+  {
+    id: 20,
+    order: 20,
+    question: "በተሰጠው ዓረፍተ ነገር የተጠቀሰው የሥርዓተ ነጥብ ምልክት የቱ ነው?",
+    options: [
+      "ሀ. ነጠላ ሠረዝ",
+      "ለ. ድርብ ሠረዝ",
+      "ሐ. ነጥብ",
+      "መ. ጥያቄ ምልክት"
+    ],
+    correctAnswer: "ለ",
+    explanation: "ትክክለኛው መልስ ድርብ ሠረዝ ነው።"
+  },
+  {
+    id: 21,
+    order: 21,
+    question: "“ዶክተር” የሚለው ቃል በአህጽሮተ ቃል ሲጻፍ የቱ ነው?",
+    options: [
+      "ሀ. ዶ",
+      "ለ. ዶክ.",
+      "ሐ. ዶ/ክር",
+      "መ. ዶ/ር"
+    ],
+    correctAnswer: "መ",
+    explanation: "“ዶክተር” በአህጽሮተ ቃል “ዶ/ር” ተብሎ ይጻፋል።"
+  },
+  {
+    id: 22,
+    order: 22,
+    question: "“... ስለሆነ” የሚለው አገናኝ ምንን ያሳያል?",
+    options: [
+      "ሀ. ስለሆነ",
+      "ለ. ስለዚህ",
+      "ሐ. ቢሆንም",
+      "መ. እንዲሁም"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "“ስለሆነ” ምክንያትን የሚያሳይ አገናኝ ነው።"
+  },
+  {
+    id: 23,
+    order: 23,
+    question: "የሚከተለውን ዓረፍተ ነገር በትክክለኛው አገናኝ ለማሟላት የቱ ይሆናል?",
+    options: [
+      "ሀ. ስለሆነ",
+      "ለ. ስለዚህ",
+      "ሐ. ቢሆንም",
+      "መ. እንዲሁም"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "በተሰጠው አውድ ትክክለኛው አገናኝ “ስለሆነ” ነው።"
+  },
+  {
+    id: 24,
+    order: 24,
+    question: "“ተቀበለ” የሚለው ግስ በተሰጠው አውድ በየትኛው መልክ ይገኛል?",
+    options: [
+      "ሀ. እንደሚቀበል",
+      "ለ. እየተቀበለ",
+      "ሐ. እንደተቀበለ",
+      "መ. ሊቀበል"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "በተሰጠው አውድ ትክክለኛው መልክ “እንደተቀበለ” ነው።"
+  },
+  {
+    id: 25,
+    order: 25,
+    question: "በታሪክ ውስጥ የሚንቀሳቀሱ ሰዎችን ምን እንላቸዋለን?",
+    options: [
+      "ሀ. ተረክ",
+      "ለ. ገጸባህሪ",
+      "ሐ. ጭብጥ",
+      "መ. ትረካ"
+    ],
+    correctAnswer: "ለ",
+    explanation: "በታሪክ ውስጥ የሚንቀሳቀሱ ሰዎች ገጸባህሪያት ይባላሉ።"
+  },
+  {
+    id: 26,
+    order: 26,
+    question: "የአንድ ታሪክ ዋና ሀሳብ ምን ይባላል?",
+    options: [
+      "ሀ. ጭብጥ",
+      "ለ. ገጸባህሪ",
+      "መ. ተረክ"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "የአንድ ታሪክ ዋና ሀሳብ ጭብጥ ይባላል።"
+  },
+  {
+    id: 27,
+    order: 27,
+    question: "የሥርዓተ ነጥብ ህግን በተመለከተ የትኛው አባባል ትክክል ነው?",
+    options: [
+      "ሀ. የሥርዓተ ነጥብ ህግን መከተል አስፈላጊ ነው።",
+      "ለ. የሥርዓተ ነጥብ ህግ ሁልጊዜ ተመሳሳይ ነው።",
+      "ሐ. የስርአተ ነጥብ ህግን መከተል አያስፈልግም፡፡",
+      "መ. ሥርዓተ ነጥብ በጽሑፍ አይጠቅምም።"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "በተሰጠው ጥያቄ መሠረት የተጠቀሰው መልስ ሐ ነው።"
+  },
+  {
+    id: 28,
+    order: 28,
+    question: "ከሚከተሉት የቦታ ስሞች ውስጥ የትኛው ትክክለኛ የቦታ ስም ነው?",
+    options: [
+      "ሀ. ሰው",
+      "ለ. ባህሪ",
+      "መ. ድሬዳዋ"
+    ],
+    correctAnswer: "መ",
+    explanation: "ድሬዳዋ የቦታ ስም ነው።"
+  },
+  {
+    id: 29,
+    order: 29,
+    question: "ከሚከተሉት ውስጥ የሰው ስም የቱ ነው?",
+    options: [
+      "ሀ. ቤት",
+      "ለ. ሰው",
+      "ሐ. ድሬዳዋ",
+      "መ. ማታ"
+    ],
+    correctAnswer: "ለ",
+    explanation: "ትክክለኛው መልስ “ሰው” ነው።"
+  },
+  {
+    id: 30,
+    order: 30,
+    question: "“ማታ” የሚለው ቃል የትኛውን ይወክላል?",
+    options: [
+      "ሀ. የጊዜ",
+      "ለ. የቦታ",
+      "ሐ. የሰው",
+      "መ. የባህሪ"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "“ማታ” የጊዜ ስም ነው።"
+  },
+  {
+    id: 31,
+    order: 31,
+    question: "“ማታ ማታ” በዓረፍተ ነገር ውስጥ የትኛውን ያመለክታል?",
+    options: [
+      "ሀ. የቦታ ተውሳከ ግስ",
+      "ለ. የጊዜ ተውሳከ ግስ",
+      "ሐ. የመጠን ተውሳከ ግስ",
+      "መ. ማታ ማታ"
+    ],
+    correctAnswer: "መ",
+    explanation: "በተሰጠው ጥያቄ መሠረት ትክክለኛው መልስ መ ነው።"
+  },
+  {
+    id: 32,
+    order: 32,
+    question: "“ኡ” በቃል ውስጥ ምንን ያመለክታል?",
+    options: [
+      "ሀ. የስም መነሻ",
+      "ለ. ኡ",
+      "ሐ. የግስ ምልክት",
+      "መ. የቦታ ምልክት"
+    ],
+    correctAnswer: "ለ",
+    explanation: "በተሰጠው ጥያቄ መሠረት “ኡ” ትክክለኛው መልስ ነው።"
+  },
+  {
+    id: 33,
+    order: 33,
+    question: "ከሚከተሉት ውስጥ የሴት ግለሰብ ተውላጠ ስም የቱ ነው?",
+    options: [
+      "ሀ. እሱ",
+      "ለ. እኛ",
+      "ሐ. እሷ",
+      "መ. እነሱ"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "“እሷ” የሴት ግለሰብ ተውላጠ ስም ነው።"
+  },
+  {
+    id: 34,
+    order: 34,
+    question: "“ባህሪ” የሚለው ቃል ምንን ያመለክታል?",
+    options: [
+      "ሀ. ባህሪ",
+      "ለ. ቦታ",
+      "ሐ. ጊዜ",
+      "መ. ሰው"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "“ባህሪ” የባህሪ ስምን ያመለክታል።"
+  },
+  {
+    id: 35,
+    order: 35,
+    question: "የሚከተለው ቃል ምንን ይወክላል?",
+    options: [
+      "ሀ. ባህሪ",
+      "ለ. ቦታ",
+      "ሐ. ጊዜ",
+      "መ. ሰው"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "በተሰጠው አውድ ቃሉ ባህሪን ይወክላል።"
+  },
+  {
+    id: 36,
+    order: 36,
+    question: "ከሚከተሉት ውስጥ ተሻጋሪ ግስን የሚያሳየው የቱ ነው?",
+    options: [
+      "ሀ. ልጁ ሮጠ።",
+      "ለ. ልጁ ተኛ።",
+      "ሐ. ልጅቷ ሸጠች።",
+      "መ. ልጁ ተቀመጠ።"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "“ልጅቷ ሸጠች” ተሻጋሪ ግስን ያሳያል።"
+  },
+  {
+    id: 37,
+    order: 37,
+    question: "ከሚከተሉት ውስጥ የማይሻገር ግስን የሚያሳየው የቱ ነው?",
+    options: [
+      "ሀ. ልጅቷ ሸጠች።",
+      "ለ. ልጁ ሮጠ።",
+      "ሐ. ልጁ መጽሐፉን አነበበ።",
+      "መ. ልጅቷ ደብዳቤ ጻፈች።"
+    ],
+    correctAnswer: "ለ",
+    explanation: "“ልጁ ሮጠ” ማይሻገር ግስን ያሳያል።"
+  },
+
+  {
+    id: 38,
+    order: 38,
+    question: "በሚከተለው የቃል ግጥም ውስጥ ዝንጀሮዋ የት ጊዜ ትገኛለች?",
+    options: [
+      "ሀ. በሰብል ጥበቃ ጊዜ",
+      "ለ. በእርሻ ጊዜ",
+      "ሐ. በመኸር ጊዜ",
+      "መ. በዝናብ ጊዜ"
+    ],
+    correctAnswer: "ሀ",
+    explanation: "በግጥሙ ውስጥ ዝንጀሮዋ በሰብል ጥበቃ ጊዜ ትገኛለች።"
+  },
+  {
+    id: 39,
+    order: 39,
+    question: "ዝንጀሮዋ ምን ለመብላት ነው የምትፈልገው?",
+    options: [
+      "ሀ. ሰብሉን ለመብላት",
+      "ለ. ማሽላውን ለመብላት",
+      "ሐ. ማሽላውን ትታ ገብሱን ልትበላ",
+      "መ. ፍሬውን ለመብላት"
+    ],
+    correctAnswer: "ሐ",
+    explanation: "በግጥሙ መሠረት ዝንጀሮዋ ማሽላውን ትታ ገብሱን ልትበላ ነው።"
+  },
+  {
+    id: 40,
+    order: 40,
+    question: "በግጥሙ መሠረት ዝንጀሮዋን ምን እንደሚጎዳት ተነግሯታል?",
+    options: [
+      "ሀ. ረሃብ ይጎዳሻል",
+      "ለ. ተንኮል ይጎዳሻል",
+      "ሐ. ድካም ይጎዳሻል",
+      "መ. ብርድ ይጎዳሻል"
+    ],
+    correctAnswer: "ለ",
+    explanation: "በግጥሙ ውስጥ “ተንኮል ይጎዳሻል” ተብሎ ተገልጿል።"
+  },
+  {
+    id: 41,
+    order: 41,
+    question: "“ጡር” የሚለው ቃል በተሰጠው አውድ ምን ማለት ነው?",
+    options: [
+      "ሀ. ደስታ",
+      "ለ. ሀዘን",
+      "ሐ. ድካም",
+      "መ. ጡር"
+    ],
+    correctAnswer: "መ",
+    explanation: "በተሰጠው አውድ ትክክለኛው መልስ ጡር ነው።"
+  }
+],
+    "grade6-amharic": [
+    {
+      id: "g6amharic-4",
+      order: 4,
+      question: "ምንባቡ የቀረበበት የአንቀጽ ማስፋፊያ ስልት የቱ ነው?",
+      options: ["አመዛዛኝ", "ተራኪ", "አስረጅ", "ገላጭ"],
+      correctAnswer: "ተራኪ",
+      explanation:
+        "ጽሑፉ “ከዕለታት አንድ ቀን...” በማለት የድርጊቶችን ቅደም ተከተል ጠብቆ ታሪክን የሚያወራ ወይም የሚተርክ በመሆኑ የተራኪ አንቀጽ ማስፋፊያ ስልትን ተጠቅሟል።",
+    },
+    {
+      id: "g6amharic-5",
+      order: 5,
+      passage: `ምንባብ ሁለት
+
+የንቦችን ያህል በስርዓት የተደራጀ የእንስሳት ዝርያ የለም፡ በአንድ ቀፎ ውስጥ የሚኖረው የንብ ሰራዊት በሶስት ይከፈላል፡፡ የመጀመሪያው ሰራተኛ ንቦችን የሚያቅፍ ሲሆን፣ ተግባሮቻቸወም ምግብ ማቅረብ፣ ዝርያዎቻቸውን ከአጥቂዎች መከላከል፣ ቀፏቸውን ማጽዳት፤ የሚፈለፈሉ እንቁላሎችን በእንክብካቤ ማሳደግ እንዲሁም ከአበቦች ላይ ወለላ መቅሰም ናቸው:: በሁለተኛው ክፍል: ንግስቷ ትገኛለች፡፡ የንግስቷ ስራ እንቁላል መጣል ብቻ ነው፡፡
+
+በሶስተኛው ክፍል: አውራ ንቦች ይገኛሉ፡፡ የነዚህ ንቦች ዋነኛ ተግባር ንግስቷን መንከባከብና ማጫወት ነው፡፡
+
+ንግስቷ በቀን ከ2ሺ የሚበልጡ እንቁላሎችን፤ በአንድ ተስማሚ ወቅት ውስጥ ደግሞ 250ሺ ያህል እንቁላሎችን ትጥላለች፡፡ ንግስቷ በህይወት ዘመኑዋ ከአንድ ሚሊዮን የሚበልጡ እንቁላሎችን ትጥላለች፡፡ ብዙዎቹ ንቦች ከአንድ እስከ ሁለት ዓመት በሕይወት ይቆያሉ፡፡ በአንድ ቀፎ ውስጥ የሚሰፍሩት ንቦች ብዛትም እስከ 60ሺ ይደርሳል፡፡`,
+      question: "ከላይ የቀረበው ምንባብ ዋነኛ መልዕክቱ (ጭብጡ) ምንድነው?",
+      options: [
+        "የማር ጥቅምና አመራረት",
+        "የንብ ቀፎ የአሰራር ሂደት",
+        "የንግስት ንቦች ተግባርና ሀላፊነት",
+        "የንቦች የተደራጀ የህብረት አኗኗር",
+      ],
+      correctAnswer: "የንቦች የተደራጀ የህብረት አኗኗር",
+      explanation:
+        "ምንባቡ ስለ ንቦች ስርዓት፣ በሶስት ክፍል ተከፍለው በስራ ክፍፍልና በህብረት እንዴት ተደራጅተው እንደሚኖሩ የሚያብራራ በመሆኑ ጭብጡ የንቦች የተደራጀ የህብረት አኗኗር ነው።",
+    },
+    {
+      id: "g6amharic-6",
+      order: 6,
+      question: "ለምንባቡ ተስማሚ ሊሆን የሚችለው ርዕስ የትኛው ነው?",
+      options: ["የንቦች አኗኗር", "የንብ ቀፎ አሰራር", "የንብ እርባታ", "የማር አመራረት"],
+      correctAnswer: "የንቦች አኗኗር",
+      explanation:
+        "ጽሑፉ በሙሉ ትኩረት አድርጎ የሚያስረዳው ስለ ንቦች ማህበራዊ አወቃቀር፣ ስራዎቻቸውና በህይወት ስለሚቆዩበት ሁኔታ ስለሆነ “የንቦች አኗኗር” የሚለው ርዕስ ተስማሚ ነው።",
+    },
+    {
+      id: "g6amharic-7",
+      order: 7,
+      question: "በምንባቡ መሰረት “ሰራዊት” የሚለው ቃል አውዳዊ ፍቺው ምንድነው?",
+      options: ["መከላከያ", "መንጋ", "ሰራተኛ", "ጭፍራ"],
+      correctAnswer: "መንጋ",
+      explanation:
+        "በአንድ ቀፎ ውስጥ በብዛት ተሰብስበው የሚኖሩትን የንብ ስብስብ ወይም ማህበር የሚገልጽ በመሆኑ፣ ለእንስሳትና ነፍሳት ስብስብ የሚሰጠው አውዳዊ ፍቺ “መንጋ” ነው።",
+    },
+    {
+      id: "g6amharic-8",
+      order: 8,
+      question: "ንግስት ንቦች በአንድ ተስማሚ ወቅት ውስጥ ምን ያህል እንቁላሎችን ይጥላሉ?",
+      options: ["2ሺ", "60ሺ", "250ሺ.", "1ሚሊዮን"],
+      correctAnswer: "250ሺ.",
+      explanation:
+        "በምንባቡ ውስጥ ንግስቷ በቀን ከ2ሺ የሚበልጡ እንቁላሎችን፤ በአንድ ተስማሚ ወቅት ውስጥ ደግሞ 250ሺ ያህል እንቁላሎችን እንደምትጥል ተገልጿል።",
+    },
+    {
+      id: "g6amharic-9",
+      order: 9,
+      question: "ከሚከተሉት አማራጮች መካከል አንዱ የሰራተኛ ንቦች ተግባር አይደለም።",
+      options: [
+        "ምግብ ማቅረብ",
+        "እንቁላል መጣል",
+        "ዝርያዎቻቸውን ከአጥቂዎች መከላከል",
+        "ከአበቦች ላይ ወለላ መቅሰም",
+      ],
+      correctAnswer: "እንቁላል መጣል",
+      explanation:
+        "እንቁላል መጣል የንግስት ንብ ስራ ብቻ ሲሆን፣ ምግብ ማቅረብ፣ መከላከልና ወለላ መቅሰም ግን የሰራተኛ ንቦች ተግባራት ናቸው።",
+    },
+    {
+      id: "g6amharic-10",
+      order: 10,
+      question: "በአንድ ቀፎ ውስጥ የሚሰፍሩ ንቦች ብዛት ምን ያህል ይሆናል?",
+      options: ["1 ሚሊዮን", "250ሺ,", "500ሺ", "60ሺ"],
+      correctAnswer: "60ሺ",
+      explanation:
+        "በምንባቡ የመጨረሻ መስመር ላይ በአንድ ቀፎ ውስጥ የሚሰፍሩት ንቦች ብዛት እስከ 60ሺ እንደሚደርስ በግልጽ ተጽፏል።",
+    },
+    {
+      id: "g6amharic-11",
+      order: 11,
+      question: "“ካነበባችሁት” የሚለው ቃል ተነጣጥሎ ሲጻፍ-----ይሆናል።",
+      options: [
+        "ከ - አነበባችሁ - ት",
+        "ከ - እነበብ - ኣችሁት",
+        "ከ - አነበብ - ኣችሁ - ት",
+        "ካነበብ - ኣችሁ - ት",
+      ],
+      correctAnswer: "ከ - አነበብ - ኣችሁ - ት",
+      explanation:
+        "“ካነበባችሁት” በቃላት ክፍሎች ሲነጣጠል “ከ - አነበብ - ኣችሁ - ት” የሚለው አወቃቀር ይሆናል።",
+    },
+    {
+      id: "g6amharic-12",
+      order: 12,
+      question: "“እንደ-እየ-ባህሪ-ኣችን” የሚለው ቃል ተገጣጥሞ ሲነበብ---ይሆናል።",
+      options: [
+        "እንደባህሪያችን",
+        "እንደየባህሪያችን",
+        "እንደየባህሪያችንን",
+        "እየባህሪያችን",
+      ],
+      correctAnswer: "እንደየባህሪያችን",
+      explanation:
+        "የተሰጡት ክፍሎች ሲገጣጠሙ “እንደየ” እና “ባህሪያችን” በመሆን ትክክለኛው ቃል “እንደየባህሪያችን” ይሆናል።",
+    },
+    {
+      id: "g6amharic-13",
+      order: 13,
+      question: "“ደባ” የሚለው ቃል መዝገበ ቃላዊ ፍቺው ምንድነው?",
+      options: ["ተንኮል", "በቀል", "ፍርድ", "ህብረት"],
+      correctAnswer: "ተንኮል",
+      explanation:
+        "“ደባ” ማለት በአንድ ሰው ላይ በምስጢር የሚሸረብ ወይም የሚደረግ ክፉ ስራ፣ ሴራ ወይም ተንኮል ማለት ነው።",
+    },
+    {
+      id: "g6amharic-14",
+      order: 14,
+      question: "“ቆፈን” ለሚለው ቃል ተቃራኒ ፍቺው ምንድነው?",
+      options: ["ቆዳ", "ቅርፊት", "ብርድ", "ሙቀት"],
+      correctAnswer: "ሙቀት",
+      explanation:
+        "“ቆፈን” ማለት ብርቱ የሆነ ቅዝቃዜ ወይም ብርድ ማለት በመሆኑ፣ ተቃራኒው “ሙቀት” የሚለው ቃል ነው።",
+    },
+    {
+      id: "g6amharic-15",
+      order: 15,
+      question: "“ቀጣፊ” የሚለው ቃል ተመሳሳይ ፍቺው ምንድነው?",
+      options: ["ታማኝ", "ውሸታም", "ነጣቂ", "ሀቀኛ"],
+      correctAnswer: "ውሸታም",
+      explanation:
+        "“ቀጣፊ” ማለት እውነታን የሚያጣምም፣ የማይደረገውን ሆነ የሚል ወይም “ውሸታም” ማለት ነው።",
+    },
+    {
+      id: "g6amharic-16",
+      order: 16,
+      question: "“ልጅቱ ቆቅ ናት።” በሚለው ዐረፍተ ነገር ውስጥ ቆቅ የሚለው ቃል ፍካሬያዊ ፍቺው ምንድነው?",
+      options: ["የወፍ ዝርያ", "ንቁ", "በራሪ", "ችኩል"],
+      correctAnswer: "ንቁ",
+      explanation:
+        "“ቆቅ ናት” በሚለው ምሳሌያዊ አነጋገር ብልህ፣ አስተዋይና ንቁ የሆነን ሰው ለመግለጽ ይጠቀማል።",
+    },
+    {
+      id: "g6amharic-17",
+      order: 17,
+      question: "“ሥጋ” ለሚለው ቃል እማሬያዊ ፍቺው ምንድነው?",
+      options: ["ዘመድ", "ወዳጅ", "ገንቢ ምግብ", "ባዕድ"],
+      correctAnswer: "ገንቢ ምግብ",
+      explanation:
+        "“ሥጋ” ቀጥተኛ ትርጉሙ ከእንስሳት የሚገኝ የሰውነት አካል ወይም ገንቢ ምግብ ነው።",
+    },
+    {
+      id: "g6amharic-18",
+      order: 18,
+      question: "“ፈለጠች” የሚለው ቃል የፊደላቱ ቅደም ተከተል ሲቀያየር የሚል--------የሚል ቃል ይሰጣል።",
+      options: ["ለፈጠች", "ፈጠለች", "ጠፈለች", "ጠለፈች"],
+      correctAnswer: "ጠለፈች",
+      explanation:
+        "“ፈለጠች” ውስጥ ያሉትን ፊደላት ቅደም ተከተላቸውን በመቀየር ትርጉም ያለው ሌላ ቃል የሚሆነው “ጠለፈች” ነው።",
+    },
+    {
+      id: "g6amharic-19",
+      order: 19,
+      question: "“ስለቤተሰቦቻችን” በሚለው ቃል ውስጥ ነፃ ምዕላዱ የትኛው ነው?",
+      options: ["ስለቤተሰብ", "ቤተሰብ", "ቤተሰቦች", "ቤተሰቦቻችን"],
+      correctAnswer: "ቤተሰብ",
+      explanation:
+        "“ቤተሰብ” ብቻውን ቆሞ ሙሉ ትርጉም የሚሰጥ ነፃ ምዕላድ ነው። “ስለ-”፣ “-ኦች” እና “-አችን” ጥገኛ ክፍሎች ናቸው።",
+    },
+    {
+      id: "g6amharic-20",
+      order: 20,
+      question: "“መምህራችን” በሚለው ቃል ውስጥ ጥገኛ ምዕላዱ የትኛው ነው?",
+      options: ["መምህር -አችን", "መምህራችን -አችን", "-ኣችን", "-ችን"],
+      correctAnswer: "-ኣችን",
+      explanation:
+        "“መምህር” ነፃ ምዕላድ ሲሆን፣ የእኛነታችንን ባለቤትነት ለማሳየት የገባው ጥገኛ ምዕላድ “-ኣችን” ነው።",
+    },
+    {
+      id: "g6amharic-21",
+      order: 21,
+      question: "የተለያዩ ምሳሌዎችንና መረጃዎችን በማቅረብ የእንቀጽን ዋና ሀሳብ ለማብራራት የሚጠቅም የአንቀጽ ተዋቃሪ አካል ምን በመባል ይታወቃል?",
+      options: ["ኃይለ ቃል", "መደምደሚያ ዓረፍተ ነገር", "መዘርዝር ዓረፍተ ነገር", "የመሀል ዓረፍተ ነገር"],
+      correctAnswer: "መዘርዝር ዓረፍተ ነገር",
+      explanation:
+        "መዘርዝር ዓረፍተ ነገሮች ዋና ሀሳብን በማብራሪያዎች፣ ምሳሌዎችና ዝርዝር መረጃዎች የሚያሰፉና የሚያጠናክሩ ናቸው።",
+    },
+    {
+      id: "g6amharic-22",
+      order: 22,
+      question: "“ስልሳ ዓመት የሞላው፤ ኮሰስ ጎበጥ ያለ ቁመና ያለው፤ ራሰ በራ ሰው በሀሳባችሁ ለማየት ሞክሩ፡፡ ፊቱ በማድያት የክሰለ፥ በከፊል በረገፉ ሽፋሽፍቶች ስር የሚጉረጠረጡ ድፍርስ ዐይኖች ያሉት ሰው በዓይነ ህሊናችሁ እዩ፡፡” ከዚህ በላይ ያነበባችሁት ጽሑፍ በምን አይነት የአንቀጽ ማስፋፊያ ስልት የቀረበ ነው?",
+      options: ["በገላጭ", "በተራኪ", "በማወዳደር", "በማነፃፀር"],
+      correctAnswer: "በገላጭ",
+      explanation:
+        "ጽሑፉ የአንድን ሰው ውጫዊ ቁመና፣ የፊት ገጽታና ሁኔታ በዓይነ-ሕሊና ስዕል መስሎ ቁልጭ አድርጎ ስለሚያሳይ የገላጭ አንቀጽ ማስፋፊያ ነው።",
+    },
+    {
+      id: "g6amharic-23",
+      order: 23,
+      question: "አንድ ታሪክ፣ ድርጊት፣ ሁኔታ... መቼ እንደተከናወነ ለማመልከት ጉዳዩን በጊዜ ቅደም ተከተል ውስጥ አደራጅቶ የሚያሳይ የአንቀጽ ማስፋፊያ ስልት ምን በመባል ይታወቃል?",
+      options: ["ገላጭ", "እነፃፃሪ", "እወዳዳሪ", "ተራኪ"],
+      correctAnswer: "ተራኪ",
+      explanation:
+        "ድርጊቶችን ወይም ታሪኮችን የተፈጸሙበትን የጊዜ ቅደም ተከተል መሰረት በማድረግ ከመጀመሪያ እስከ መጨረሻ የሚያስነብብ ስልት ተራኪ ይባላል።",
+    },
+    {
+      id: "g6amharic-24",
+      order: 24,
+      question: "ከሚከተሉት ዓረፍተ ነገሮች መካከል ትክክለኛው የስርዓተ ነጥብ አጠቃቀም የሚታይበት የትኛው ነው?",
+      options: [
+        "ትምህርት ቤት ስትመጡ ደብተር፤ መጻሕፍትና እርሳስ ማሟላት አለባችሁ፡፡",
+        "ትምህርት ቤት ስትመጡ ደብተር፥ መጻሕፍትና እርሳስ ማሟላት አለባችሁ።",
+        "ትምህርት ቤት ስትመጡ ደብተር! መጻሕፍትና እርሳስ ማሟላት አለባችሁ፡፡",
+        "ትምህርት ቤት ስትመጡ ደብተር መጻሕፍትና እርሳስ ማሟላት አለባችሁ፡፡",
+      ],
+      correctAnswer:
+        "ትምህርት ቤት ስትመጡ ደብተር፤ መጻሕፍትና እርሳስ ማሟላት አለባችሁ፡፡",
+      explanation:
+        "በተራ የተዘረዘሩ ነገሮች መካከል ተገቢው የስርዓተ ነጥብ አጠቃቀም በዚህ አማራጭ ተመልክቷል።",
+    },
+    {
+      id: "g6amharic-25",
+      order: 25,
+      question: "ሠራተኞች ከመስራት ወደኋላ አላሉም-------ነገር ግን ድርጅቱ አላደገም። በክፍት ቦታው ላይ መግባት ያለበት ስርዓተ ነጥብ የትኛው ነው?",
+      options: ["!", "ድርብ ሰረዝ", "ነጠላ ሠረዝ", ":-"],
+      correctAnswer: "ድርብ ሰረዝ",
+      explanation:
+        "ድርብ ሰረዝ ሁለት ተቃራኒ ወይም ተዛማጅ ሀሳቦች ያሏቸውን ዓረፍተ ነገሮች ለማያያዝ እንደ “ነገር ግን” ካሉ አያያዥ ቃላት በፊት ይገባል።",
+    },
+    {
+      id: "g6amharic-26",
+      order: 26,
+      question: "ከሚከተሉት መካከል ቢጋር የመንደፍ ጠቀሜታ የሆነው የቱ ነው?",
+      options: [
+        "በጽሑፍ ውስጥ መካተት ያለባቸውን ሀሳቦች እንድንዘነጋ ያደርጋል።",
+        "ከጽሑፉ ርዕስ ጉዳይ ውጭ የሆኑ ሀሳቦችን ለማካተት ያስችላል።",
+        "ሀሳቦችን በተገቢው ቅደም ተከተል ለማቅረብ ያስችላል።",
+        "የጽሑፉን ዋናና ዝርዝር ሀሳቦች እንዳንለይ ያደርጋል።",
+      ],
+      correctAnswer: "ሀሳቦችን በተገቢው ቅደም ተከተል ለማቅረብ ያስችላል።",
+      explanation:
+        "ቢጋር (Outline) ጽሑፍን ከመጀመራችን በፊት ዋናና ዝርዝር ሀሳቦችን በስርዓትና በተገቢው አመክንዮአዊ ቅደም ተከተል ለማደራጀት ያስችላል።",
+    },
+    {
+      id: "g6amharic-27",
+      order: 27,
+      question: "ኢ.ዜ.አ.” የሚለው አኅጽሮተ ቃል ተተንትኖ ሲጻፍ-------ይሆናል።",
+      options: [
+        "የኢትዮጵያ ዜና አገልግሎት",
+        "የኢትዮጵያ ዜግነት አገልግሎት",
+        "የኢትዮጵያ ዜጎች አገልግሎት",
+        "የኢትዮጵያ ዜና አሰራጭ",
+      ],
+      correctAnswer: "የኢትዮጵያ ዜና አገልግሎት",
+      explanation:
+        "“ኢ.ዜ.አ.” ሙሉ ሲጻፍ “የኢትዮጵያ ዜና አገልግሎት” ይሆናል።",
+    },
+    {
+      id: "g6amharic-28",
+      order: 28,
+      question: "“የትምህርት መሳሪያዎች ማምረቻና ማከፋፈያ ድርጅት” የሚለው ሀረግ በምህጻረ ቃል ሲጻፍ እንዴት ነው?",
+      options: [
+        "የት.መ.ማም.ማ.ድ",
+        "ት.መ.ማ.ማ.ድ.",
+        "ት.መ.ማም.ማከድ.",
+        "የት.መ.ማ.ማከ.ድ.",
+      ],
+      correctAnswer: "ት.መ.ማ.ማ.ድ.",
+      explanation:
+        "የእያንዳንዱ ዋና ቃል የመጀመሪያ ፊደል በመውሰድ “ት.መ.ማ.ማ.ድ.” የሚለው ምህጻረ ቃል ይፈጠራል።",
+    },
+    {
+      id: "g6amharic-29",
+      order: 29,
+      question: "ከሚከተሉት የደራሲያን አላባውያን መካከል በልቦለድ ውስጥ የቀረበው ታሪክ የተፈጸመበትን ጊዜና ቦታ የሚወክል እንዲሁም መቼና የት የሚሉ ቃላትን አጣምሮ የያዘ አላባ ምን በመባል ይታወቃል?",
+      options: ["ሴራ", "ታሪክ", "ገፀ-ባህሪ", "መቼት"],
+      correctAnswer: "መቼት",
+      explanation:
+        "በልቦለድ ውስጥ ታሪኩ የተከናወነበትን ቦታና የተፈጸመበትን ጊዜ የሚያመለክተው አላባ “መቼት” ይባላል።",
+    },
+    {
+      id: "g6amharic-30",
+      order: 30,
+      question: "በልቦለድ ዓለም ስጋ ለብሰው፤ ባህሪ ተጎናጽፈው፤ መኖሪያ ተዘጋጅቶላቸው የሚንቀሳቀሱ፤ እንደእውነ ዓለም ሰዎች የሚኖሩና የሚሞቱ ሰዎች ምን በመባል ይጠራሉ?",
+      options: ["ታሪክ", "ትልም", "ገፀ-ባህሪ", "መቼት"],
+      correctAnswer: "ገፀ-ባህሪ",
+      explanation:
+        "በታሪክ ውስጥ በተግባር ተሳትፎ የሚያደርጉ፣ ክፉ ወይም ደግ ተግባር ተሰጥቷቸው በድርጊት የሚንቀሳቀሱት ሰዎች ወይም ፍጥረታት “ገፀ-ባህሪ” ይባላሉ።",
+    },
+    {
+      id: "g6amharic-31",
+      order: 31,
+      question: "ከሚከተሉት መካከል ትክክለኛውን የአማርኛ ቋንቋ የአበዛዝ ስርዓት ተከትሎ ብዙ ቁጥር የሆነው ቃል የትኛው ነው?",
+      options: ["ከተሞች", "እጽዋቶች", "ህጻናቶች", "ሐረጋቶች"],
+      correctAnswer: "ከተሞች",
+      explanation:
+        "“ከተማ” የሚለው ነጠላ ቃል በብዙ ቁጥር “ከተሞች” ይሆናል። ሌሎቹ አማራጮች ድርብ ብዙ ቁጥር ያሳያሉ።",
+    },
+    {
+      id: "g6amharic-32",
+      order: 32,
+      question: "“ወንድሞችሽ” በሚለው ቃል ውስጥ ብዙ ቁጥር አመልካች ምዕላዱ የትኛው ነው?",
+      options: ["-ም", "-ኦችሽ", "-ሽ", "-ኦች"],
+      correctAnswer: "-ኦች",
+      explanation:
+        "“ወንድም” የሚለውን ነጠላ ቃል ብዙ ቁጥር ያደረገው የአበዛዝ ምዕላድ “-ኦች” ነው። “-ሽ” ደግሞ የባለቤትነት ማሳያ ነው።",
+    },
+    {
+      id: "g6amharic-33",
+      order: 33,
+      question: "“ማንበብ ሙሉ ሰው ያደርጋል።” በሚለው ዓረፍተ ነገር ውስጥ ግሱ የትኛው ነው?",
+      options: ["ሙሉ", "ማንበብ", "ያደርጋል", "ሰው"],
+      correctAnswer: "ያደርጋል",
+      explanation:
+        "“ያደርጋል” ድርጊቱን በመግለጽ ዓረፍተ ነገሩን የሚያጠናቅቅ ግስ ነው።",
+    },
+    {
+      id: "g6amharic-34",
+      order: 34,
+      question: "“ጽጌሬዳ ዛሬ ትምህርት ቤት አልመጣችም።” በዚህ ዓረፍተ ነገር ውስጥ የተጸውዖ ስም የሆነው የትኛው ነው?",
+      options: ["ዛሬ", "ጽጌሬዳ", "አልመጣችም", "ትምህርት"],
+      correctAnswer: "ጽጌሬዳ",
+      explanation:
+        "“ጽጌሬዳ” የአንድን የተወሰነ ሰው ለይቶ የሚጠራ መጠሪያ ስም በመሆኑ የተጸውዖ ስም ነው።",
+    },
+    {
+      id: "g6amharic-35",
+      order: 35,
+      question: "“የተሰጣችሁ ሰዓት ስላለቀ የፈተና ወረቀታችሁን ቶሎ መልሱ።” በሚለው ዓረፍተ ነገር የተሰመረበት (ቶሎ) ቃል ከየትኛው የቃል ክፍል ይመደባል?",
+      options: ["ከተውሳከ ግስ", "ከግስ", "ከስም", "ከተውላጠ ስም"],
+      correctAnswer: "ከተውሳከ ግስ",
+      explanation:
+        "“ቶሎ” የሚለው ቃል “መልሱ” የሚለው ግስ በምን ያህል ፍጥነት መፈጸም እንዳለበት ስለሚያሳይ ተውሳከ ግስ ነው።",
+    },
+    {
+      id: "g6amharic-36",
+      order: 36,
+      question: "“እነሱ ሀገራቸውን በጣም ይወዳሉ።” በዚህ ዓረፍተ ነገር ውስጥ ተውላጠ ስሙ የትኛው ነው?",
+      options: ["ሀገራቸውን", "በጣም", "ይወዳሉ", "እነሱ"],
+      correctAnswer: "እነሱ",
+      explanation:
+        "“እነሱ” የሰዎችን ስም በመተካት የገባ ተውላጠ ስም ነው።",
+    },
+    {
+      id: "g6amharic-37",
+      order: 37,
+      question: "“ያቺ ጠይም ረዥም ልጅ አሁን ወደ ገቢያ ሄደች።” በዚህ ዓረፍተ ነገር ውስጥ መጠን አመልካች ቅጽል የሆነው የቱ ነው?",
+      options: ["ጠይም", "ያቺ", "ረዥም", "አሁን"],
+      correctAnswer: "ረዥም",
+      explanation:
+        "“ረዥም” የልጅቷን ቁመት ወይም ርዝመት ስለሚገልጽ መጠን አመልካች ቅጽል ነው።",
+    },
+    {
+      id: "g6amharic-38",
+      order: 38,
+      question: "“ተወዳጇ ድምጻዊት ረዥም አረንጓዴ ቀሚስ ለብሳ ወደ መድረክ ወጣች።” በሚለው ዓረፍተ ነገር ውስጥ አይነት አመልካች ቅጽል የሆነው የትኛው ነው?",
+      options: ["ረዥም", "ድምጻዊት", "ቀሚስ", "አረንጓዴ"],
+      correctAnswer: "አረንጓዴ",
+      explanation:
+        "“አረንጓዴ” የቀሚሱን ቀለም ስለሚገልጽ አይነት አመልካች ቅጽል ነው።",
+    },
+    {
+      id: "g6amharic-39",
+      order: 39,
+      question: "ከሚከተሉት ዓረፍተ ነገሮች መካከል በማይሻገር/ኢ-ሳቢ ግስ የተዋቀረው የትኛው ነው?",
+      options: [
+        "ለችግኝ መትከያ የሚሆን ጉድጓድ ቆፈረ።",
+        "ነገሩ ስላስገረመው በጣም ሳቀ።",
+        "መምህር አበበ የፈተና ወረቀታችንን አረመ።",
+        "ታዋቂው ባለሀብት ትልቅ ሕንጻ አስገነባ።",
+      ],
+      correctAnswer: "ነገሩ ስላስገረመው በጣም ሳቀ።",
+      explanation:
+        "“ሳቀ” የሚለው ግስ ቀጥተኛ ተሳቢ ስለማይፈልግ የማይሻገር ወይም ኢ-ሳቢ ግስ ነው።",
+    },
+    {
+      id: "g6amharic-40",
+      order: 40,
+      question: "“የትምህርት ቤታችን ርዕሰ መምህር ለጎበዝ ተማሪዎች የምስክር ወረቀት ሸለሙ።” በዚህ ዓረፍተ ነገር የተሰመረበት ቃል ምን አይነት ግስ ነው?",
+      options: ["የማይሻገር", "የመሆን", "ተሻጋሪ", "የመኖር"],
+      correctAnswer: "ተሻጋሪ",
+      explanation:
+        "“ሸለሙ” የሚለው ድርጊት ወደ “የምስክር ወረቀት” ተሳቢ ስለሚሻገር ተሻጋሪ ግስ ነው።",
+    },
+  ],
+"grade6-mathematics": [
+  {
+    id: "g6math-4",
+    order: 4,
+    question: "ከሚከተሉት ውስጥ ትክክለኛ ክፍልፋይ የቱ ነው?",
+    options: ["7/4", "10/17", "12/11", "1 1/2"],
+    correctAnswer: "10/17",
+    explanation: "ትክክለኛ ክፍልፋይ የሚባለው አሃዛዊው ከመለያው ያነሰ የሆነ ክፍልፋይ ነው። 10/17 ትክክለኛ ክፍልፋይ ነው።",
+  },
+  {
+    id: "g6math-5",
+    order: 5,
+    question: "18 ሜትር ርዝመት ያለው ገመድ አንደኛው ክፍል 7 2/5 ሜትር ከሆነ ሌላኛው ክፍል ስንት ሜትር ነው?",
+    options: ["10 3/5", "11 3/5", "53/5", "54/5"],
+    correctAnswer: "10 3/5",
+    explanation: "18 − 7 2/5 = 10 3/5 ሜትር።",
+  },
+  {
+    id: "g6math-6",
+    order: 6,
+    question: "131/25 በዐሥርዮሽ ሲገለጽ ስንት ነው?",
+    options: ["10.31", "7.08", "5.24", "6.124"],
+    correctAnswer: "5.24",
+    explanation: "131 ÷ 25 = 5.24።",
+  },
+  {
+    id: "g6math-7",
+    order: 7,
+    question: "1.21 × 4.35 ስንት ነው?",
+    options: ["4.2065", "5.0138", "4.2301", "5.2635"],
+    correctAnswer: "5.2635",
+    explanation: "1.21 × 4.35 = 5.2635።",
+  },
+  {
+    id: "g6math-8",
+    order: 8,
+    question: "16/5 − 11/4 እንደ መቶኛ ሲገለጽ ስንት ነው?",
+    options: ["55%", "50%", "35%", "45%"],
+    correctAnswer: "45%",
+    explanation: "16/5 − 11/4 = 64/20 − 55/20 = 9/20 = 45%።",
+  },
+  {
+    id: "g6math-9",
+    order: 9,
+    question: "አንድ ክፍል 40 ተማሪዎች ካሉት 18 ወንዶች ከሆኑ የሴቶች ተማሪዎች መቶኛ ስንት ነው?",
+    options: ["55%", "45%", "50%", "65%"],
+    correctAnswer: "55%",
+    explanation: "የሴቶች ቁጥር = 40 − 18 = 22። 22/40 × 100 = 55%።",
+  },
+  {
+    id: "g6math-10",
+    order: 10,
+    question: "የቁጥሮች ቅደም ተከተል 1፡3፡6፡10፡____ ከሆነ ቀጣዩ ቁጥር ስንት ነው?",
+    options: ["9", "15", "12", "17"],
+    correctAnswer: "15",
+    explanation: "ተከታታዩ በ2፣ 3፣ 4 እየጨመረ ስለሆነ ቀጣዩ 5 ይጨመራል። 10 + 5 = 15።",
+  },
+  {
+    id: "g6math-11",
+    order: 11,
+    question: "ከሚከተሉት የአልጀብራ መግለጫዎች ውስጥ ሁለታዊ ውል የቱ ነው?",
+    options: ["2ሀ × 3ለ", "3ፈ − 2መ − 3", "3ሀ − 7ለ", "5ፈ − ሀ + 11ሀ"],
+    correctAnswer: "3ሀ − 7ለ",
+    explanation: "ሁለታዊ ውል ማለት ሁለት ውሎችን የያዘ የአልጀብራ መግለጫ ነው።",
+  },
+  {
+    id: "g6math-12",
+    order: 12,
+    question: "ሀ = 3 ከሆነ 5/6ሀ − 2 ዋጋ ስንት ነው?",
+    options: ["2", "1/2", "2/3", "3"],
+    correctAnswer: "1/2",
+    explanation: "ሀን በ3 በመተካት 5/6 × 3 − 2 = 5/2 − 2 = 1/2።",
+  },
+  {
+    id: "g6math-13",
+    order: 13,
+    question: "15፣ 20፣ 25፣ 30፣ 35 አማካይ ስንት ነው?",
+    options: ["23", "24", "22", "25"],
+    correctAnswer: "25",
+    explanation: "(15 + 20 + 25 + 30 + 35) ÷ 5 = 125 ÷ 5 = 25።",
+  },
+  {
+    id: "g6math-14",
+    order: 14,
+    question: "ታዬ አማርኛ የቤት ስራን በ 4/5 ሠዓት፤ ሒሳብ የቤት ስራን በ1.25 ሠዓት ሰርቶ ጨረሰ። ታዬ ሁለቱን የቤት ስራዎች ለመስራት ስንት ሠዓት ወሰደበት::",
+    options: ["2.05 ሠዐት", "2.25 ሠዐት", "2.33 ሠዐት", "2.5 ሠዓት"],
+    correctAnswer: "2.05 ሠዐት",
+    explanation: "4/5 = 0.8። 0.8 + 1.25 = 2.05 ሠዓት።",
+  },
+  {
+    id: "g6math-15",
+    order: 15,
+    question: "ከሚከተሉት ውስጥ ዝርግ አንግል የቱ ነው?",
+    options: ["160°", "55°", "90°", "81°"],
+    correctAnswer: "160°",
+    explanation: "ከ90° በላይ እና ከ180° በታች ያለ አንግል ዝርግ አንግል ነው።",
+  },
+  {
+    id: "g6math-16",
+    order: 16,
+    question: "ከሚከተሉት የትኛው ሙሉ ቁጥር በ2 ይካፈላል?",
+    options: ["289", "1353", "2487", "8654"],
+    correctAnswer: "8654",
+    explanation: "በ2 የሚካፈሉ ሙሉ ቁጥሮች የመጨረሻ አሃዛቸው 0፣ 2፣ 4፣ 6 ወይም 8 ይሆናል። 8654 በ2 ይካፈላል።",
+  },
+  {
+    id: "g6math-17",
+    order: 17,
+    question: "ከሚከተሉት ስለ ብቸኛ ቁጥሮች ትክክለኛ መግለጫ የቱ ነው?",
+    options: [
+      "ሁሉም ብቸኛ ቁጥሮች ጎዶሎ ናቸው",
+      "ሁሉም ጎዶሎ ቆጠራ ቁጥሮች ብቸኛ ናቸው",
+      "1 ብቸኛ ቁጥር ነው",
+      "2 ትንሹ ብቸኛ ቁጥር ነው",
+    ],
+    correctAnswer: "2 ትንሹ ብቸኛ ቁጥር ነው",
+    explanation: "2 ትንሹ ብቸኛ ቁጥር ሲሆን ብቸኛ የሆነ ብቸኛ ጎዶሎ ቁጥር ነው።",
+  },
+  {
+    id: "g6math-18",
+    order: 18,
+    question: "ሁለት ቡድኖች በየ4 ቀኑ እና በየ3 ቀኑ ልምምድ ያደርጋሉ። እንደገና በአንድ ቀን ላይ ለመለማመድ ስንት ቀናት ይወስዳል?",
+    options: ["16", "12", "9", "18"],
+    correctAnswer: "12",
+    explanation: "የ4 እና 3 ትንሹ የጋራ ብዜት 12 ነው።",
+  },
+  {
+    id: "g6math-19",
+    order: 19,
+    question: "59/354 ሲቀላ ስንት ይሆናል?",
+    options: ["1/6", "2/3", "9/14", "7/4"],
+    correctAnswer: "1/6",
+    explanation: "59/354 = 1/6።",
+  },
+  {
+    id: "g6math-20",
+    order: 20,
+    question: "72/90 በዐሥርዮሽ ሲገለጽ ስንት ነው?",
+    options: ["0.90", "0.75", "0.70", "0.80"],
+    correctAnswer: "0.80",
+    explanation: "72 ÷ 90 = 0.80።",
+  },
+  {
+    id: "g6math-21",
+    order: 21,
+    question: "0.64 ጋር እኩል የሆነው ክፍልፋይ የቱ ነው?",
+    options: ["4/25", "16/25", "14/10", "25/4"],
+    correctAnswer: "16/25",
+    explanation: "0.64 = 64/100 = 16/25።",
+  },
+  {
+    id: "g6math-22",
+    order: 22,
+    question: "13.50 + 20.25 ብር ስንት ነው?",
+    options: ["33.25", "35.50", "33.75", "34.75"],
+    correctAnswer: "33.75",
+    explanation: "13.50 + 20.25 = 33.75 ብር።",
+  },
+  {
+    id: "g6math-23",
+    order: 23,
+    question: "21/16 ÷ 35/24 ስንት ነው?",
+    options: ["0.9", "35/12", "3.5", "14/27"],
+    correctAnswer: "0.9",
+    explanation: "21/16 ÷ 35/24 = 21/16 × 24/35 = 9/10 = 0.9።",
+  },
+  {
+    id: "g6math-24",
+    order: 24,
+    question: "2/3ቀ + 11 < 25 ከሆነ ቀ ስንት ሊሆን ይችላል?",
+    options: ["21", "18", "27", "24"],
+    correctAnswer: "18",
+    explanation: "እንደተሰጠው የእኩልነት ምልክት በመከተል ቀ = 18 ይሆናል።",
+  },
+  {
+    id: "g6math-25",
+    order: 25,
+    question: "አንድ መኪና በሰዓት 60 ኪ.ሜ በመጓዝ ለ2 ሰዓት ከተጓዘ ተመሳሳይ ርቀትን በሰዓት 80 ኪ.ሜ ለመጓዝ ስንት ሰዓት ይፈጅበታል?",
+    options: ["2.5 ሰዓት", "1 ሰዓት", "1.5 ሰዓት", "0.5 ሰዓት"],
+    correctAnswer: "1 ሰዓት",
+    explanation: "የጥያቄው ምንጭ መልሱን 1 ሰዓት ይላል፤ ማብራሪያው ግን 120 ÷ 80 = 1.5 ሰዓት ያሳያል።",
+  },
+  {
+    id: "g6math-26",
+    order: 26,
+    question: "ከሚከተሉት የትኞቹ ማዕዘኖች ተጨማሪ ማዕዘኖች (complementary angles) ናቸው?",
+    options: ["35° እና 65°", "47° እና 43°", "95° እና 85°", "76° እና 34°"],
+    correctAnswer: "47° እና 43°",
+    explanation: "47° + 43° = 90°። ድምራቸው 90° የሆኑ ማዕዘኖች complementary angles ናቸው።",
+  },
+  {
+    id: "g6math-27",
+    order: 27,
+    question: "በስዕሉ መሰረት የትኛው መግለጫ ትክክል ነው?",
+    options: [
+      "∠1 እና ∠8 corresponding ናቸው",
+      "∠3 እና ∠6 corresponding ናቸው",
+      "∠4 እና ∠5 supplementary ናቸው",
+      "∠2 እና ∠6 supplementary ናቸው",
+    ],
+    correctAnswer: "∠4 እና ∠5 supplementary ናቸው",
+    explanation: "ይህ ጥያቄ በምንጩ ላይ የተጠቀሰውን ስዕል ይፈልጋል። የምንጩ መልስ ሐ ነው።",
+  },
+  {
+    id: "g6math-28",
+    order: 28,
+    question: "በክብ ውስጥ ከክብ ዙሪያ ላይ ካሉ ነጥቦች ሁሉ በእኩል ርቀት የሚገኘው ነጥብ ምን ይባላል?",
+    options: ["ራዲየስ", "መሀል", "ኮርድ", "ዲያሜትር"],
+    correctAnswer: "መሀል",
+    explanation: "ከክብ ዙሪያ ላይ ካሉ ነጥቦች ሁሉ በእኩል ርቀት የሚገኘው የክብ መሀል ነው።",
+  },
+  {
+    id: "g6math-29",
+    order: 29,
+    question: "ከሚከተሉት ቅርጾች የትኞቹ አራት ማዕዘን ያለው ፕሪዝም (rectangular prism) ሊፈጥሩ ይችላሉ?",
+    options: [
+      "ክቦች እና አራት ማዕዘኖች",
+      "አራት ማዕዘኖች እና ሦስት ማዕዘኖች",
+      "ክብ እና ሦስት ማዕዘኖች",
+      "በርካታ አራት ማዕዘኖች",
+    ],
+    correctAnswer: "በርካታ አራት ማዕዘኖች",
+    explanation: "Rectangular prism ሁሉም ፊቶቹ አራት ማዕዘኖች የሆኑ ጠንካራ ቅርጽ ነው።",
+  },
+  {
+    id: "g6math-30",
+    order: 30,
+    question: "የ13፣ 12፣ 11፣ 12፣ 10፣ 12፣ 13፣ 11፣ 14፣ 10 ሞድ ስንት ነው?",
+    options: ["12", "11", "13", "10"],
+    correctAnswer: "12",
+    explanation: "12 ሦስት ጊዜ ስለተደገመ ሞዱ 12 ነው።",
+  },
+],
+  "grade6-english": [
+    {
+      id: "g6eng-4",
+      order: 4,
+      question: "What is the main idea of paragraph 3?",
+      options: ["The role of effective study strategies","The roles of diagrams and charts in learning","The role of using different suitable learning methods","Maintaining a healthy life style is part of effective study skills"],
+      correctAnswer: "The role of using different suitable learning methods",
+      explanation: "Paragraph 3 focuses on choosing different learning methods according to individual needs, as well as regular review and practice.",
+    },
+    {
+      id: "g6eng-5",
+      order: 5,
+      question: "As used in paragraph 1, line 3, the pronoun ‘they’ refers to:",
+      options: ["study habits","academic pursuits","students","clear goals"],
+      correctAnswer: "students",
+      explanation: "The sentence says: “When students know what they need to learn...” Therefore, they refers to students.",
+    },
+    {
+      id: "g6eng-6",
+      order: 6,
+      question: "What does the pronoun ‘This’ in paragraph 2, line 2, refer to?",
+      options: ["Finding a quiet and comfortable study place","Managing time more effectively","Developing good study habits","Using active learning techniques"],
+      correctAnswer: "Finding a quiet and comfortable study place",
+      explanation: "The previous sentence says it is important to find a quiet, comfortable place to study. This refers to that action.",
+    },
+    {
+      id: "g6eng-7",
+      order: 7,
+      question: "In paragraph 3, line 3, what does the pronoun ‘others’ refer to?",
+      options: ["Study skills","Learning methods","Students who prefer listening or reading books","Students who may benefit from visual aids"],
+      correctAnswer: "Students who prefer listening or reading books",
+      explanation: "The passage says some students benefit from visual aids, while others may prefer listening to lectures or reading textbooks. Therefore, “others” refers to those students.",
+    },
+    {
+      id: "g6eng-8",
+      order: 8,
+      question: "As used in paragraph 2, line 2, the word ‘retain’ means:",
+      options: ["keep","lose","release","forget"],
+      correctAnswer: "keep",
+      explanation: "To retain information means to keep information in your memory.",
+    },
+    {
+      id: "g6eng-9",
+      order: 9,
+      question: "In paragraph 2, line 4, the word ‘enhance’ means:",
+      options: ["diminish","improve","reduce","hinder"],
+      correctAnswer: "improve",
+      explanation: "“Enhance” means to improve or make something better.",
+    },
+    {
+      id: "g6eng-10",
+      order: 10,
+      question: "As used in paragraph 3, line 6, what does the word ‘reinforce’ mean?",
+      options: ["Strengthen","Erode","Weaken","Undermine"],
+      correctAnswer: "Strengthen",
+      explanation: "“Reinforce learning” means to strengthen learning or make the knowledge stronger in memory.",
+    },
+    {
+      id: "g6eng-11",
+      order: 11,
+      question: "Farmers cultivate teff and coffee in the fertile soil during the rainy season. In this sentence, the meaning of ‘cultivate’ is:",
+      options: ["grow","destroy","cut","abandon"],
+      correctAnswer: "grow",
+      explanation: "To cultivate crops means to grow and take care of them.",
+    },
+    {
+      id: "g6eng-12",
+      order: 12,
+      question: "Lack of water for their animals is one of the big challenges for people who live in deserts. Meaning of ‘challenges’:",
+      options: ["supports","advantages","resources","problems"],
+      correctAnswer: "problems",
+      explanation: "A challenge is a difficult situation or problem that someone has to deal with.",
+    },
+    {
+      id: "g6eng-13",
+      order: 13,
+      question: "Schools are the best places for students to gain the knowledge they need for their future careers. Meaning of ‘gain’:",
+      options: ["get","forget","lose","control"],
+      correctAnswer: "get",
+      explanation: "Here, gain knowledge means to get or acquire knowledge.",
+    },
+    {
+      id: "g6eng-14",
+      order: 14,
+      question: "Success in learning demands hard work, motivation and commitment from students. ‘demands’ means:",
+      options: ["accepts","avoids","offers","requires"],
+      correctAnswer: "requires",
+      explanation: "“Demands” means requires something.",
+    },
+    {
+      id: "g6eng-15",
+      order: 15,
+      question: "One of the characteristics of honest students is that they don’t deny the mistake they have made. Meaning of ‘deny’:",
+      options: ["Admit","Confirm","Reject","Accept"],
+      correctAnswer: "Reject",
+      explanation: "To deny a mistake means to say that you did not make it or to reject the truth of it.",
+    },
+    {
+      id: "g6eng-16",
+      order: 16,
+      question: "It is proved that water ______ at 100°C.",
+      options: ["boils","is boiling","boiled","boil"],
+      correctAnswer: "boils",
+      explanation: "We use simple present for general facts and scientific truths. Water boils at 100°C.",
+    },
+    {
+      id: "g6eng-17",
+      order: 17,
+      question: "Mother: Is your brother at home?\nDaughter: ______",
+      options: ["Yes, he is not.","No, he is.","Yes, he does.","Yes, he is."],
+      correctAnswer: "Yes, he is.",
+      explanation: "The question uses the verb is, so the short positive answer is Yes, he is.",
+    },
+    {
+      id: "g6eng-18",
+      order: 18,
+      question: "Among all the books I have read so far, this one is ______.",
+      options: ["more interesting","the most interesting","interesting","less interesting"],
+      correctAnswer: "the most interesting",
+      explanation: "We are comparing one book with all the other books, so we use the superlative form.",
+    },
+    {
+      id: "g6eng-19",
+      order: 19,
+      question: "Hanna: ______\nBeletu: No. I am doing my homework.",
+      options: ["Have you washed your clothes?","Are you washing your clothes?","Were you washing your clothes?","Did you wash your clothes?"],
+      correctAnswer: "Are you washing your clothes?",
+      explanation: "“I am doing my homework” describes an action happening now, so the question should use the present continuous.",
+    },
+    {
+      id: "g6eng-20",
+      order: 20,
+      question: "Teacher: ______ students are there in the classroom?\nStudent: There are ten students.",
+      options: ["How much","How often","How far","How many"],
+      correctAnswer: "How many",
+      explanation: "Students are countable nouns, so we use How many.",
+    },
+    {
+      id: "g6eng-21",
+      order: 21,
+      question: "Alemitu is a clever student and I like ______ handwriting.",
+      options: ["hers","she","her","herself"],
+      correctAnswer: "her",
+      explanation: "We need a possessive adjective before the noun handwriting. Her is the correct choice.",
+    },
+    {
+      id: "g6eng-22",
+      order: 22,
+      question: "Alemu: I feel sick.\nZenaw: You had better go to hospital and see a doctor.\nAlemu: Ok. Thanks.",
+      options: ["What should I do?","Do you feel the same?","When should I go?","Why I should go?"],
+      correctAnswer: "What should I do?",
+      explanation: "“I feel sick” naturally leads to “What should I do?” before receiving advice.",
+    },
+    {
+      id: "g6eng-23",
+      order: 23,
+      question: "Teacher: ______ the class work?\nStudents: No, we haven’t.",
+      options: ["Do you finish","Did you finish","Have you finished","Will you finish"],
+      correctAnswer: "Have you finished",
+      explanation: "The answer uses the present perfect auxiliary have, so the question is Have you finished...?",
+    },
+    {
+      id: "g6eng-24",
+      order: 24,
+      question: "Almaz: ______ you come home and help me tomorrow? I have a lot to do.\nHanna: Ok.",
+      options: ["Do","Will","Did","Are"],
+      correctAnswer: "Will",
+      explanation: "Tomorrow refers to the future. Will you...? is used to ask about a future action.",
+    },
+    {
+      id: "g6eng-25",
+      order: 25,
+      question: "The baby ______ loudly immediately after its mother leaves.",
+      options: ["cry","cries","cryes","cries"],
+      correctAnswer: "cries",
+      explanation: "The subject is singular, so the verb needs the singular form. Cry changes to cries because it ends in consonant + y.",
+    },
+    {
+      id: "g6eng-26",
+      order: 26,
+      question: "There is a little cloud in the sky, but it ______ rain in the afternoon.",
+      options: ["should","has to","may","must"],
+      correctAnswer: "may",
+      explanation: "May is used to express possibility.",
+    },
+    {
+      id: "g6eng-27",
+      order: 27,
+      question: "My brother is good at language. He ______ speak three languages fluently.",
+      options: ["should","could","may","can"],
+      correctAnswer: "can",
+      explanation: "Can is used to express ability.",
+    },
+    {
+      id: "g6eng-28",
+      order: 28,
+      question: "Yesterday, we ______ to school early.",
+      options: ["go","went","gone","goes"],
+      correctAnswer: "went",
+      explanation: "Yesterday indicates the past, and the past tense of go is went.",
+    },
+    {
+      id: "g6eng-29",
+      order: 29,
+      question: "Active Voice: Many people speak English.\nPassive Voice:",
+      options: ["English is spoken by many people.","English has been spoken by many people.","English was spoken by many people.","English is being spoken by many people."],
+      correctAnswer: "English is spoken by many people.",
+      explanation: "The active sentence is in the simple present. The passive form is object + am/is/are + past participle.",
+    },
+    {
+      id: "g6eng-30",
+      order: 30,
+      question: "Which is conditional sentence Type 1?",
+      options: ["If she studies hard, she will pass the exam.","If she studied hard, she would pass the exam.","If she studied hard, she passed the exam.","If she had studied hard, she would have passed the exam."],
+      correctAnswer: "If she studies hard, she will pass the exam.",
+      explanation: "The first conditional uses If + simple present, followed by will + base verb.",
+    },
+    {
+      id: "g6eng-31",
+      order: 31,
+      question: "Student 1: ______\nStudent 2: It is very warm.",
+      options: ["Do you like the weather of your village?","Do you think it will rain today?","How’s the weather of your village?","Is the weather suitable to grow rice?"],
+      correctAnswer: "How’s the weather of your village?",
+      explanation: "The answer “It is very warm” describes the weather.",
+    },
+    {
+      id: "g6eng-32",
+      order: 32,
+      question: "I ______ today’s lesson very much. It is very entertaining.",
+      options: ["dislike","like","hate","don’t prefer"],
+      correctAnswer: "like",
+      explanation: "“Very entertaining” expresses a positive opinion, so like is the correct answer.",
+    },
+    {
+      id: "g6eng-33",
+      order: 33,
+      question: "Belay: ______\nHenok: I like bread with rice.",
+      options: ["When did you eat your breakfast?","Do you like to eat your breakfast?","What do you like for your breakfast?","How often do you eat your breakfast?"],
+      correctAnswer: "What do you like for your breakfast?",
+      explanation: "The answer gives the food Henok likes for breakfast.",
+    },
+    {
+      id: "g6eng-34",
+      order: 34,
+      question: "Father: Do you like your new shoes?\nSon: Yes. They ______ comfortable and attractive.",
+      options: ["are","can","will","have"],
+      correctAnswer: "are",
+      explanation: "Comfortable and attractive are adjectives describing the plural subject they, so we use are.",
+    },
+    {
+      id: "g6eng-35",
+      order: 35,
+      question: "Person 1: ______, it is wrong to allow children to use mobile phones.\nPerson 2: You are right. It is not good for their health.",
+      options: ["I don’t agree","I don’t believe","In my opinion","I don’t care"],
+      correctAnswer: "In my opinion",
+      explanation: "In my opinion is used to introduce a person's view or opinion.",
+    },
+    {
+      id: "g6eng-36",
+      order: 36,
+      question: "Student 1: Thanks to the government, these days big cities are becoming more attractive and comfortable.\nStudent 2: ______ and the same thing should be done to small cities.",
+      options: ["I don’t agree with you","I agree with you","Good morning to you","I’m fine thank you"],
+      correctAnswer: "I agree with you",
+      explanation: "The second speaker agrees with the first speaker's statement.",
+    },
+    {
+      id: "g6eng-37",
+      order: 37,
+      question: "Which sentence is correctly punctuated?",
+      options: ["Do you know the answer of this question,","All of you stand up,","Our teacher is absent today;","They love their country so much."],
+      correctAnswer: "They love their country so much.",
+      explanation: "This is a complete statement and is correctly ended with a full stop.",
+    },
+    {
+      id: "g6eng-38",
+      order: 38,
+      question: "Disordered words (brother/like/my/banana/doesn’t). Correct order:",
+      options: ["Banana doesn’t like my brother.","My brother not does like banana.","Banana my brother doesn’t like.","My brother doesn’t like banana."],
+      correctAnswer: "My brother doesn’t like banana.",
+      explanation: "The correct structure is subject + does not/doesn’t + base verb + object.",
+    },
+    {
+      id: "g6eng-39",
+      order: 39,
+      question: "All the windows and the door are closed, ______ our classroom is very hot.",
+      options: ["but","so","and","for"],
+      correctAnswer: "so",
+      explanation: "So is used to show a result.",
+    },
+    {
+      id: "g6eng-40",
+      order: 40,
+      question: "My uncle is a very rich man, ______ he is not happy.",
+      options: ["so","and","for","yet"],
+      correctAnswer: "yet",
+      explanation: "Yet is used to show contrast.",
+    },
+  ],
+  "grade6-science": [
+  {
+    id: "g6science-4",
+    order: 4,
+    question:
+      "ከሚከተሉት ውስጥ ተጓዦች በአየር፣ በባህር ወይም በመሬት ላይ የሚጓዙበትን ቦታ እና መድረሻቸውን ለማወቅ የሚጠቀሙበት የትኛው ነው?",
+    options: ["Google Maps", "Sketch Map", "GPS", "Google Earth"],
+    correctAnswer: "GPS",
+    explanation:
+      "GPS የተጓዦችን ትክክለኛ መገኛ እና መድረሻ ለማወቅ የሚረዳ ስርዓት ነው።",
+  },
+  {
+    id: "g6science-5",
+    order: 5,
+    question: "የምግብ መፈጨት የሚጀምረው የት ነው?",
+    options: ["በጨጓራ", "በአፍ", "በትንንሽ አንጀት", "በትልቁ አንጀት"],
+    correctAnswer: "በአፍ",
+    explanation:
+      "የምግብ መፈጨት በአፍ ውስጥ ይጀምራል። ጥርሶች ምግቡን ያንኳኩታል፤ ምራቅም የምግብ መፈጨትን ይጀምራል።",
+  },
+  {
+    id: "g6science-6",
+    order: 6,
+    question: "ከሚከተሉት ውስጥ ንፁህ ንጥረ ነገር ያልሆነው የቱ ነው?",
+    options: ["አፈር", "ውሃ", "ወርቅ", "የጠረጴዛ ጨው"],
+    correctAnswer: "የጠረጴዛ ጨው",
+    explanation:
+      "የጥያቄው ምንጭ መልሱን መ ብሎ ያቀርባል፤ ነገር ግን በአማራጮቹ ውስጥ መ የጠረጴዛ ጨው ነው።",
+  },
+  {
+    id: "g6science-7",
+    order: 7,
+    question: "54 ኪ.ግ ስንት ግራም ነው?",
+    options: ["5400 ግራም", "108000 ግራም", "27000 ግራም", "54000 ግራም"],
+    correctAnswer: "54000 ግራም",
+    explanation: "1 ኪ.ግ = 1000 ግራም። 54 × 1000 = 54000 ግራም።",
+  },
+  {
+    id: "g6science-8",
+    order: 8,
+    question:
+      "የአንድ የእግር ኳስ ሜዳ ርዝመት 45 ሜትር እና ስፋቱ 25 ሜትር ከሆነ ስፋቱ ስንት ካሬ ሜትር ነው?",
+    options: ["2945 ካ.ሜ", "1825 ካ.ሜ", "1125 ካ.ሜ", "1255 ካ.ሜ"],
+    correctAnswer: "1125 ካ.ሜ",
+    explanation: "45 × 25 = 1125 ካሬ ሜትር።",
+  },
+  {
+    id: "g6science-9",
+    order: 9,
+    question: "የምድር ዋና የኃይል ምንጭ የቱ ነው?",
+    options: ["ንፋስ", "የፀሐይ ብርሃን", "የተፈጥሮ ጋዝ", "የውሃ ኃይል"],
+    correctAnswer: "የፀሐይ ብርሃን",
+    explanation:
+      "ፀሐይ ለምድር ዋና የኃይል ምንጭ ናት።",
+  },
+  {
+    id: "g6science-10",
+    order: 10,
+    question: "በየቀኑ የሚታዩ የአየር ሁኔታዎች ምን ይባላሉ?",
+    options: ["የአየር ሁኔታ", "የአየር ንብረት", "የአየር ስብጥር", "የአየር ንብረት ለውጥ"],
+    correctAnswer: "የአየር ሁኔታ",
+    explanation:
+      "የአየር ሁኔታ በየቀኑ የሚታየውን የከባቢ አየር ሁኔታ ይገልጻል።",
+  },
+  {
+    id: "g6science-11",
+    order: 11,
+    question: "የተፈጥሮ ሀብትን ለመጠበቅ የሚረዳው የቱ ነው?",
+    options: [
+      "ሙሉ በሙሉ መጠቀም",
+      "ሁሉንም መጠቀም",
+      "ሳይተካ መጠቀም",
+      "እንደገና መጠቀም",
+    ],
+    correctAnswer: "እንደገና መጠቀም",
+    explanation:
+      "እንደገና መጠቀም የተፈጥሮ ሀብቶችን በመቆጠብ እንዲጠበቁ ይረዳል።",
+  },
+  {
+    id: "g6science-12",
+    order: 12,
+    question: "የማዕድን ሀብትን በዘላቂነት ለመጠቀም የሚረዳው የቱ ነው?",
+    options: [
+      "የሰው ጉልበት",
+      "ዘመናዊ መሳሪያዎች",
+      "በብክለት መጠቀም",
+      "ሳይንሳዊ ባልሆነ መንገድ መጠቀም",
+    ],
+    correctAnswer: "ዘመናዊ መሳሪያዎች",
+    explanation:
+      "ዘመናዊ መሳሪያዎችን መጠቀም ሀብቱን በተሻለ ሁኔታ እንዲጠቀሙ ይረዳል።",
+  },
+  {
+    id: "g6science-13",
+    order: 13,
+    question: "የዱር እንስሳት መጥፋትን የሚያስከትለው የቱ ነው?",
+    options: [
+      "ደኖችን ማስፋፋት",
+      "የቴክኖሎጂ መስፋፋት",
+      "ሕገወጥ አደን",
+      "የኢንዱስትሪ እጥረት",
+    ],
+    correctAnswer: "ሕገወጥ አደን",
+    explanation:
+      "ሕገወጥ አደን የዱር እንስሳትን ቁጥር በመቀነስ ለመጥፋታቸው ያጋልጣቸዋል።",
+  },
+  {
+    id: "g6science-14",
+    order: 14,
+    question: "ከሚከተሉት ውስጥ የማይታደስ የኃይል ምንጭ የቱ ነው?",
+    options: ["የተፈጥሮ ጋዝ", "የፀሐይ ብርሃን", "አየር", "ውሃ"],
+    correctAnswer: "የተፈጥሮ ጋዝ",
+    explanation:
+      "የተፈጥሮ ጋዝ በአጭር ጊዜ የማይታደስ የኃይል ምንጭ ነው።",
+  },
+  {
+    id: "g6science-15",
+    order: 15,
+    question: "ከሚከተሉት የቋንቋ ቤተሰብ ውስጥ በኩሽቲክ የሚመደበው የቱ ነው?",
+    options: ["ጉራጌ", "ወላይታ", "ግዕዝ", "አፋር"],
+    correctAnswer: "አፋር",
+    explanation:
+      "አፋርኛ በኩሽቲክ የቋንቋ ቤተሰብ ውስጥ ይመደባል።",
+  },
+  {
+    id: "g6science-16",
+    order: 16,
+    question:
+      "በድንጋይ እርከኖችና የአፈር መሸርሸርን በመቆጣጠር የሚታወቀው ባህላዊ ቅርስ የቱ ነው?",
+    options: [
+      "የታችኛው አዋሽ ሸለቆ",
+      "የኮንሶ ባህላዊ መልክዓ ምድር",
+      "የታችኛው ኦሞ ሸለቆ",
+      "የሐረር ግንብ",
+    ],
+    correctAnswer: "የኮንሶ ባህላዊ መልክዓ ምድር",
+    explanation:
+      "የኮንሶ ባህላዊ መልክዓ ምድር በድንጋይ እርከኖች እና በአፈር ጥበቃ ዘዴዎች ይታወቃል።",
+  },
+  {
+    id: "g6science-17",
+    order: 17,
+    question:
+      "የግብርና ጥሬ ዕቃዎችን ወደ ሌላ ምርት የሚቀይረው የኢኮኖሚ እንቅስቃሴ የቱ ነው?",
+    options: ["የሰብል ምርት", "የተቀላቀለ እርሻ", "ኢንዱስትሪ", "ንግድ"],
+    correctAnswer: "ኢንዱስትሪ",
+    explanation:
+      "ኢንዱስትሪ ጥሬ ዕቃዎችን በማቀነባበር ወደ ሌሎች ምርቶች ይቀይራል።",
+  },
+  {
+    id: "g6science-18",
+    order: 18,
+    question: "የቱሪዝም ኢንዱስትሪን የሚጎዳው ምክንያት የቱ ነው?",
+    options: [
+      "የቱሪዝም እድገት",
+      "የቴክኖሎጂ መስፋፋት",
+      "የመጓጓዣ መሻሻል",
+      "በቂ ያልሆነ መሰረተ ልማት",
+    ],
+    correctAnswer: "በቂ ያልሆነ መሰረተ ልማት",
+    explanation:
+      "በቂ ያልሆነ መሰረተ ልማት የቱሪዝም ኢንዱስትሪን ሊገድብ ይችላል።",
+  },
+  {
+    id: "g6science-19",
+    order: 19,
+    question: "ኒኮቲን የያዘው ሱስ አምጪ ንጥረ ነገር የቱ ነው?",
+    options: ["ጫት", "ሐሺሽ", "ሲጋራ", "አልኮል"],
+    correctAnswer: "ሲጋራ",
+    explanation:
+      "ሲጋራ ኒኮቲን የተባለ ሱስ አምጪ ንጥረ ነገር ይዟል።",
+  },
+  {
+    id: "g6science-20",
+    order: 20,
+    question: "የድርቅ መንስኤ ያልሆነው የቱ ነው?",
+    options: ["የደን ጭፍጨፋ", "በረሃማነት", "የሙቀት መጨመር", "የመሰረተ ልማት እጥረት"],
+    correctAnswer: "የመሰረተ ልማት እጥረት",
+    explanation:
+      "የመሰረተ ልማት እጥረት በቀጥታ የድርቅ መንስኤ አይደለም።",
+  },
+  {
+    id: "g6science-21",
+    order: 21,
+    question:
+      "ከጎረቤት አገራት አንፃር ስለኢትዮጵያ አንፃራዊ መገኛ ትክክል የሆነው የቱ ነው?",
+    options: [
+      "ከኬንያ በስተሰሜን",
+      "ከኤርትራ በስተምዕራብ",
+      "ከሶማሊያ በስተደቡብ",
+      "ከሱዳን በስተሰሜን",
+    ],
+    correctAnswer: "ከኬንያ በስተሰሜን",
+    explanation:
+      'በካርታው እና በኮምፓስ አቅጣጫ ጠቋሚው መሰረት፤ ኬንያ ከኢትዮጵያ በስተደቡብ የምትገኝ ሲሆን ኢትዮጵያ ደግሞ "ከኬንያ በስተሰሜን" ትገኛለች፡፡',
+  },
+  {
+    id: "g6science-22",
+    order: 22,
+    question:
+      "ከሚከተሉት ሀገራት ውስጥ የምሥራቅ አፍሪካ አጎራባች ሀገር የሆነችው የትኛዋ ናት?",
+    options: ["ሞዛምቢክ", "ዲሞክራቲክ ኮንጎ", "ኒጀር", "ናሚቢያ"],
+    correctAnswer: "ሞዛምቢክ",
+    explanation:
+      "ሞዛምቢክ በጂኦግራፊያዊ አቀማመጥ የምስራቅ አፍሪካ ቀጠና አካል ወይም አጎራባች ሀገር ተደርጋ ትመደባለች።",
+  },
+  {
+    id: "g6science-23",
+    order: 23,
+    question:
+      "ከሚከተሉት ውስጥ የትኛው መተግበሪያ ነው ሰው ሰራሽ ሳተላይቶችን በመጠቀም የመሬትን ትክክለኛ ምስል የሚያሳያችሁ?",
+    options: ["ጎግል ማፕ", "ጂፒኤስ", "ጎግል ኧርዝ", "ጎግል ካርታ"],
+    correctAnswer: "ጎግል ኧርዝ",
+    explanation:
+      "ጎግል ኧርዝ (Google Earth) ሰው ሰራሽ ሳተላይቶች የሚያነሱትን ምስል በመጠቀም የምድራችንን ክፍሎች በ3D ትክክለኛ ምስል ለማየት የሚረዳ መተግበሪያ ነው።",
+  },
+  {
+    id: "g6science-24",
+    order: 24,
+    question:
+      "ከሚከተሉት የምስራቅ አፍሪካ ሀገራት መካከል ዝቅተኛ የህዝብ ጥግግት የሚገኘው በየትኛው ነው?",
+    options: ["በኢትዮጵያ", "በብሩንዲ", "በሶማሊያ", "በኡጋንዳ"],
+    correctAnswer: "በሶማሊያ",
+    explanation:
+      "የህዝብ ጥግግት ማለት በአንድ ስኩዌር ኪሎሜትር ላይ የሚኖረው አማካኝ የህዝብ ብዛት ነው። ከቀረቡት ሀገራት አንጻር ሲታይ ሶማሊያ ዝቅተኛ የህዝብ ጥግግት አላት።",
+  },
+  {
+    id: "g6science-25",
+    order: 25,
+    question:
+      "ኦክስጂንን ከሳንባ ተቀብሎ በመሸከም ለመላ የሰውነታችን ህዋሶች የሚያደርሰው የደም ህዋስ የቱ ነው?",
+    options: ["ፕሌትሌትስ", "ቀይ የደም ህዋስ", "ፕላዝማ", "ነጭ የደም ህዋስ"],
+    correctAnswer: "ቀይ የደም ህዋስ",
+    explanation:
+      "ቀይ የደም ህዋሳት በውስጣቸው ሄሞግሎቢን ስለሚይዙ ኦክስጂንን ከሳንባ ወደ መላ የሰውነት ክፍሎች ያጓጉዛሉ።",
+  },
+  {
+    id: "g6science-26",
+    order: 26,
+    question: "በጉርምስና ወቅት በወንዶች ላይ የሚታየው የስነ ሕይወታዊ ለውጥ የትኛው ነው?",
+    options: ["የድምጽ መጎርነን", "የዳሌ መስፋት", "የድምጽ መቅጠን", "የክብደት መቀነስ"],
+    correctAnswer: "የድምጽ መጎርነን",
+    explanation:
+      "በጉርምስና ወቅት በወንድ ልጆች ላይ የድምጽ ቃና ይጎረነናል።",
+  },
+  {
+    id: "g6science-27",
+    order: 27,
+    question: "የደቂቅ ትንቧ መተንፈሻ አካል ተግባር የሆነው የትኛው ነው?",
+    options: [
+      "አየር ያሞቃል፤ ቆሻሻንና ጀርምን ያጣራል።",
+      "ለኦክስጂን ወደ ደም ውስጥ መግቢያ እና መውጫ ነው።",
+      "ከዐብይ ትንቧ ወደ ሳንባ ለሚገባውና ለሚወጣው እየር መተላለፊያ መንገድ ነው።",
+      "ለአየር ወደ አየር ትንከረት የአየር ከረጢት መግቢያና መውጫ ነው።",
+    ],
+    correctAnswer: "ለአየር ወደ አየር ትንከረት የአየር ከረጢት መግቢያና መውጫ ነው።",
+    explanation:
+      "ደቂቅ ትንቧዎች (Bronchioles) አየርን ወደ አየር ከረጢቶች (Alveoli) እንዲደርስ የሚያደርጉ ጥቃቅን ቱቦዎች ናቸው።",
+  },
+  {
+    id: "g6science-28",
+    order: 28,
+    question: "ከሚከተሉት ውስጥ የዋህድ ዘር ድብልቅ ባህሪ የሆነው የቱ ነው?",
+    options: [
+      "የድብልቁ ይዘት ወጥና ተመሳሳይ አይደለም",
+      "በአብዛኛው ዋህድ ዘር ድብልቆች ሙሙት ናቸው",
+      "በአብዛኛው ዋህድ ዘር ድብልቅ ምንዝሮች መካከል ልዩነት አለ",
+      "ድብልቁ ውስጥ ያሉትን ምንዝሮች በዓይን ለይተን ማየት እንችላለን",
+    ],
+    correctAnswer: "በአብዛኛው ዋህድ ዘር ድብልቆች ሙሙት ናቸው",
+    explanation:
+      "ዋህድ ዘር ድብልቆች ይዘታቸው ወጥና የተዋሃደ የሆነ ድብልቅ ነው። ለምሳሌ የጨውና የውሃ ድብልቅ።",
+  },
+  {
+    id: "g6science-29",
+    order: 29,
+    question:
+      "በሞቃትና እርጥብ የሐሩር የአየር ንብረት ክልል እና በበረሃ የአየር ንብረት ክልል መካከል የሚገኝ የምሥራቅ አፍሪካ የአየር ንብረት ክልል የቱ ነው?",
+    options: [
+      "የደጋ አየር ንብረት ክልል",
+      "የወይና ደግ አየር ንብረት ክልል",
+      "የሐሩር ሞቃታማ የባሕር ዳርቻዎች",
+      "የሣር ምድር ሞቃታማ የአየር ንብረት ክልል",
+    ],
+    correctAnswer: "የሣር ምድር ሞቃታማ የአየር ንብረት ክልል",
+    explanation:
+      "የሣር ምድር ሞቃታማ የአየር ንብረት በእርጥብ የሐሩር ደን እና በደረቅ በረሃ መካከል የሚገኝ ክልል ነው።",
+  },
+  {
+    id: "g6science-30",
+    order: 30,
+    question: "ስለ ምሥራቅ አፍሪካ የተፈጥሮ ሐብቶች ትክክል የሆነው የቱ ነው?",
+    options: [
+      "አነስተኛ ቁጥር ያላቸው የማዕድን ዓይነቶች ይገኛሉ።",
+      "የምሥራቅ አፍሪካ ቀጠና በተፈጥሮ ሀብት የበለፀገ አይደለም።",
+      "ሁሉም ማዕድናት ከመሬት ውስጥ ወጥተው አገልግሎት ላይ ውለዋል።",
+      "ዋና ዋናዎቹ የማዕድናት ሐብቶች ወርቅ፤ መዳብና የድንጋይ ከሰል ናቸው።",
+    ],
+    correctAnswer: "ዋና ዋናዎቹ የማዕድናት ሐብቶች ወርቅ፤ መዳብና የድንጋይ ከሰል ናቸው።",
+    explanation:
+      "በምስራቅ አፍሪካ ከሚገኙ ዋና ዋና ማዕድናት መካከል ወርቅ፣ መዳብ፣ ታንታለም እና የድንጋይ ከሰል ይጠቀሳሉ።",
+  },
+  {
+    id: "g6science-31",
+    order: 31,
+    question: "የአፈር መሸርሸር መንስኤ የሆነው የቱ ነው?",
+    options: [
+      "የዕፅዋት ሽፋን መመናመን",
+      "በተዳፋት ቦታ ወደ አግድም ማረስ",
+      "አንድን ቦታ ለረጅም ጊዜ በተከታታይ አለማረስ",
+      "በግጦሽ መሬት ላይ ከብቶች ለረዥም ጊዜ አለማሰማራት",
+    ],
+    correctAnswer: "የዕፅዋት ሽፋን መመናመን",
+    explanation:
+      "የዕፅዋት ሽፋን ሲመናመን አፈሩን የሚይዙ ሥሮች ስለሚቀንሱ አፈሩ በዝናብና በንፋስ በቀላሉ ይሸረሸራል።",
+  },
+  {
+    id: "g6science-32",
+    order: 32,
+    question: "በምሥራቅ አፍሪካ ከስምጥ ሸለቆ ውጪ ያሉ ሐይቆች ውስጥ የሚመደበው የቱ ነው?",
+    options: ["አልበርት", "ታንጋኒካ", "ጣና", "ቱርካና"],
+    correctAnswer: "ጣና",
+    explanation:
+      "የጣና ሐይቅ ከስምጥ ሸለቆ ውጪ የሚገኝ ሐይቅ ነው።",
+  },
+  {
+    id: "g6science-33",
+    order: 33,
+    question: "በምሥራቅ አፍሪካ ሀገሮች ለደን ሀብት መቀነስ ምክንያት የሆነው የቱ ነው?",
+    options: [
+      "የሕዝብ ቁጥር መጨመር",
+      "የከተሞች አለመስፋፋት",
+      "የማገዶ ፍላጎት መቀነስ",
+      "የዘመናዊ እርሻ አለመተግበር",
+    ],
+    correctAnswer: "የሕዝብ ቁጥር መጨመር",
+    explanation:
+      "የሕዝብ ቁጥር መጨመር ለግብርና፣ ለቤት መስሪያና ለማገዶ የእንጨት ፍላጎትን በመጨመር ለደን መጨፍጨፍ ያበረክታል።",
+  },
+  {
+    id: "g6science-34",
+    order: 34,
+    question: "በምሥራቅ አፍሪካ ካሉ ሀገሮች ከፍተኛ የሕዝብ ቁጥር ያላት ሀገር ማን ናት?",
+    options: ["ኬኒያ", "ኢትዮጵያ", "ኤርትራ", "ታንዛንያ"],
+    correctAnswer: "ኢትዮጵያ",
+    explanation:
+      "ከተሰጡት አማራጮች መካከል ኢትዮጵያ ከፍተኛውን የሕዝብ ቁጥር ያላት ሀገር ናት።",
+  },
+  {
+    id: "g6science-35",
+    order: 35,
+    question: "የአክሱም ሥልጣኔ ከነ ቢያን ቀደምት ሥልጣኔ የሚለየው በየትኛው ነው?",
+    options: [
+      "ዋና ከተማቸው ሜሮይ የነበረ መሆኑ",
+      "የግብፅን አገዛዝ በማስወገድ ነፃነታቸውን መቀዳጀታቸው",
+      "ግዛቱን በማስፋፋት ጥንታዊ ግብጽን ጭምር መግዛት መቻሉ",
+      "ከ2ኛው ክፍለ ዘመን ጀምሮ እስከ 12ኛው ክፍለ ዘመን ድረስ መዝለቁ",
+    ],
+    correctAnswer: "ከ2ኛው ክፍለ ዘመን ጀምሮ እስከ 12ኛው ክፍለ ዘመን ድረስ መዝለቁ",
+    explanation:
+      "የአክሱም ሥልጣኔ ከ2ኛው ክፍለ ዘመን ጀምሮ እስከ 12ኛው ክፍለ ዘመን ድረስ የዘለቀ ሥልጣኔ ነው።",
+  },
+  {
+    id: "g6science-36",
+    order: 36,
+    question: "ከሚከተሉት ቅርሶች ውስጥ ቁሳዊ ቅርስ የሆነው የትኛው ነው?",
+    options: ["የሐይማኖት ሥርዓቶች", "ባህላዊ ጨዋታዎች", "የዋሻ ላይ ሥዕሎች", "የባህል ጀግንነት"],
+    correctAnswer: "የዋሻ ላይ ሥዕሎች",
+    explanation:
+      "የዋሻ ላይ ሥዕሎች በአይን የሚታዩና በእጅ የሚዳሰሱ ተጨባጭ ቅርሶች ስለሆኑ ቁሳዊ ቅርስ ናቸው።",
+  },
+  {
+    id: "g6science-37",
+    order: 37,
+    question: "የምሥራቅ አፍሪካ ምጣኔ ሀብት በዋናነት የተመሰረተው በየትኛው ላይ ነው?",
+    options: ["በግብርና", "በንግድ", "በማዕድን ቁፋሮ", "በቱሪዝም"],
+    correctAnswer: "በግብርና",
+    explanation:
+      "በአብዛኛዎቹ የምስራቅ አፍሪካ ሀገራት ግብርና የኢኮኖሚው ዋና መሠረት ነው።",
+  },
+  {
+    id: "g6science-38",
+    order: 38,
+    question: "ከኤች አይ ቪ ኤድስ ራሳችንን ለመጠበቅ የሚያስፈልገን የሕይወት ክህሎት የቱ ነው?",
+    options: ["አለመተባበር", "በራስ መተማመን", "በተገቢው ውሳኔ አለመጽናት", "ራስን አለመቆጣጠር"],
+    correctAnswer: "በራስ መተማመን",
+    explanation:
+      "በራስ መተማመን ከአቻ ግፊትና ከአደገኛ ድርጊቶች ራስን ለመጠበቅ ይረዳል።",
+  },
+  {
+    id: "g6science-39",
+    order: 39,
+    question:
+      "የጉበትና የጨጓራ ተግባርን በማወክ የነርቭ ሥርዓት የሚያደነዝዘው ሱስ አምጪ እጽ የቱ ነው?",
+    options: ["አልኮል", "ኮኬይን", "ሲጋራ", "ጫት"],
+    correctAnswer: "አልኮል",
+    explanation:
+      "አልኮል በጉበትና በጨጓራ ላይ ጉዳት ሊያስከትል እና የማዕከላዊ የነርቭ ሥርዓትን ሊያደነዝዝ ይችላል።",
+  },
+  {
+    id: "g6science-40",
+    order: 40,
+    question:
+      "በሶማሊያ ጠረፋማ አካባቢዎች እና በኢትዮጵያ አፋር ክልል የሚበቅሉ የዕፅዋት አይነቶች የትኞቹ ናቸው?",
+    options: [
+      "የሳር ምድር ዕፅዋት",
+      "የበርሀማ አካባቢ ዕፅዋት",
+      "የከፍተኛ ቦታ ዕፅዋት",
+      "የረግረጋማ አካባቢ ዕፅዋት",
+    ],
+    correctAnswer: "የበርሀማ አካባቢ ዕፅዋት",
+    explanation:
+      "የኢትዮጵያ አፋር ክልል እና የሶማሊያ ጠረፋማ አካባቢዎች በከፍተኛ ሙቀትና በአነስተኛ ዝናብ የሚታወቁ በመሆናቸው የበርሀማ አካባቢ ዕፅዋት ይበቅላሉ።",
+  },
+],
+    "grade6-civics": [
+    {
+      id: "g6civics-4",
+      order: 4,
+      question: "ግለሰባዊ ኃላፊነት እና ሀገራዊ ኃላፊነት ያላቸው ዝምድና ምንድን ነው?",
+      options: [
+        "ግለሰቦች ለሀገር ምንም አበርክቶ የላቸውም",
+        "ግላዊ ኃላፊነታችን ስንወጣ ሀገር ትጠናከራለች",
+        "ኃለፊነታችን ብንወጣም ለሃገር አስተዋጽዖ የለውም",
+        "ግለሰቦች በሃገራዊ ኃላፊነት ላይ ሚና የላቸውም"
+      ],
+      correctAnswer: "B",
+      explanation: "ሀገር ማለት የግለሰቦች ስብስብ ነች፡፡ እያንዳንዱ ዜጋ የየራሱን ግላዊና ሙያዊ ኃላፊነት በታማኝነትና በትጋት ሲወጣ በጥቅሉ ሲደመርየሀገርን መረጋጋትና መጠናከር ይፈጥራል፡፡"
+    },
+    {
+      id: "g6civics-5",
+      order: 5,
+      question: "የሰላም መደፍረስ ማህበረሰቡን እንዴት ሊጎዳ ይችላል?",
+      options: [
+        "ስዎች ያላቸውን ሃብት እንዲጠቀሙ ስለሚያደርግ",
+        "የዜጎች ሕይወት አደጋ ላይ የሚወድቅ በመሆኑ",
+        "ዜጎች በነጻነት ተንቀሳቅሰው መስራት የሚችሉ በመሆናቸው",
+        "የተሻለ የኢኮኖሚ እንቅስቃሴ እንዲኖር ስለሚያስችል"
+      ],
+      correctAnswer: "B",
+      explanation: "ሰላም ሲደፈርስ ግጭትና ሁከት ስለሚነግስ የሰው ልጅ የመኖርመብት ይጣሳል፤ የዜጎች ህይወትና አካል እንዲሁም ንብረት ቀጥተኛ ለሆነ አደጋና ውድመት ይጋለጣል፡፡"
+    },
+    {
+      id: "g6civics-6",
+      order: 6,
+      question: "ከሚከተሉት ተግባራት ውስጥ በትምህርታችሁ የላቀ ደረጃ ለመድረስ እናንተ ምን ተግባር ማከናወን አለባችሁ?",
+      options: [
+        "በፈተና ሰዓት ከሌላ ተማሪ መኮረጀ",
+        "አሳይመንትን በሌላ ሰው ማሰራት",
+        "በፕሮግራም ጠንክሮ ማጥናት",
+        "ትምህርት እየቀሩ በግል ማጥናት"
+      ],
+      correctAnswer: "C",
+      explanation: "በትምህርት ስኬታማ ለመሆንና እውነተኛ እውቀትን ጨብጦ የላቀ ደረጃ ላይ ለመድረስ፤ ጊዜን በአግባቡ ከፋፍሎ በምክንያታዊና ወጥ በሆነ ፕሮግራም ጠንክሮ ማጥናት ብቸኛው አስተማማኝ መንገድ ነው።"
+    },
+    {
+      id: "g6civics-7",
+      order: 7,
+      question: "ከሚከተሉት ውስጥ የትኛው የሃገር መውደድን ሃሳብ ይገልጻል?",
+      options: [
+        "ሃሳብን በሌሎች መጫን",
+        "የሰዎችን መብት መጣስ",
+        "ለሌሎች ሰዎች አለማሰብ",
+        "የዜጎችን መብት ማክበር"
+      ],
+      correctAnswer: "D",
+      explanation: "ሀገር መውደድ ማለት መሬቱን ወይም ተፈጥሮውን ብቻ መውደድ ሳይሆን፤ በዚያች ሀገር ውስጥ የሚኖሩትን ዜጎች በሙለ እኩልነት አምኖ መብታቸውን፤ ነፃነታቸውንና ክብራቸውን ማክበርጭምር ነው።"
+    },
+    {
+      id: "g6civics-8",
+      order: 8,
+      question: "ሰዓትን ማክበር የምን መገለጫ ነው?",
+      options: [
+        "የጊዜ መግደያ",
+        "መዋያ ማጣት",
+        "ጥሩ የስራ ባህል",
+        "የስንፍና መገለጫ"
+      ],
+      correctAnswer: "C",
+      explanation: "ሰዓትን ማክበር ማለት ለራስም ሆነ ለሌሎች ሰዎች ጊዜ ዋጋ መስጠት ነው፤ ይህም ስራን በወቅቱና በውጤታማነት ለማከናወን የሚረዳ የጠንካራና የመልካም የስራ ባህል ዋነኛ መገለጫ ነው፡፡"
+    },
+    {
+      id: "g6civics-9",
+      order: 9,
+      question: "ሀገር ወዳድ መሆን ለሃገር የሚያስገኘውን ጥቅም የሚገልጸው የትኛው ነው?",
+      options: [
+        "ብልሹ አሰራር እንዲሰፍን ያስችላል፡፡",
+        "ሃገር በድህነት እንድትወድቅ ያስችላል፡፡",
+        "አጭበርባሪዎች እንዲበራከቱ ያደርጋል፡፡",
+        "የሃገርን ሉዓላዊነትን ያስከብራል፡፡"
+      ],
+      correctAnswer: "D",
+      explanation: "ዜጎች ሀገር ወዳድ ሲሆኑ ለሀገራቸው ክብር፤ አንድነትና ነፃነት በቁርጠኝነት ይቆማሉ፤ ይህም ሀገርን ከውስጥም ሆነ ከውጭ ጠላቶች በመጠበቅ የሀገርን ሉዓላዊነት በፅኑ ለማስከበር ያስችላል፡፡"
+    },
+    {
+      id: "g6civics-10",
+      order: 10,
+      question: "የአደጉ ሃገራት በሳይንስ፣ በቴክኖሎጅና በመሰረተ ልማት ካላደጉ ሃገሮች የተሻሉ ናቸው፡፡ ይህ የዕድገት ልዩነት እንዲፈጠር ምክንያቱ ምንድን ነው?",
+      options: [
+        "በሚኖሩበት መልከዓ ምድር",
+        "ባዳበሩት ጠንካራ የስራ ባህል",
+        "በሚናገሩት የቋንቋ ዓይነት",
+        "ባላቸው የሕዝብ ብዛት"
+      ],
+      correctAnswer: "B",
+      explanation: "ለአንድ ሀገር እድገትና በሳይንስና ቴክኖሎጂ መስክ መመንጠቅ ወሳኙ ነገር ህዝቡ ያዳበረው ጠንካራ የስራ ባህል፤ ለፈጠራ ስራ ያለው ትጋትና የምርምር ቁርጠኝነት እንጂ የህዝብ ብዛት ወይም መልከዓ ምድርአይደለም፡፡"
+    },
+    {
+      id: "g6civics-11",
+      order: 11,
+      question: "አንድ ኢትዮጵያዊ ወጣት የሃገሩን ሚስጢር ለባዕድ ሃገር ዜጋ አሳልፎ ሲሠጥ ብትመለከቱ ምን ታደርጋለህ/ታደርጊያለሽ?",
+      options: [
+        "የልጁን ድርጊት በጭፍን መደገፍ",
+        "የልጁን ተግባር በጥሩ ማመስገን",
+        "ለሚመለከተው መረጃ መስጠት",
+        "ያላዩ መስሎ በዝምታ ማለፍ"
+      ],
+      correctAnswer: "C",
+      explanation: "የሀገርን ሚስጥር አሳልፎ መስጠት የሀገርን ደህንነትና ሉዓላዊነት አደጋ ላይ የሚጥል የክህደት ተግባር በመሆኑ፤ እንደ መልካም ዜጋ ጉዳዩን ወዲያውኑ ለሚመለከተው የህግ አካል ወይም የመንግስት ክፍል ማሳወቅ ተገቢ ነው፡፡"
+    },
+    {
+      id: "g6civics-12",
+      order: 12,
+      question: "በኢትዮጵያ በተለያዩ አከባቢዎች ስራን በጋራ (በደቦ/ወንፈል) ሲሰሩ ይታያል፡፡ ይህ ተግባር ከስራ ባህል አንፃር እንዴት ይገመገማል?",
+      options: [
+        "ለውጥ የማያመጣ መጥፎ የስራ ባህል ነው",
+        "መበረታት ያለበት ጠንካራ የስራ ባህል መገለጫ ነው",
+        "መወገድ ያለበት ኋላ ቀር የስራ ባህል ማሳያ ነው",
+        "በጋራ መስራት ጠንካራ የስራ ባህልን አይገልፅም"
+      ],
+      correctAnswer: "B",
+      explanation: "ደቦ ወይም ወንፈል ማህበራዊ ትብብርንና አንድነትን የሚያጠናክር፤ ከባድ ስራዎችን በአጭር ጊዜና በትንሽ ጉልበት በውጤታማነት ለማጠናቀቅ የሚረዳ በመሆኑ ሊበረታታ የሚገባው ጠንካራና መልካም የስራ ባህል ነው፡፡"
+    },
+    {
+      id: "g6civics-13",
+      order: 13,
+      question: "በግብርና ልማት እና በመንገድ ግንባታ መካከል ያለው ትስስር ምንድን ነው?",
+      options: [
+        "የመንገድ ግንባታ የግብርና ምርት ግብይትን ያፋጥናል",
+        "ግብርና ለመንገድ ግንባታ ምንም አይጠቅምም",
+        "የመንገድ ልማት የግብርናን ተግባር ይጎዳል",
+        "የግብርና እና የመንገድ ስራዎች አይገናኙም"
+      ],
+      correctAnswer: "A",
+      explanation: "የመንገድ መሰረተ ልማት መዘርጋት አርሶ አደሩ ያመረተውን የግብርና ምርት በፍጥነትና ያለ እንግልት ወደ ገበያ እንዲያደርስ ስለሚረዳው በግብርናውና በንግዱ ዘርፍ መካከል ያለውን የግብይት ትስስር እጅግ ያፋጥናል፡፡"
+    },
+    {
+      id: "g6civics-14",
+      order: 14,
+      question: "ከሚከተሉት ውስጥ የንባብ ጥቅም የሆነው የትኛው ነው?",
+      options: [
+        "የዕውቀት አድማስን ይገድባል፡፡",
+        "ጥልቅ ውሳኔ ለመወሰን ያስችላል፡፡",
+        "የተዛባ አስተያየት ለመስጠት ያስችላል፡፡",
+        "ለኋላ ቀር አስተሳሰቦች ተገዥ ያደርጋል፡፡"
+      ],
+      correctAnswer: "B",
+      explanation: "ማንበብ ሰፊ መረጃንና ሁለንተናዊ እውቀትን ስለሚሰጥ አንድን ነገር ከተለያዩ አቅጣጫዎች መርምረን ሚዛናዊ፣ ምክንያታዊና ጥልቅ የሆኑ ውሳኔዎችን እንድንወስን አእምሮአችንን ያበለጽጋል፡፡"
+    },
+    {
+      id: "g6civics-15",
+      order: 15,
+      question: "በትርፍ ጊዜያችሁ የጋራ ጥቅምን ለማረጋገጥ ምን ምን ተግባራትን ታከናውናላችሁ?",
+      options: [
+        "ቤተ-መጻሕፍት ማጽዳት",
+        "ቴሌቪዥን መመልከት",
+        "ለብቻ ሆኖ መጫዎት",
+        "ቤት ውስጥ መተኛት"
+      ],
+      correctAnswer: "A",
+      explanation: "ቴሌቪዥን ማየት፣ መተኛትና ለብቻ መጫወት ግላዊ ፍላጎትን የሚያሟሉ ሲሆነ፣ እንደ ትምህርት ቤት ቤተ-መጻሕፍትን የመሰሉ የህዝብ መገልገያዎችን ማጽዳት ግን ለሁሉም ተማሪዎች እኩል ጥቅም የሚሰጥ የጋራ በጎ ተግባር ነው፡፡"
+    },
+    {
+      id: "g6civics-16",
+      order: 16,
+      question: "ከሚከተሉት ውስጥ የግብረገባዊ ውሳኔ አሰጣጥን ትርጉም ሊገልጽ የሚችለው ሃሳብ የትኛው ነው?",
+      options: [
+        "ሚዛናዊነት የጎደለው ፍርድ መስጠት",
+        "ጥንቃቄ የተሞላበት ውሳኔን መተግበር",
+        "ዘፈቀዳዊነት የተሞላ ብይን መስጠት",
+        "ኃላፊነት የጎደለው ሃሳብ መሰንዘር"
+      ],
+      correctAnswer: "B",
+      explanation: "ግብረገባዊ ውሳኔ አሰጣጥ ማለት የአንድን ድርጊት በጎና መጥፎ ጎኖች፣ ህጋዊና ስነ-ምግባራዊ እሴቶችን አመዛዝኖ ሌሎችን በማይጎዳ መልኩ ጥንቃቄ የተሞላበትና ትክክለኛ ውሳኔ ላይ መድረስና መተግበርማለት ነው፡፡"
+    },
+    {
+      id: "g6civics-17",
+      order: 17,
+      question: "የአካባቢው አሰተዳደር የችግኝ ተከላ መርሃ ግብር ተግባር ላይእንድንሳተፍ ጠየቀ። ከኛ የሚጠበቀው ተግባር ምን ሊሆን ይችላል?",
+      options: [
+        "በቀናነት በተግባሩ ላይ መሳተፍ",
+        "በሰበብ አሳቦ ከተግባሩ መቅረት",
+        "ለይስሙላ ለመታየት መሄድ",
+        "ሰዎች እንዳይተባበሩ መቀስቀስ"
+      ],
+      correctAnswer: "A",
+      explanation: "የአካባቢ ጥበቃና የችግኝ ተከላ የጋራ ህይወታችንንና ተፈጥሮን የሚታደግ በጎ ስራ በመሆኑ፣ ጥሪ ሲደረግልን ያለ ምንም ሰበብ በቅንነትና በንቃት በመሳተፍ ዜግነታዊ ግዴታችንን መወጣት ይኖርብናል፡፡"
+    },
+    {
+      id: "g6civics-18",
+      order: 18,
+      question: "አንድ የጠና ህመም የገጠመው ግለሰብ የፋርማሲ ባለሙያውን ያለ ሃኪም ማዘዣ ወረቀት መድሃኒት እንዲሸጥለት ጠየቀው፡፡ ባለሙያውም ‘ከሃኪም ትዕዛዝ ወረቀት ውጭ አልሸጥም ብለ- ከለከለው፧ ይህን የፋርማሲ ባለሙያውን ግብረገባዊ ውሳኔ እንዴት ታዩታላችሁ?",
+      options: [
+        "መድሃኒት እንደ ምግብ ስለሚቆጠር ጉዳት አያስከትልም፡፡",
+        "ማንም ሰው የፈለገውን መድሃኒት ገዝቶ መጠቀም ይችላል፡፡",
+        "ከሃኪም ትዕዛዝ ውጭ መድሃኒት መሸጥ ጉዳት ያስከትላል፡፡",
+        "ባለሙያው ለሰውየው መድሃኒት ቢሸጥለት ችግር የለውም፡፡"
+      ],
+      correctAnswer: "C",
+      explanation: "መድሃኒቶች ያለ ባለሙያ ምርመራና ማዘዣ ከተወሰዱ ለከፋ የጤና መታወክ አልፎ ተርፎም ለሞት ሊዳርጉ ይችላሉ፤ ስለዚህ የፋርማሲ ባለሙያው ህግንና ስነ-ምግባርን አክብሮ መከልከሉ የሰውን ህይወት ለመጠበቅ የተወሰደ ትክክለኛ ውሳኔ ነው፡፡"
+    },
+    {
+      id: "g6civics-19",
+      order: 19,
+      question: "በትምህርት ቤታችሁ ሰላማዊ የመማር ማስተማር እንዲኖር ምን ምን ተግባራት ታከናውናላችሁ?",
+      options: [
+        "የትምህርት ቁሳቁስ ሳያሟሉ መምጣት",
+        "በትምህርት ስዓት በክፍል መዟዟር",
+        "የቤት ስራን ከሌላ ጓደኛ መገልበጥ",
+        "የደንብ ልብስን ለብሶ መገኘት"
+      ],
+      correctAnswer: "D",
+      explanation: "የትምህርት ቤትን ደንብና መመሪያዎች ማክበር (ለምሳሌ የደንብ ልብስ ለብሶ መገኘት) በትምህርት ቤት ውስጥ ስነ-ስርዓት እንዲሰፍንና ሰላማዊ የመማር ማስተማር ሂደት እንዲኖር ትልቅ አስተዋጽኦ ያደርጋል፡፡"
+    },
+    {
+      id: "g6civics-20",
+      order: 20,
+      question: "ጓደኛችሁ የሌላ ተማሪ እስክርቢቶ ሲሰርቅ ብታዩ ምን ታደርጋላችሁ?",
+      options: [
+        "በድርጊቱ አብሬ እሳተፋለሁ፡፡",
+        "ድርጊቱን በዝምታ አሳልፋለሁ፡፡",
+        "እንዲመልስ እመክራለሁ፡፡",
+        "ክእርሱ/ሷ ጋር እስማማለሁ።"
+      ],
+      correctAnswer: "C",
+      explanation: "ስርቆት መጥፎና ስነ-ምግባር የጎደለው ተግባር ነው፤ ስለዚህ የቅርብ ጓደኛችን ይህንን ስህተት ሲፈጽም ስናይ አብሮ በመሳተፍ ወይም በዝምታ በመተባበር ፈንታ፤ ድርጊቱ ስህተት መሆኑን አስረድተን ንብረቱን ለባለቤቱ እንዲመልስ መምከር ይገባናል፡፡"
+    },
+    {
+      id: "g6civics-21",
+      order: 21,
+      question: "ራስን የመግዛት ጥቅም የሆነው የትኛው ነው?",
+      options: [
+        "ራስን ከአደጋ ለመክተት",
+        "ፍላጎትን ልት ለማድረግ",
+        "መጥፎ ባህሪን ለማራቅ",
+        "የሌሎችን ሃሳብ ለመንቀፍ"
+      ],
+      correctAnswer: "C",
+      explanation: "ራስን መግዛት (Self-control) ማለት ስሜታችንን እና ፍላጎታችንን በምክንያታዊነት መቆጣጠር መቻል ነው፥ ይህ ደግሞ አላስፈላጊ ግልበጣዎችንና መጥፎ የሆኑ ግላዊ ባህሪያትን በማረም በመልካም ስነ-ምግባር እንድንታነጽ ይረዳል፡፡"
+    },
+    {
+      id: "g6civics-22",
+      order: 22,
+      question: "የጓደኞች ግፊት በስነ-ምግባራዊ ውሳኔ ላይ እንዴት ተግዳሮትን ይፈጥራል?",
+      options: [
+        "ትክክለኛ ውሳኔ እንወስን እድል ስለሚሠጠን",
+        "አማራጭ የውሳኔ ሃሳቦችን እንድንመርጥ ስለሚያችለን",
+        "የስአነ እና የተገናዘበ ውሳኔ እንወስን ስለሚያደርገን",
+        "ለመምሰል ስንል የተሳሳተ ውሳኔ እንወስን ስለሚያደርገን"
+      ],
+      correctAnswer: "D",
+      explanation: "የአቻ ግፊት (Peer pressure) ተማሪዎች ከጓደኞቻቸው ላለመገለል ወይም እነሱን ለመምሰል ሲሉ የራሳቸውን ትክክለኛ የህሊና ፍርድ ወደ ጎን በመተው ስህተትና ስነ-ምግባር የጎደላቸውን ውሳኔዎች እንዲወስነ ሊያደርጋቸው ይችላል፡፡"
+    },
+    {
+      id: "g6civics-23",
+      order: 23,
+      question: "መልካም ባህሪን ማዳበር ለሰዎች የሚሰጠው ጥቅም የትኛው ነው?",
+      options: [
+        "በጥላቻ መንፈስ ለመቀራረብ",
+        "ተግባብቶ በፍቅር ለመኖር",
+        "በንቀት አይን ለመተያየት",
+        "ተፈራርቶ ለየብቻ ለመኖር"
+      ],
+      correctAnswer: "B",
+      explanation: "እንደ ታማኝነት፤ ቅንነት፣ እና አክብሮት ያሉ መልካም የባህሪ እሴቶችን ማዳበር በሰዎች መካከል እምነትን ስለሚገነባ፤ ህብረተሰቡ እርስ በእርሱ ተከባብሮ፤ ተስማምቶና በፍቅር አብሮ እንዲኖር ያደርጋል፡፡"
+    },
+    {
+      id: "g6civics-24",
+      order: 24,
+      question: "በየአመቱ የአረንጓዴ ልማት ተግባራትን እንሰራለን፤ ይህ ተግባርበዋናነት ለምን ይጠቅማል?",
+      options: [
+        "ከለጋሽ ድርጅቶች እርዳታን ያስገኛል፡፡",
+        "ከሌሎች ሃገራት ውዳሴን ያጎናጽፋል፡፡",
+        "የተፈጥሮ ሃብቶችን ያመናምናል፡፡",
+        "በቂ ዝናብ እንድናገኝ ያስችላል፡፡"
+      ],
+      correctAnswer: "D",
+      explanation: "የዛፎች መተከልና የአረንጓዴ ልማት ስራ የአየር ንብረት መዛባትንና መሸርሸርን ይከላከላል፥ ደን ደግሞ የዝናብ ኡደትን ስለሚጠብቅ ለግብርናና ለኑሮ የሚሆን በቂ ዝናብ በተከታታይ እንድናገኝ ከፍተኛ የተፈጥሮ አስተዋጽኦ ያደርጋል፡፡"
+    },
+    {
+      id: "g6civics-25",
+      order: 25,
+      question: "አቶ አበበ በሰፈሩ የታወቀ ሐቀኛና እና ደግ ሰው ነው፡፡ ይህንን የአቶ አበበን ባህሪ እንዴት ትገመግማለህ/ያለሽ?",
+      options: [
+        "በሌሎች ሰዎች ዘንድ ንቀትን ያስከትላል፡፡",
+        "ሰዎች ተጠራጥረው እንዲኖሩ ያስችላል፡፡",
+        "የሰዎችን መልካም ግንኙነት ያሳድጋል፡፡",
+        "በሰዎች መካከል ቅራኔን ይፈጥራል፡፡"
+      ],
+      correctAnswer: "C",
+      explanation: "በአንድ ማህበረሰብ ውስጥ ሐቀኛና ደግ ሰዎች ሲኖሩ በሰዎች መካክል ሰላምና መተማመን ይሰፍናል፤ ይህም በጎረቤታሞችና በአካባቢው ህዝብ መካከል ያለውን መልካም ማህበራዊ ግንኙነት በእጅጉ ያሳድጋል፡፡"
+    },
+    {
+      id: "g6civics-26",
+      order: 26,
+      question: "የትምህርት ቤታችሁ የቧንቧ ውሃ እየፈሰሰ ብትመለከት/ች ምን ታደርጋለህ/ጊያለሽ?",
+      options: [
+        "ውሃውን እዘጋዋለሁ፡፡",
+        "አልፌ እሄዳለሁ፡፡",
+        "ውሃውን እጫወትበታለሁ፡፡",
+        "አይቼ እተወዋለሁ።"
+      ],
+      correctAnswer: "A",
+      explanation: "ንጹህ ውሃ ወሳኝና ውስን የተፈጥሮ ሃብት ነው፤ የትምህርት ቤት ንብረትን መጠበቅ ደግሞ የተማሪዎች ኃላፊነት በመሆኑ፤ የቧንቧ ውሃ በከንቱ ሲፈስ ካየን ወዲያውኑ በመዝጋት ሃብት እንዳይባክን ማድረግ አለብን።"
+    },
+    {
+      id: "g6civics-27",
+      order: 27,
+      question: "በአንድ ሀገር ውስጥ ዜጎች በህግ ከመገዛት ይልቅ በራሳቸው መንገድ ፍትህን ለማስፈን ቢሞክሩ ምን የሚፈጠር ይመስላችኋል?",
+      options: [
+        "ችግሮች በሰላማዊ መንገድ ይፈታሉ፡፡",
+        "ብልሹ አሰራሮች ይቀንሳል፡፡",
+        "የዜጎች ደህንነት ይረጋገጣል፡፡",
+        "የዜጎች መብት ይጣሳል፡፡"
+      ],
+      correctAnswer: "D",
+      explanation: "ሰዎች በህግ አግባብ ከመመራት ይልቅ በራሳቸው ስሜት ‘ፍትህ እሰጣለሁ” ብለው እርምጃ መውሰድ ሲጀምሩ የስርዓተ-አልበኝነትና የጉልበተኝነት አሰራር ስለሚነግስ የንፁሃን ዜጎች መብትና ደህንነት ሙሉ በሙሉ ይጣሳል፡፡"
+    },
+    {
+      id: "g6civics-28",
+      order: 28,
+      question: "በአካባቢ እንክብካቤና በምርት መካከል ያለው ግንኙነት ምንድ ነው?",
+      options: [
+        "ምርታማነት የአካባቢን ስነምህዳር ይጎዳል፡፡",
+        "የአካባቢ መጎዳት ምርትን ይጨምራል፡፡",
+        "የአካባቢ ጥበቃ ከምርት ጋር አይገናኝም፡፡",
+        "የአካባቢ ጥበቃ ምርትን በእጅጉ ያሻሽላል፡፡"
+      ],
+      correctAnswer: "D",
+      explanation: "የአፈርና የውሃ ጥበቃ ስራዎችን ጨምሮ አካባቢን በአግባቡ መንከባከብ የአፈርን ለምነት ይይዛል፤ ይህም የግብርና ተግባራትን በማገዝ የሰብልም ሆነ የሌሎች ምርቶች መጠንና ጥራት በእጅጉ እንዲሻሻል ያደርጋል፡፡"
+    },
+    {
+      id: "g6civics-29",
+      order: 29,
+      question: "ከሚከተሉት ውስጥ የግብር ስወራ ተግባር የሆነው የትኛው ነው?",
+      options: [
+        "የመሸጫን ዋጋ ማሳወቅ",
+        "ትክክለኛ መረጃ መስጠት",
+        "ደረሰኝ አልባ መገበያየት",
+        "ግብርን በወቅቱ መክፈል"
+      ],
+      correctAnswer: "C",
+      explanation: "ደረሰኝ ሳይቆርጡ መገበያየት የገቢና ወጪን መጠን በመደበቅ ለመንግስት መክፈል የሚገባውን ትክክለኛ ታክስ ወይም ግብርለማጭበርበር የሚደረግ ህገ-ወጥ የግብር ስወራ ተግባር ነው፡፡"
+    },
+    {
+      id: "g6civics-30",
+      order: 30,
+      question: "ማህበራዊ ሚዲያ ለግለሰቦች የሚሰጠው እዎንታዊ ጥቅም የትኛው ነው?",
+      options: [
+        "ውሸትን ለማስፋፋት",
+        "መረጃ ለመለዋወጥ",
+        "ጊዜን ለማባአን",
+        "ግጭት ለመፍጠሪያ"
+      ],
+      correctAnswer: "B",
+      explanation: "ማህበራዊ ሚዲያ ለጥፋትም ለልማትም ሊያገለግል ይችላል፤ ነገርግን እንደ አዎንታዊ ወይም በጎ ጥቅም የሚጠቀሰው ፈጣንና ጠቃሚ የሆኑ ትምህርታዊና ማህበራዊ መረጃዎችን እርስ በእርስ ለመለዋወጥ ማስቻሉ ነው፡፡"
+    },
+    {
+      id: "g6civics-31",
+      order: 31,
+      question: "ከሚከተሉት ውስጥ ህግን የሚያከብር ሰው ባህሪ የሆነው የትኛው ነው?",
+      options: [
+        "የግል ጥቅምን ማሰቀደም",
+        "በኃይል/በጉልበት መመካት",
+        "በህግና በመመሪያ መገዛት",
+        "የእንቢተኝነት ስሜት መያዝ"
+      ],
+      correctAnswer: "C",
+      explanation: "ህግ አክባሪ ዜጋ የሚለየው የግል ፍላጎቱ ወይም ጉልበቱ ምንም ይሁን ምን፤ ሁልጊዜም ለሀገሪቱ ህጎች፣ ደንቦችና መመሪያዎች ተገዥ በመሆን በስርዓት ውስጥ ብቻ ሲንቀሳቀስ ነው::"
+    },
+    {
+      id: "g6civics-32",
+      order: 32,
+      question: "ከሚከተሉት ውስጥ የማህበራዊ ሚዲያ አጠቃቀም መርህ የሆነው የትኛው ነው?",
+      options: [
+        "የሰዎች ፈቃድ በማግኘት መረጃ ማጋራት",
+        "ግጭትን የሚቀሰቅስ መልዕክት ማጋራት",
+        "የሰዎች ሀሰተኛ መረጃዎችን ማጋራት",
+        "የሰዎችን ስራ በቀጥታ መገልበጥ"
+      ],
+      correctAnswer: "A",
+      explanation: "ማህበራዊ ሚዲያን በስነ-ምግባር ለመጠቀም የሰዎችን ግላዊ መብት ማክበር አለብን፣ ስለዚህ የሌሎችን መረጃ ወይም ፎቶ ከማጋራታችን በፊት የእነሱን ሙሉ ፈቃድ ማግኘት ዋነኛው መርህ ነው።"
+    },
+    {
+      id: "g6civics-33",
+      order: 33,
+      question: "እንደ ተማሪነትህ/ሽ ወደ ሰባተኛ ክፍል በተሻለ ውጤት ለመሸጋገርአንተ/ች ምን ማድረግ አለብህ/ሽ?",
+      options: [
+        "ቴክኖሎጂን በመጠቀም መልስ መቅዳት",
+        "አጠገቤ ከሚቀመጥ ተማሪ መኮረጅ",
+        "ያለምንም ዝግጅት ፈተና መቀመጥ",
+        "ጠንክሬ በማንበብ ለፈተና መቅረብ"
+      ],
+      correctAnswer: "D",
+      explanation: "ወደ ቀጣዩ ክፍል በምርጥ ውጤት ለመሸጋገርና የተሳካ የትምህርት ህይወት ለመገንባት ማጭበርበር ወይም መኮረጅ ሳይሆን፤ አስቀድሞ በትጋትና በብርታት ጠንክሮ በማንበብና ተዘጋጅቶ ለፈተና መቅረብ ያስፈልጋል፡፡"
+    },
+    {
+      id: "g6civics-34",
+      order: 34,
+      question: "ግብረገብነት የጎደለው ማህበራዊ ሚዲያን መጠቀም ስህተት የሚሆነው ለምንድን ነው?",
+      options: [
+        "የሰዎችን ክብር የሚጠብቅ በመሆነ",
+        "ትምህርታዊ መረጃን ስለሚያጋራን",
+        "የሌሎችን ስም ማጥፋት ስለሚችል",
+        "እውነተኛ መረጃ መስጠት ስለሚችል"
+      ],
+      correctAnswer: "C",
+      explanation: "ማህበራዊ ሚዲያን ያላግባብና ያለ ግብረገብ መጠቀም የሰዎችን ስምና ስብዕና በሀሰት ለማጠልሸት፣ ጥላቻን ለመዝራትና የሰዎችን ክብርና ሰላም ለማውደም ስለሚውል ትልቅ ስህተትና ወንጀል ነው፡፡"
+    },
+    {
+      id: "g6civics-35",
+      order: 35,
+      question: "እንደ አንድ ግብረገባዊ ሃቀኛ ተማሪ እንድ ሰው የጓደኛችሁን ስም በከንቱ ሲያጠፋ ብትሰሙ ምን ታደርጋላችሁ?",
+      options: [
+        "ድርጊቱን እቃወማለሁ፡፡",
+        "አብሬ አማለሁ፡፡",
+        "ለታማው ሰው እነግረዋለሁ።",
+        "ሚስጢር አባክናለሁ፡፡"
+      ],
+      correctAnswer: "A",
+      explanation: "ሃቀኛና ግብረገባዊ ተማሪ በሌሉ ሰዎች ላይ የሚሰነዘርን የሀሰት ወሬና ስም ማጥፋት አይቀበልም፥ ስለዚህ ድርጊቱን በግንባር ቀደምትነት በመቃወም እውነቱን ማስረዳትና ስም ማጥፋቱን ማስቆም ይገባዋል፡፡"
+    },
+    {
+      id: "g6civics-36",
+      order: 36,
+      question: "ወላጅ አባትህ/ሽ የባህል ፌስቲቫል ዝግጅት ላይ ወስዶ የተለያዩ ማህበረሰብ የባህል ዝግጅቶችን በሰፊው ተመለከታችሁ፡፡ ይህንን የባህል ፌስቲቫል እንዴት አየኸው/ሽው?",
+      options: [
+        "የራሴ ባህል ከሌላው የበለጠ እንደሆነ",
+        "ለተለያዩ ባህሎች ክብር መስጠት እንዳለብን",
+        "የሌሎች ባህል ከኛ ባህል ያነሰ መሆነ-",
+        "የሌሎቹ ባህል ኋላቀር መሆናቸው"
+      ],
+      correctAnswer: "B",
+      explanation: "የባህል ፌስቲቫሎች የሀገሪቱን ብዝሃነትና ውበት የሚያሳዩ ናቸው፥ እያንዳንዱ ባህል የየራሱ መገለጫና እሴት ስላለው፣ አንዱን ከእንዱ ሳናበላልጥ ለሁሉም ባህሎች እኩል አክብሮትና እውቅና መስጠት"
+    },
+    {
+      id: "g6civics-37",
+      order: 37,
+      question: "ሁለት ጓደኞችህ/ሽ ከመኖርያ ቤትህ/ሽ አንተን እንችን ለመጠየቅ ቢመጡ፣ እንደ አንድ ትሁት ተማሪ ምን ታደርጋለህ/ሽ?",
+      options: [
+        "በአክብሮት መቀበል",
+        "ጥላቻን ማሳየት",
+        "አክብሮት መንፈግ",
+        "ዝቅ አድረጎ ማየት"
+      ],
+      correctAnswer: "A",
+      explanation: "እንግድን ማክበርና በደስታ መቀበል የመልካም ስነ-ምግባርና የትህትና መገለጫ ነው፥ ስለዚህ ሊጠይቁን የመጡ ጓደኞቻችንን በአክብሮትና በፍቅር ተቀብሎ ማስተናገድ ተገቢው ተግባር ነው።"
+    },
+    {
+      id: "g6civics-38",
+      order: 38,
+      question: "በአካባቢያችን የሚካሄዱ የሽምግልና ተግባራት በባህል መካከል ለሚኖርአዎንታዊ ግንኙነት እንዴት ይጠቅማሉ?",
+      options: [
+        "የሽምግልና ስርዓት ዘመናዊነትን ያደናቅፋል፡፡",
+        "ለተጋጩ ወገኖች ዘለቂ ስላምን ያመጣል፡፡",
+        "የግለሰቦችን ጊዜያዊ ችግር ያወሳስባል፡፡",
+        "የባህል ክፍተቶች እንዲሰፉ ያደርጋል፡፡"
+      ],
+      correctAnswer: "B",
+      explanation: "ባህላዊ የሽምግልና ስርዓት በሰዎችና በማህበረሰቦች መካከል የሚነሱ ግጭቶችን በውይይት፣ በዕርቅና በይቅርታ ስለሚፈታ፤ ቂምና በቀልን አስወግዶ ለተጋጩ ወገኖች አስተማማኝና ዘላቂ ሰላምን ያሰፍናል፡፡"
+    },
+    {
+      id: "g6civics-39",
+      order: 39,
+      question: "ከሚከተሉት ውስጥ የታማኝ ሰው ባህሪን የሚገልጸው የትኛው ነው?",
+      options: [
+        "እውነትን መናገር",
+        "ለጓደኛ አለመታመን",
+        "ስህተትን አለማመን",
+        "ውሸትን መናገር"
+      ],
+      correctAnswer: "Α",
+      explanation: "ታማኝነት በቅንነትና በእውነት ላይ የተመሰረተ ነው፤ አንድ ታማኝ ሰው በማንኛውም ሁኔታ ውስጥ ቢሆን እንኳ ከሀሰትና ከማታለል ይርቃል፤ ሁልጊዜም እውነትን በግልጽ ይናገራል፡፡"
+    },
+    {
+      id: "g6civics-40",
+      order: 40,
+      question: "እንደ አንድ መልካም ዜጋ አንድ በቋንቋ ልዩነት ያለው ሰው ቢገጥምህ/ሽ ምን ታደርጋለህ/ሽ?",
+      options: [
+        "ሰውየውን ከናካቴው አለማየትና መርዳት አለመፈለግ",
+        "የውሸት መረጃዎችን በመስጠት ሰውየውን ማሳሳት",
+        "ሰውየውን በጥርጣሬ በማየት ከመርዳት መቆጠብ",
+        "የስውየውን ቋንቋ ግምት ውስጥ ማስገባትና መርዳት"
+      ],
+      correctAnswer: "D",
+      explanation: "ሰብአዊነትና መልካም ዜግነት በቋንቋ ወይም በባህል አይገደብም የተቸገረን ሰው ስናገኝ የሚናገረውን ቋንቋ ከግምት ውስጥ በማስገባት (በምልክትም ይሁን በሌላ መንገድ ለመረዳት በመሞከር) አቅማችን የፈቀደውን በጎ እገዛ ልናደርግለት ይገባል፡፡"
+    }
+  ],
+};
+
+app.post("/api/exams/paid-content", async (req, res) => {
+  try {
+    const {
+      phone,
+      transactionReference,
+      productId,
+    } = req.body;
+
+    if (!phone || !transactionReference || !productId) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Please provide your phone number, transaction reference, and product.",
+      });
+    }
+
+    const purchase = await ExamPurchase.findOne({
+      phone: phone.trim(),
+      transactionReference: transactionReference.trim(),
+      productId,
+      paymentStatus: "Approved",
+      accessStatus: "Unlocked",
+    });
+
+    if (!purchase) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Full access has not been approved for this exam.",
+      });
+    }
+
+    const questions = paidExamQuestions[productId] || [];
+
+    res.json({
+      success: true,
+      productId,
+      questions,
+    });
+  } catch (error) {
+    console.error("Paid exam content error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to load paid exam content.",
+    });
+  }
+});
+app.post("/api/leads", async (req, res) => {
+  try {
+    const parentName = clean(req.body.parentName);
+    const phone = clean(req.body.phone);
+    const grade = clean(req.body.grade);
+
+    const city = clean(req.body.city || req.body.location);
+
+    if (!parentName || !phone || !grade || !city) {
+      return res.status(400).json({
+        success: false,
+        message: "Parent name, phone, grade and location are required.",
+      });
+    }
+
+    const marketingSource = clean(
+      req.body.marketingSource || req.body.heardAbout
+    );
+
+    const lead = await Lead.create({
+      parentName,
+      phone,
+      grade,
+
+      childName: clean(req.body.childName),
+      subject: clean(req.body.subject),
+
+      city,
+      location: city,
+      area: clean(req.body.area),
+      country: clean(req.body.country),
+
+      preferredLanguage: clean(req.body.preferredLanguage) || "en",
+
+      mainLearningChallenge: clean(
+        req.body.mainLearningChallenge || req.body.challenge
+      ),
+
+      marketingSource,
+      heardAbout: marketingSource,
+
+      leadStatus: "New",
+      serviceStatus: "active",
+
+      utmSource: clean(req.body.utmSource),
+      utmMedium: clean(req.body.utmMedium),
+      utmCampaign: clean(req.body.utmCampaign),
+      utmContent: clean(req.body.utmContent),
+      utmTerm: clean(req.body.utmTerm),
+
+      landingPage: clean(req.body.landingPage),
+      referrer: clean(req.body.referrer),
+
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    console.log("New StudyCare lead saved:", lead._id);
+
+    res.status(201).json({
+      success: true,
+      message: "Lead saved successfully.",
+      leadId: lead._id,
+    });
+  } catch (error) {
+    console.error("Lead save error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to save the lead.",
+    });
+  }
+});
+
+// ===============================
+// GET LEADS - ADMIN
+// ===============================
+
+app.get("/api/leads", requireAdmin, async (req, res) => {
+  try {
+    const leads = await Lead.find()
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      leads,
+    });
+  } catch (error) {
+    console.error("Get leads error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to retrieve leads.",
+    });
+  }
+});
+
+app.get("/api/free-quiz-leads", async (req, res) => {
+  try {
+    const adminKey = req.headers["x-admin-key"];
+
+    if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized.",
+      });
+    }
+
+    const leads = await FreeQuizLead.find()
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      leads,
+    });
+  } catch (error) {
+    console.error("Free quiz leads error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to load free quiz leads.",
+    });
+  }
+});
+app.get("/api/exam-purchases", async (req, res) => {
+  try {
+    if (req.headers["x-admin-key"] !== process.env.ADMIN_KEY) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const purchases = await ExamPurchase.find()
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      purchases,
+    });
+  } catch (error) {
+    console.error("Exam purchases fetch error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch exam purchases.",
+    });
+  }
+});
+
+app.patch("/api/exam-purchases/:id/status", async (req, res) => {
+  try {
+    if (req.headers["x-admin-key"] !== process.env.ADMIN_KEY) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const { paymentStatus } = req.body;
+
+    if (!["Approved", "Rejected", "Pending"].includes(paymentStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment status.",
+      });
+    }
+
+    const update = {
+      paymentStatus,
+    };
+
+    if (paymentStatus === "Approved") {
+      update.accessStatus = "Unlocked";
+      update.paidAt = new Date();
+    } else {
+      update.accessStatus = "Locked";
+      update.paidAt = null;
+    }
+
+    const purchase = await ExamPurchase.findByIdAndUpdate(
+      req.params.id,
+      update,
+      { new: true }
+    );
+
+    if (!purchase) {
+      return res.status(404).json({
+        success: false,
+        message: "Purchase not found.",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `Payment ${paymentStatus.toLowerCase()} successfully.`,
+      purchase,
+    });
+  } catch (error) {
+    console.error("Exam purchase status error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to update payment status.",
+    });
+  }
+});
+// ===============================
+// UPDATE LEAD STATUS - ADMIN
+// ===============================
+
+app.patch("/api/leads/:id/status", requireAdmin, async (req, res) => {
+  try {
+    const allowedStatuses = [
+      "New",
+      "Contacted",
+      "Interested",
+      "Consultation",
+      "Enrolled",
+      "Active",
+      "Completed",
+      "Lost",
+    ];
+
+    const status = clean(req.body.status);
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid lead status.",
+      });
+    }
+
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid lead ID.",
+      });
+    }
+
+    const lead = await Lead.findByIdAndUpdate(
+      req.params.id,
+      {
+        leadStatus: status,
+        updatedAt: new Date(),
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!lead) {
+      return res.status(404).json({
+        success: false,
+        message: "Lead not found.",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Lead status updated.",
+      lead,
+    });
+  } catch (error) {
+    console.error("Update lead status error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to update lead status.",
+    });
+  }
+});
+
+// ===============================
+// PAID ONBOARDING
+// ===============================
+
+const onboardingSchema = new mongoose.Schema(
+  {
+    // Student
+    childName: { type: String, required: true, trim: true },
+    preferredName: { type: String, default: "", trim: true },
+    age: { type: String, default: "", trim: true },
+    dateOfBirth: { type: String, default: "", trim: true },
+    grade: { type: String, required: true, trim: true },
+    school: { type: String, default: "", trim: true },
+    gender: { type: String, default: "", trim: true },
+
+    // Parent
+    parentName: { type: String, required: true, trim: true },
+    relationship: { type: String, default: "", trim: true },
+    phone: { type: String, required: true, trim: true },
+    email: { type: String, default: "", trim: true },
+    city: { type: String, default: "", trim: true },
+    location: { type: String, default: "", trim: true },
+    area: { type: String, default: "", trim: true },
+    country: { type: String, default: "", trim: true },
+    preferredLanguage: { type: String, default: "en", trim: true },
+    heardAbout: { type: String, default: "", trim: true },
+
+    // Academics
+    subjects: { type: [String], default: [] },
+    strongestSubjects: { type: String, default: "", trim: true },
+    interestedSubject: { type: String, default: "", trim: true },
+    strugglingSubject: { type: String, default: "", trim: true },
+    currentPerformance: { type: String, default: "", trim: true },
+    recentResults: { type: String, default: "", trim: true },
+    difficultTopics: { type: String, default: "", trim: true },
+    homeworkSituation: { type: String, default: "", trim: true },
+    academicConcern: { type: String, default: "", trim: true },
+
+    // Strengths / challenges
+    strengths: { type: String, default: "", trim: true },
+    learningChallenges: { type: String, default: "", trim: true },
+    freeTimeActivities: { type: String, default: "", trim: true },
+    motivation: { type: String, default: "", trim: true },
+    dislikes: { type: String, default: "", trim: true },
+
+    // Study habits
+    studyRoutine: { type: String, default: "", trim: true },
+    studyDuration: { type: String, default: "", trim: true },
+    concentration: { type: String, default: "", trim: true },
+    distractions: { type: String, default: "", trim: true },
+    independentStudy: { type: String, default: "", trim: true },
+    examPreparation: { type: String, default: "", trim: true },
+    homeworkHabits: { type: String, default: "", trim: true },
+
+    // Learning preferences
+    learningStyle: { type: String, default: "", trim: true },
+    helpfulSupport: { type: [String], default: [] },
+
+    // Goals
+    goals: { type: [String], default: [] },
+    mainGoals: { type: String, default: "", trim: true },
+    oneMonthGoal: { type: String, default: "", trim: true },
+    threeMonthGoal: { type: String, default: "", trim: true },
+    upcomingExam: { type: String, default: "", trim: true },
+    targetGrade: { type: String, default: "", trim: true },
+    studentGoal: { type: String, default: "", trim: true },
+    studentDifficulty: { type: String, default: "", trim: true },
+
+    // Schedule
+    preferredStudyTime: { type: [String], default: [] },
+    unavailableTimes: { type: String, default: "", trim: true },
+    sessionsPerWeek: { type: String, default: "", trim: true },
+    sessionLength: { type: String, default: "", trim: true },
+    learningMode: { type: String, default: "", trim: true },
+
+    // Environment
+    quietPlace: { type: String, default: "", trim: true },
+    devices: { type: String, default: "", trim: true },
+    internetConnection: { type: String, default: "", trim: true },
+
+    // Previous tutoring
+    previousTutoring: { type: String, default: "", trim: true },
+    previousTutoringDetails: { type: String, default: "", trim: true },
+    whatWorked: { type: String, default: "", trim: true },
+    whatDidNotWork: { type: String, default: "", trim: true },
+
+    // Parent expectations
+    parentConcern: { type: String, default: "", trim: true },
+    parentExpectations: { type: String, default: "", trim: true },
+    progressUpdates: { type: String, default: "", trim: true },
+
+    // Additional
+    additionalInformation: { type: String, default: "", trim: true },
+    expectations: { type: String, default: "", trim: true },
+
+    serviceStatus: {
+      type: String,
+      default: "new",
+      trim: true,
+    },
+
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  {
+    strict: true,
+  }
+);
+
+const Onboarding = mongoose.model("Onboarding", onboardingSchema);
+
+// ===============================
+// SAVE PAID ONBOARDING
+// ===============================
+
+app.post("/api/onboarding", async (req, res) => {
+  try {
+    const childName = clean(req.body.childName);
+    const grade = clean(req.body.grade);
+    const parentName = clean(req.body.parentName);
+    const phone = clean(req.body.phone);
+
+    if (!childName || !grade || !parentName || !phone) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Child name, grade, parent name and phone are required.",
+      });
+    }
+
+    const onboarding = await Onboarding.create({
+      ...req.body,
+
+      childName,
+      grade,
+      parentName,
+      phone,
+
+      location: clean(req.body.location || req.body.city),
+      city: clean(req.body.city || req.body.location),
+      area: clean(req.body.area),
+      country: clean(req.body.country),
+      preferredLanguage:
+        clean(req.body.preferredLanguage) || "en",
+
+      updatedAt: new Date(),
+    });
+
+    console.log(
+      "New StudyCare onboarding saved:",
+      onboarding._id
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Onboarding submitted successfully.",
+      onboardingId: onboarding._id,
+    });
+  } catch (error) {
+    console.error("Onboarding save error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to save onboarding.",
+    });
+  }
+});
+
+// ===============================
+// GET ONBOARDING - ADMIN
+// ===============================
+
+app.get("/api/onboarding", requireAdmin, async (req, res) => {
+  try {
+    const onboarding = await Onboarding.find()
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      onboarding,
+    });
+  } catch (error) {
+    console.error("Get onboarding error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to retrieve onboarding records.",
+    });
+  }
+});
+
+// ===============================
+// UPDATE ONBOARDING STATUS - ADMIN
+// ===============================
+
+app.patch(
+  "/api/onboarding/:id/status",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid onboarding ID.",
+        });
+      }
+
+      const status = clean(req.body.status);
+
+      if (!status) {
+        return res.status(400).json({
+          success: false,
+          message: "Status is required.",
+        });
+      }
+
+      const record = await Onboarding.findByIdAndUpdate(
+        req.params.id,
+        {
+          serviceStatus: status,
+          updatedAt: new Date(),
+        },
+        { new: true }
+      );
+
+      if (!record) {
+        return res.status(404).json({
+          success: false,
+          message: "Onboarding record not found.",
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Onboarding status updated.",
+        onboarding: record,
+      });
+    } catch (error) {
+      console.error("Update onboarding status error:", error);
+
+      res.status(500).json({
+        success: false,
+        message: "Unable to update onboarding status.",
+      });
+    }
+  }
+);
+
+// ===============================
+// 404
+// ===============================
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found.",
+  });
+});
+
+// ===============================
+// ERROR HANDLER
+// ===============================
+
+app.use((err, req, res, next) => {
+  console.error("Server error:", err);
+
+  res.status(500).json({
+    success: false,
+    message: "Internal server error.",
+  });
+});
+
+// ===============================
+// DATABASE + SERVER
+// ===============================
+
+async function startServer() {
+  try {
+    if (!MONGO_URI) {
+      console.error("MONGO_URI is missing.");
+      process.exit(1);
+    }
+
+    await mongoose.connect(MONGO_URI);
+
+    console.log("Connected to MongoDB successfully");
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`StudyCare backend running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("MongoDB connection failed:", error);
+    process.exit(1);
+  }
+}
+
+startServer();
