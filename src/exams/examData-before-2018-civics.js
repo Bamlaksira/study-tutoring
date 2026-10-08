@@ -403,60 +403,6 @@ Finally, maintaining a healthy lifestyle is an important part of developing stro
     }
   ]
 },
-{
-  id: "grade6-2018-civics",
-  grade: "Grade 6",
-  subject: "Civics",
-  title: "Grade 6 2018 Civics Ministry Exam",
-  price: 65,
-  description:
-    "Practice the 2018 Grade 6 Civics Ministry Exam with the original questions, answers and explanations.",
-  active: true,
-  questions: [
-    {
-      id: "g6c2018-1",
-      question:
-        "ሠላም ለሃገር ምን ጠቀሜታ ይኖረዋል?",
-      options: [
-        "A. ጠንካራና የበለጸገች ሃገር ይፈጥራል",
-        "B. በሁከት የተሞላች ሃገር ይፈጥራል",
-        "C. ኋላ ቀር ማኅበረሰብ እንዲፈጠር ያግዛል",
-        "D. ጥገኛና ተረጅ ሃገር እንዲኖር ያደርጋል"
-      ],
-      correctAnswer: "A",
-      explanation:
-        "በአንድ ሀገር ውስጥ ሰላም ሲሰፍን ዜጎች በነፃነት ሰርተው ለመለወጥ እድል ያገኛሉ፤ ይህም ማህበራዊና ኢኮኖሚያዊ እድገትን በማምጣት ጠንካራና የበለጸገች ሀገር ለመገንባት መሰረት ይሆናል፡፡"
-    },
-    {
-      id: "g6c2018-2",
-      question:
-        "በስሜት ውስጥ የሚወሰድ አሉታዊ የኃላፊነት ውጤት የትኛው ነው?",
-      options: [
-        "A. ሽልማት መቀበል",
-        "B. እምነት መጨመር",
-        "C. ክብርን መጎናጸፍ",
-        "D. ሌሎችን መጉዳት"
-      ],
-      correctAnswer: "D",
-      explanation:
-        "አንድ ሰው በንዴት ወይም ባልተረጋጋ ስሜት ውስጥ ሆኖ ውሳኔዎችን ሲያስተላልፍና እርምጃዎችን ሲወስድ ኃላፊነት የጎደለው ተግባር ስለሚሆን ራሱንም ሆነ ሌሎችን ሰዎችን ለጉዳት ይዳርጋል፡፡"
-    },
-    {
-      id: "g6c2018-3",
-      question:
-        "ከሚከተሉት ውስጥ የትኛው በሠላምና በሃገር ዕድገት መካከል ያለውን ትስስር ያሳያል?",
-      options: [
-        "A. ሠላም ሲኖር ልማት፤ አንድነት እና ዕድገት ይጠናክራል",
-        "B. ሠላም ቢኖርም ባይኖርም በልማት ላይ ምንም ለውጥ የለውም",
-        "C. ሰዎች ሰላምን ባያስጠብቁም ልማትን በቀላሉ ሊያመጡ ይችላሉ",
-        "D. ሠላም የሚጠቅመው ግለሰቦችን እንጅ ሀገርን አይደለም"
-      ],
-      correctAnswer: "A",
-      explanation:
-        "ሰላምና ልማት የማይነጣጠሉ ጽንሰ-ሀሳቦች ናቸው፣ ሀገር ሰላም ስትሆን የዜጎች አንድነት ይጠነክራል፣ የልማት ስራዎች ያለምንም እንቅፋት ይከናወናሉ፤ ይህም ሀገራዊ እድገትን ያፋጥናል፡፡"
-    }
-  ]
-},
   {
   id: "grade6-2017-amharic",
   grade: "Grade 6",
