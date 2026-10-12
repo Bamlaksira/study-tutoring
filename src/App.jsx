@@ -207,6 +207,48 @@ if(window.location.pathname.startsWith('/model-exams')) return <ModelExams/>
         </div>
       </section>
 
+      <section id="tutoring" className="section tutoring-section">
+        <div className="heading">
+          <span>03</span>
+          <h2>Grade 6 Online Tutoring</h2>
+          <p>
+            Help your child understand difficult topics, complete homework,
+            and prepare for exams with personalized academic support.
+          </p>
+        </div>
+
+        <div className="tutoring-card">
+          <div className="tutoring-details">
+            <h3>Personalized Learning Support</h3>
+            <p>Designed around your child's learning needs and goals.</p>
+
+            <ul>
+              <li>3 online sessions every week</li>
+              <li>1 hour per session</li>
+              <li>Help with difficult subjects and topics</li>
+              <li>Homework and exam preparation</li>
+              <li>Practice questions and progress checks</li>
+            </ul>
+
+            <div className="tutoring-price">
+              <strong>3,000 ETB</strong>
+              <span>per month</span>
+            </div>
+
+            <button
+              className="btn primary"
+              onClick={() =>
+                whatsapp(
+                  "Hello StudyCare! I'm interested in Grade 6 online tutoring. I would like to learn about the subjects, available schedule, and enrollment process. I understand the package costs 3,000 ETB per month for three one-hour sessions per week."
+                )
+              }
+            >
+              Ask About Grade 6 Tutoring →
+            </button>
+          </div>
+        </div>
+      </section>
+
       <section id="services" className="section">
         <div className="heading"><span>03</span><h2>{t.servicesTitle}</h2></div>
         <div className="service-grid">{t.services.map((x,i)=><div className="service" key={x}><div className="number">0{i+1}</div><h3>{x}</h3><p>Structured support designed around the student's current needs and learning goals.</p><button onClick={()=>whatsapp(`I am interested in ${x}. I would like to know more.`)}>Ask About This →</button></div>)}</div>
