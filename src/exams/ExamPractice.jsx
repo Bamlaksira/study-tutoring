@@ -255,12 +255,20 @@ setTransactionReference("");
   }
 };
 
-  const goPreviousQuestion = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion((prev) => prev - 1);
-      setShowExplanation(false);
-    }
-  };
+  
+const goPreviousQuestion = () => {
+  if (currentQuestion > 0) {
+    const previousIndex = currentQuestion - 1;
+    const previousQuestionData = questions[previousIndex];
+
+    setCurrentQuestion(previousIndex);
+
+    setShowExplanation(
+      Boolean(answers[previousQuestionData?.id])
+    );
+  }
+};
+
 
   const loadPaidQuestions = async (productId) => {
     try {
@@ -495,9 +503,19 @@ const handlePurchase = async () => {
     ...styles.option,
   };
 
-  if (!showExplanation) {
-    return base;
+  const isSelected = option === selectedAnswer;
+
+if (!showExplanation) {
+  if (isSelected) {
+    return {
+      ...base,
+      border: "2px solid #2563eb",
+      background: "#eff6ff",
+    };
   }
+
+  return base;
+}
 
   const englishLabels = ["A", "B", "C", "D"];
   const amharicLabels = ["ሀ", "ለ", "ሐ", "መ"];
