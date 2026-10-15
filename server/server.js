@@ -7096,7 +7096,7 @@ const onboardingSchema = new mongoose.Schema(
 
     // Environment
     quietPlace: { type: String, default: "", trim: true },
-    devices: { type: String, default: "", trim: true },
+    devices: { type: [String], default: [] },
     internetConnection: { type: String, default: "", trim: true },
 
     // Previous tutoring
