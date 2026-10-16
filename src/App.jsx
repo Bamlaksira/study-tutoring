@@ -3,6 +3,7 @@ import './App.css'
 import Onboarding from './Onboarding'
 import Grade6Quiz from './quizzes/Grade6Quiz'
 import ModelExams from './ModelExams'
+import Grade6Registration from './Grade6Registration'
 const API = 'https://studycare-backend.onrender.com'
 const GUIDE = '/study-guide.pdf'
 const WHATSAPP = '251908075506'
@@ -155,6 +156,7 @@ function App() {
 
  if(window.location.pathname==='/grade-6-quiz') return <Grade6Quiz/>
 if(window.location.pathname==='/onboarding') return <Onboarding/>
+if(window.location.pathname==='/grade-6-registration') return <Grade6Registration/>
 if(window.location.pathname==='/grade-6-quiz') return <Grade6Quiz/>
 if(window.location.pathname.startsWith('/model-exams')) return <ModelExams/>
   const score=Object.values(answers).reduce((a,v)=>a+v,0)

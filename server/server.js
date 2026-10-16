@@ -262,6 +262,12 @@ const leadSchema = new mongoose.Schema(
       trim: true,
     },
 
+    learningMethod: {
+      type: String,
+      default: "Online",
+      trim: true,
+    },
+
     country: {
       type: String,
       default: "",
@@ -6818,6 +6824,83 @@ app.post("/api/leads", async (req, res) => {
 });
 
 // ===============================
+
+app.post("/api/grade-6-registrations", async (req, res) => {
+  try {
+    const parentName = clean(req.body?.parentName);
+    const phone = clean(req.body?.phone);
+    const childName = clean(req.body?.childName);
+    const city = clean(req.body?.city);
+    const area = clean(req.body?.area);
+    const subject = clean(req.body?.subject);
+
+    if (!parentName || !phone || !childName || !city || !area || !subject) {
+      return res.status(400).json({
+        success: false,
+        message: "Please complete all required fields.",
+      });
+    }
+
+    if (
+      parentName.length > 120 ||
+      childName.length > 120 ||
+      phone.length > 25 ||
+      city.length > 100 ||
+      area.length > 100
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "One or more fields are too long.",
+      });
+    }
+
+    if (phone.length < 7) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid phone number.",
+      });
+    }
+
+    if (!["Mathematics", "English"].includes(subject)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select Mathematics or English.",
+      });
+    }
+
+    const lead = new Lead({
+      parentName,
+      phone,
+      childName,
+      city,
+      area,
+      location: area,
+      grade: "6",
+      subject,
+      learningMethod: "Online",
+      country: "Ethiopia",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    await lead.save();
+
+    console.log("Grade 6 registration saved:", lead._id);
+
+    return res.status(201).json({
+      success: true,
+      message: "Registration received. StudyCare will contact you.",
+    });
+  } catch (error) {
+    console.error("Grade 6 registration save failed:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to submit your registration. Please try again.",
+    });
+  }
+});
+
 // GET LEADS - ADMIN
 // ===============================
 
