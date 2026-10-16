@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import Grade6RegistrationSuccess from './Grade6RegistrationSuccess'
 import Onboarding from './Onboarding'
 import Grade6Quiz from './quizzes/Grade6Quiz'
 import ModelExams from './ModelExams'
@@ -159,6 +160,7 @@ if(window.location.pathname==='/onboarding') return <Onboarding/>
 if(window.location.pathname==='/grade-6-registration') return <Grade6Registration/>
 if(window.location.pathname==='/grade-6-quiz') return <Grade6Quiz/>
 if(window.location.pathname.startsWith('/model-exams')) return <ModelExams/>
+if(window.location.pathname==='/grade-6-registration-success') return <Grade6RegistrationSuccess/>
   const score=Object.values(answers).reduce((a,v)=>a+v,0)
 
   return <div className="site">

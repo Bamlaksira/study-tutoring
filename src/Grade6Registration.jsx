@@ -46,16 +46,7 @@ export default function Grade6Registration() {
         )
       }
 
-      setSuccess(true)
-      setMessage('Registration received! StudyCare will contact you.')
-      setForm({
-        parentName: '',
-        phone: '',
-        childName: '',
-        city: '',
-        area: '',
-        subject: '',
-      })
+            window.location.href = '/grade-6-registration-success'
     } catch (error) {
       setMessage(
         error.message ||
