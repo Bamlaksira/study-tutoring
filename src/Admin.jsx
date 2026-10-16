@@ -140,7 +140,7 @@ export default function Admin() {
       setOnboardings(
         Array.isArray(data)
           ? data
-          : data.onboardings || []
+          : data.onboarding || data.onboardings || []
       );
     } else {
       errors.push(
